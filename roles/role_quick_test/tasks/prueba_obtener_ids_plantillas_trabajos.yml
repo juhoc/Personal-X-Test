@@ -1,0 +1,33 @@
+- name: Tareas por bloques - obtencion id y nombres de plantilla de trabajo
+  block:
+    - name: Obtener lista de IDs y Plantillas de trabajo
+      uri:
+        url: "{{ api_rest_at }}/api/v2/job_templates/"
+        method: GET
+        headers:
+          Authorization: "Bearer {{ api_rest_at_tk }}"
+        validate_certs: no
+        return_content: yes
+      register: job_templates
+
+    - name: Mostrar lista de IDs y Plantillas de trabajo
+      debug:
+        msg: |
+          {% for template in job_templates.json.results %}
+          - ID: {{ template.id }}, Nombre: {{ template.name }}
+          {% endfor %}
+
+    - name: Generar contenido para el archivo
+      set_fact:
+        job_template_info: |
+          {% for template in job_templates.json.results %}
+          - ID: {{ template.id }}, Nombre: {{ template.name }}
+          {% endfor %}
+  delegate_to: localhost
+
+- name: Tareas por bloques - Crear archivo texto plano de id y nombres de plantilla de trabajo
+  block:
+    - name: Guardar la información en un archivo
+      copy:
+        content: "{{ job_template_info }}"
+        dest: "{{ remote_path }}job_templates_info.txt"

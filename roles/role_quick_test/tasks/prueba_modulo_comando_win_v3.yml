@@ -1,0 +1,98 @@
+---
+- name: Tareas por bloques - Validacion formato CRQ o ICR
+  block:
+    - name: Validando Formato de Cambio o Incidente
+      assert:
+        that:
+          - idcrqincreq | string | regex_search('(CRQ|INC|REQ)[0-9]{12}')
+        fail_msg: "El CRQ, INC o REQ no cumplen con la condiciones del formato"
+        success_msg: "El CRQ, INC o REQ cumplen con las condiciones del formato"
+      run_once: true
+      delegate_to: localhost
+
+- name: Obtener Estado de Salud previo al IPL Windows
+  block:
+    - win_file:
+        path: "{{ unidadvasb }}foto_salud_temporal_post.txt"
+        state: touch
+
+    - win_shell: |
+        $fecha = date
+        $nombre_server = hostname
+        echo "Fecha actual: $fecha" > {{ unidadvasb }}foto_salud_temporal_post.txt
+        echo "Hostname: $nombre_server" >> {{ unidadvasb }}foto_salud_temporal_post.txt
+        echo " " >> {{ unidadvasb }}foto_salud_temporal_post.txt
+
+    - win_shell: |
+        $ips = (Get-NetIPConfiguration).IPv4Address.IPAddress
+        echo "Las direcciones IPs son:" >> {{ unidadvasb }}foto_salud_temporal_post.txt
+        echo $ips >> {{ unidadvasb }}foto_salud_temporal_post.txt
+        echo " " >> {{ unidadvasb }}foto_salud_temporal_post.txt
+
+    - win_shell: |
+        $Uptime = (Get-Date) - (Get-CimInstance -ClassName win32_operatingsystem).LastBootUpTime
+        echo "Tiempo Activo IPL: $($Uptime.Days)-Days:$($Uptime.Hours)-Hours:$($Uptime.Minutes)-Minutes:$($Uptime.Seconds)-Seconds" >> {{ unidadvasb }}foto_salud_temporal_post.txt
+        echo " " >> {{ unidadvasb }}foto_salud_temporal_post.txt
+
+    - win_shell: |
+        $cpuLoad = (Get-WmiObject -Class Win32_Processor | Measure-Object -Property LoadPercentage -Average).Average
+        echo "Porcentaje de CPU en uso: $([math]::Round($cpuLoad, 2))%"  >> {{ unidadvasb }}foto_salud_temporal_post.txt
+        echo " " >> {{ unidadvasb }}foto_salud_temporal_post.txt
+
+    - win_shell: |
+        $memoryInfo = Get-WmiObject -Class Win32_OperatingSystem | Select-Object @{
+        Name="TotalVisibleMemory(GB)";Expression={[math]::Round($_.TotalVisibleMemorySize / 1MB, 2)}
+        }, @{
+        Name="FreePhysicalMemory(GB)";Expression={[math]::Round($_.FreePhysicalMemory / 1MB, 2)}
+        }
+        echo "Uso de Memoria:"  >> {{ unidadvasb }}foto_salud_temporal_post.txt
+        echo $memoryInfo >> {{ unidadvasb }}foto_salud_temporal_post.txt
+
+    - win_shell: |
+        $fwstatus = Get-NetFirewallProfile | format-table Name, Enabled
+        echo "Estado del firewall:"  >> {{ unidadvasb }}foto_salud_temporal_post.txt
+        echo $fwstatus >> {{ unidadvasb }}foto_salud_temporal_post.txt
+
+    - win_shell: |
+        echo "Estado de los discos logicos" >> {{ unidadvasb }}foto_salud_temporal_post.txt
+        Get-WmiObject -Class Win32_LogicalDisk | Select-Object DeviceID, @{Name="Size(GB)";Expression={[math]::Round($_.Size / 1GB, 2)}}, @{Name="FreeSpace(GB)";Expression={[math]::Round($_.FreeSpace / 1GB, 2)}} >> {{ unidadvasb }}foto_salud_temporal_post.txt
+
+    - win_shell: |
+        $kbs = Get-WmiObject -Class Win32_QuickFixEngineering | Sort-Object -Property InstalledOn -Descending
+        echo "Ultimas actualizaciones de seguridad instaladas" >> {{ unidadvasb }}foto_salud_temporal_post.txt
+        echo $kbs >> {{ unidadvasb }}foto_salud_temporal_post.txt
+
+    - win_shell: type {{ unidadvasb }}foto_salud_temporal_post.txt
+      register: esalud_total
+
+    - set_fact:
+        salud_servidor: "{{ esalud_total.stdout_lines }}"
+
+    - win_file:
+        path: "{{ unidadvasb }}foto_salud_temporal_post.txt"
+        state: absent
+
+- name: Crear Repprte de Estado de Salud previo al IPL Windows
+  block:
+    - win_file:
+        path: "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_salud_os_posterior.txt"
+        state: touch
+  
+    - win_copy:
+        content: "{{ salud_servidor | join('\n') }}"
+        dest: "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_salud_os_posterior.txt"
+  
+    - name: Envio de evidencias posterioes al IPL
+      win_shell: |
+        $archivos = Get-ChildItem "{{ gdmmailrepo }}" | Where-Object {$_.Name -match "{{ idcrqincreq }}" -and $_.Name -match "os_posterior"} | Select-Object -ExpandProperty FullName
+        $sendMailMessageSplat = @{
+        From = 'IT-OPERATORATION <itoperationintegration.mx@bbva.com>'
+        To = {{ mail_to }}
+        Subject = "Reportes GDM Windows Patching"
+        Body = "Se adjuntan archivo de evidencias estado salud OS Windows posterior al IPL"
+        SmtpServer = '150.100.207.52'
+        Attachments = $archivos
+        }
+        Send-MailMessage @sendMailMessageSplat
+  delegate_to: wvmbao01.bvm.bluecare.kyndryl.net
+#Autor Julio Hoyos

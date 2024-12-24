@@ -1,0 +1,95 @@
+---
+- name: Bloques Nun. 1
+  block:
+    - name: Tarea Num. 
+      stat:
+        path: "{{ temporal }}/batchsftpfiledim.txt"
+      register: existbfdim
+
+    - name: Tarea Num. 
+      become: true
+      file:
+        path: "{{ home_ansible }}"
+        state: directory
+        owner: bvmuxat2
+        group: automate
+        mode: "0755"
+
+    - name: Tarea Num. 
+      become: true
+      template:
+        src: batchsftpfiledim.j2
+        dest: "{{ temporal }}/batchsftpfiledim.txt"
+        owner: ccrbao
+        group: grpcrbao
+        mode: "0755"
+      run_once: true
+      delegate_to: asitsmaop2.bvm.bluecare.kyndryl.net
+      when: not existbfdim.stat.exists
+
+
+    - name: Tarea Num. 
+      stat:
+        path: "{{ destino_dim }}{{ instala }}/{{ software }}"
+      register: existmdim
+
+    - name: Tarea Num. 
+      command: sudo su - {{ usuario }} -c "sftp -b {{ temporal }}/batchsftpfiledim.txt -o StrictHostKeyChecking=no {{ usuario }}@{{ hostvars[inventory_hostname]['ipaddress'] }}"
+      ignore_errors: true
+      delegate_to: asitsmaop2.bvm.bluecare.kyndryl.net
+      when: not existmdim.stat.exists
+
+    - name: Tarea Num. 
+      stat:
+        path: "{{ destino_dim }}{{ instala }}/{{ software }}"
+      register: existmdim
+
+    - name: Tarea Num. 
+      command: sudo su - {{ usuario }} -c "scp -o StrictHostKeyChecking=no {{ recurso_dim }}{{ software }} {{ usuario }}@{{ hostvars[inventory_hostname]['ipaddress'] }}:{{ destino_dim }}{{ instala }}"
+      ignore_errors: true
+      delegate_to: asitsmaop2.bvm.bluecare.kyndryl.net
+      when: not existmdim.stat.exists
+
+    - name: Tarea Num. 
+      stat:
+        path: "{{ destino_dim }}{{ instala }}/{{ software }}"
+      register: existmdim
+
+#    - name: Tarea Num. 
+#      become: true
+#      get_url:
+#        dest: "{{ destino_dim }}{{ instala }}/{{ software }}"
+#        url: http://{{ ipweb }}:{{ puertoweb }}/{{ software }}
+#        owner: ccrbao
+#        group: grpcrbao
+#        mode: 0755
+#        force_basic_auth: yes
+#      ignore_errors: True
+#      when: not existmdim.stat.exists
+
+    - name: Tarea Num. 
+      stat:
+        path: "{{ destino_dim }}{{ instala }}/{{ software }}"
+      register: existmdim
+
+    - name: Tarea Num. 
+      fail:
+        msg:
+          - "No se puedo transferir la media de Dimension por ningun metodo SFTP, SCP y URI"
+          - "Favor de validar con el Team de Seguridad para indentificar si existen restricciones para los metodos SFTP, SCP y/o URL"
+      when: not existmdim.stat.exists
+
+    - name: Tarea Num. 
+      debug:
+        msg:
+          - "La trasferencia de la media de Dimension fue exitosa"
+      when: existmdim.stat.exists
+
+    - name: Tarea Num.
+      become: true
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ destino_dim }}{{ instala }}"
+      ignore_errors: true      

@@ -1,0 +1,39 @@
+---
+#------------------Incrementar Logical Volume------------------#
+- name: Tareas por bloques - Incrementando el Logical Volume
+  block:
+    - name: Copiar el shell script
+      copy:
+        src: "files/{{ scripfs_out }}"
+        dest: "{{ bvmuxat2_home }}{{ scripfs_out }}"
+        mode: 0755
+
+    - name: Ejecutar el shell script
+      become: true
+      shell: "df -hP | grep -i {{ fs_name }}"
+
+    - name: Ejecutar el shell script
+      become: true
+      shell: "export PATH=$PATH:/sbin:/usr/sbin && {{ bvmuxat2_home }}{{ scripfs_out }} {{ fs_name }} {{ fs_size }} {{ fs_option }}"
+      register: incrementar_fs_result
+      environment:
+         PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:{{ ansible_env.PATH }}"
+
+    - name: Borrar shell script
+      become: true
+      file:
+        path: "{{ bvmuxat2_home }}{{ scripfs_out }}"
+        state: absent
+
+    - name: Mostrar mensajes de resultado
+      debug:
+        msg:
+          - "{{ incrementar_fs_result.stdout_lines }}"
+      when: "'successfully' in incrementar_fs_result.stdout"
+
+    - name: Mostrar mensajes de resultado
+      fail:
+        msg:
+          - "{{ incrementar_fs_result.stdout_lines }}"
+      when: "'ERROR' in incrementar_fs_result.stdout"
+  #------------------Reporte post - Physical Volume y Logical Volume------------------#

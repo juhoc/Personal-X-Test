@@ -1,0 +1,65 @@
+---
+- block:
+    - name: Copiar el {{ archivo_tmp }} de la ruta {{ ruta1 }} a la ruta {{ ruta2 }}
+      become: true
+      copy:
+        src: "{{ ruta1 }}{{ archivo }}"
+        dest: "{{ ruta2 }}"
+      register: tara_resultv1_0
+
+    - name: Remover el {{ archivo_tmp }} de la ruta {{ ruta1 }}
+      become: true
+      file:
+        path: "{{ ruta1 }}{{ archivo }}"
+        state: absent
+      register: tara_resultv1_1
+  when: "opciones == 'Mover_archivo'"
+
+- block:
+    - name: Copiar el {{ archivo_tmp }} de la ruta {{ ruta1 }} a la ruta {{ ruta2 }}
+      become: true
+      copy:
+        src: "{{ ruta1 }}{{ archivo }}"
+        dest: "{{ ruta2 }}"
+      register: tara_resultv2
+  when: "opciones == 'Copiar_archivo'"
+
+- block:
+    - name: Remover el {{ archivo_tmp }} de la ruta {{ ruta1 }}
+      become: true
+      file:
+        path: "{{ ruta1 }}{{ archivo }}"
+        state: absent
+      register: tara_resultv3
+  when: "opciones == 'Remover_archivo'"
+
+- block:
+    - name: Descomprimir el {{ archivo_tmp }} de la ruta {{ ruta1 }} a la ruta {{ ruta2 }}
+      become: true      
+      unarchive: 
+        src: "{{ ruta1 }}{{ archivo_tmp }}"
+        dest: "{{ ruta2 }}"
+        remote_src: yes
+      register: tara_resultv4
+  when: "opciones == 'Descomprimir'"
+
+- block:
+    - name: Crear directorio {{ ruta1 }}
+      become: true      
+      file: 
+        path: "{{ ruta1 }}"
+        state: directory
+        mode: '0744'
+        owner: bvmuxat2
+        group: automate
+      register: tara_resultv5
+  when: "opciones == 'Crear_directorio'"
+
+- block:
+    - name: Borrar directorio {{ ruta1 }}
+      become: true      
+      file: 
+        path: "{{ ruta1 }}"
+        state: absent
+      register: tara_resultv6
+  when: "opciones == 'Borrar_directorio'"

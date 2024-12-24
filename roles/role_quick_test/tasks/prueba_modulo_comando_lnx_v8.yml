@@ -1,0 +1,24 @@
+---
+- name: Bloques Nun. 1 Lista Cluster WebSphere Application Server
+  block:
+    - shell: if [ -f {{ gdmlcfsasb }}websphere90.asb ]; then echo "/WebSphere90/"; fi
+      register: wasversion
+
+    - name: Ejecutar script baja instancias WebSphere
+      become: yes
+      become_user: was60
+      become_method: su
+      become_exe: sudo su -
+      shell: |
+        export PATH=$PATH:/sbin:/usr/sbin
+        CLUSTER_R=$(ls -1R {{ wasversion.stdout }} | grep clusters:$ | grep "App\w*/pro\w*/Dmg\w*/con\w*/cel\w*/$(uname -n)" | tr ":" "/")
+        CLUSTER_I=$(ls -1 $CLUSTER_R)
+        for cluwasi in $CLUSTER_I
+          do
+          ./wsadmin.sh -lang jython -f ./Alta_Cluster.py $cluwasi
+          done
+      args:
+        chdir: "{{ wasversion.stdout }}AppServer/profiles/Dmgr01/bin/"
+      environment:
+        PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:{{ ansible_env.PATH }}"
+      when: "'WebSphere90' in wasversion.stdout"

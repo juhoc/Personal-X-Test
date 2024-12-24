@@ -1,0 +1,97 @@
+---
+- name: Tareas por bloques - Validacion formato CRQ o ICR
+  block:
+    - name: Validando Formato de Cambio o Incidente
+      assert:
+        that:
+          - idcrqincreq | string | regex_search('(CRQ|INC|REQ)[0-9]{12}')
+        fail_msg: "El CRQ, INC o REQ no cumplen con la condiciones del formato"
+        success_msg: "El CRQ, INC o REQ cumplen con las condiciones del formato"
+      run_once: true
+      delegate_to: localhost
+
+- name: Zip CRQ, INC o REQ y envio de correo
+  block:
+    - name: Buscar todos los archivos .zip para borra
+      win_find:
+        paths: "{{ gdmmailrepo }}"
+        patterns: '*.zip'
+      register: zip_files
+
+    - win_file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ zip_files.files }}"
+      when: zip_files.matched > 0
+
+- name: Zip CRQ, INC o REQ y envio de correo
+  block:
+    - win_shell: Compress-Archive "{{ gdmmailrepo }}\{{ idcrqincreq }}*foto*" -DestinationPath "{{ gdmmailrepo }}\{{ idcrqincreq }}_totales.zip"
+
+    - name: Envio de evidencias por CRQ, INC o REQ
+      win_shell: |
+        $archivos = Get-ChildItem "{{ gdmmailrepo }}" | Where-Object {$_.Name -match "{{ idcrqincreq }}_totales.zip"} | Select-Object -ExpandProperty FullName
+        $sendMailMessageSplat = @{
+        From = 'IT-OPERATORATION <itoperationintegration.mx@bbva.com>'
+        To = {{ mail_to }}
+        Subject = "Reportes GDM Windows Patching"
+        Body = "Se adjuntan todas las evidencias por CRQ o INC o REQ previas y posteriores al IPL"
+        SmtpServer = '150.100.207.52'
+        Attachments = $archivos
+        }
+        Send-MailMessage @sendMailMessageSplat
+  when: "send_mail == 'Fotos_x_CRQ_INC_REC_IPL'"
+
+- name: Zip Previas y envio de correo
+  block:
+    - win_shell: Compress-Archive "{{ gdmmailrepo }}\{{ idcrqincreq }}*previa*" -DestinationPath "{{ gdmmailrepo }}\{{ idcrqincreq }}_totales_previas.zip"
+
+    - name: Envio de evidencias previas al IPL
+      win_shell: |
+        $archivos = Get-ChildItem "{{ gdmmailrepo }}" | Where-Object {$_.Name -match "{{ idcrqincreq }}_totales_previas.zip"} | Select-Object -ExpandProperty FullName
+        $sendMailMessageSplat = @{
+        From = 'IT-OPERATORATION <itoperationintegration.mx@bbva.com>'
+        To = {{ mail_to }}
+        Subject = "Reportes GDM Windows Patching"
+        Body = "Se adjuntan los archivos de evidencias de servicios, disco y salud os previos al IPL"
+        SmtpServer = '150.100.207.52'
+        Attachments = $archivos
+        }
+        Send-MailMessage @sendMailMessageSplat
+  when: "send_mail == 'Fotos_previas_IPL'"
+
+- name: Zip Posteriores y envio de correo
+  block:
+    - win_shell: Compress-Archive "{{ gdmmailrepo }}\{{ idcrqincreq }}*posterior*" -DestinationPath "{{ gdmmailrepo }}\{{ idcrqincreq }}_totales_posteriores.zip"
+
+    - name: Envio de evidencias posterioes al IPL
+      win_shell: |
+        $archivos = Get-ChildItem "{{ gdmmailrepo }}" | Where-Object {$_.Name -match "{{ idcrqincreq }}_totales_posteriores.zip"} | Select-Object -ExpandProperty FullName
+        $sendMailMessageSplat = @{
+        From = 'IT-OPERATORATION <itoperationintegration.mx@bbva.com>'
+        To = {{ mail_to }}
+        Subject = "Reportes GDM Windows Patching"
+        Body = "Se adjuntan los archivos de evidencias de servicios, disco y salud os posterior al IPL"
+        SmtpServer = '150.100.207.52'
+        Attachments = $archivos
+        }
+        Send-MailMessage @sendMailMessageSplat
+  when: "send_mail == 'Fotos_posterior_IPL'"
+
+- name: Zip Diferecicias y envio de correo
+  block:
+    - win_shell: Compress-Archive "{{ gdmmailrepo }}\{{ idcrqincreq }}*diff*" -DestinationPath "{{ gdmmailrepo }}\{{ idcrqincreq }}_totales_diferencias.zip"
+
+    - name: Envio de evidencias de compara previa vs posterior
+      win_shell: |
+        $archivos = Get-ChildItem "{{ gdmmailrepo }}" | Where-Object {$_.Name -match "{{ idcrqincreq }}_totales_diferencias.zip"} | Select-Object -ExpandProperty FullName
+        $sendMailMessageSplat = @{
+        From = 'IT-OPERATORATION <itoperationintegration.mx@bbva.com>'
+        To = {{ mail_to }}
+        Subject = "Reportes GDM Windows Patching"
+        Body = "Se adjuntan los archivos de evidencias de comparar servicios, disco y salud os previos vs posterior al IPL"
+        SmtpServer = '150.100.207.52'
+        Attachments = $archivos
+        }
+        Send-MailMessage @sendMailMessageSplat
+  when: "send_mail == 'Fotos_Diferencias_IPL'"

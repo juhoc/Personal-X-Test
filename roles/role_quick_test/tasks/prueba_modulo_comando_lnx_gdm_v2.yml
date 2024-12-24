@@ -1,0 +1,42 @@
+---
+- name: Tareas por bloques - Validacion formato CRQ o ICR
+  block:
+    - name: Validando Formato de Cambio o Incidente
+      assert:
+        that:
+          - idcrqincreq | string | regex_search('(CRQ|INC|REQ)[0-9]{12}')
+        fail_msg: "El CRQ, INC o REQ no cumplen con la condiciones del formato"
+        success_msg: "El CRQ, INC o REQ cumplen con las condiciones del formato"
+      run_once: true
+      delegate_to: localhost
+
+- name: Tareas por bloques - Validar Status PPs previa al IPL OS Linux
+  block:
+    - name: Creando archivos de evidencias servidores previas IPL OS Linux
+      block:
+        - stat:
+            path: "{{ mountfsasb }}pps_aps_status.sh"
+          register: shell_script_file
+
+        - file:
+            path: "{{ mountfsasb }}pps_aps_status.sh"
+            state: absent
+          when: shell_script_file.stat.exists == true
+
+        - name: Copiando script foto previa IPL OS Linux
+          become: yes
+          copy:
+            src: files/pps_aps_status.sh
+            dest: "{{ gdmmailrepo }}"
+            mode: 0750
+            owner: bvmuxat2
+            group: automate
+    
+        - name: Ejecutar script foto previa IPL OS Linux
+          become: true
+          shell: "export PATH=$PATH:/sbin:/usr/sbin && {{ mountfsasb }}pps_status_previa_os_ipl.sh"
+          register: result_accion
+          environment:
+            PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:{{ ansible_env.PATH }}"
+
+

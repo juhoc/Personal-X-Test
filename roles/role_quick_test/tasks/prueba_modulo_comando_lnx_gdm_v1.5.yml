@@ -1,0 +1,143 @@
+---
+- name: Tareas por bloques - Validacion formato CRQ o ICR
+  block:
+    - name: Validando Formato de Cambio o Incidente
+      assert:
+        that:
+          - idcrqincreq | string | regex_search('(CRQ|INC|REQ)[0-9]{12}')
+        fail_msg: "El CRQ, INC o REQ no cumplen con la condiciones del formato"
+        success_msg: "El CRQ, INC o REQ cumplen con las condiciones del formato"
+      run_once: true
+      delegate_to: localhost
+
+- name: Tareas por bloques - borrar evidencias zip
+  block:
+    - name: Buscar archivos y borrar archivos zip
+      find:
+        paths: "{{ gdmmailrepo }}"
+        patterns: "*.zip"
+      register: zip_files
+
+    - file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ zip_files.files }}"
+      when: zip_files.matched > 0
+
+- name: Busca, comprimir y envia correo con evidencias totales
+  block:
+    - name: Buscar archivos que contengan el {{ idcrqincreq }}, comprimir en zip y enviar correo
+      find:
+        paths: "{{ gdmmailrepo }}"
+        patterns: "{{ idcrqincreq }}*"
+      register: archivos_filtrados
+
+    - archive:
+        path: "{{ archivos_filtrados.files | map(attribute='path') | list }}"
+        dest: "{{ gdmmailrepo }}{{ idcrqincreq }}_totales.zip"
+        format: zip
+        mode: '0644'
+      with_items: "{{ archivos_filtrados.files }}"
+
+    - shell: ls {{ gdmmailrepo }}{{ idcrqincreq }}*totales.zip
+      register: listfltxt
+
+    - mail:
+        host: "{{ smtp }}"
+        port: "{{ smtpport }}"
+        from: "{{ mailfrom }}"
+        to: "{{ mailto }}"
+        subject: "Reportes GDM Linux Patching"
+        body: "Se adjuntan todas las evidencias del {{ idcrqincreq }} de previas y posteriores al IPL"
+        attach: "{{ listfltxt.stdout_lines }}"
+  when: "send_mail == 'Fotos_x_CRQ_INC_REC_IPL'"
+
+#---
+
+- name: Busca, comprimir y envia correo con evidencias totales
+  block:
+    - name: Buscar archivos que contengan el {{ idcrqincreq }}, comprimir en zip y enviar correo
+      find:
+        paths: "{{ gdmmailrepo }}"
+        patterns: "{{ idcrqincreq }}*previa*"
+      register: archivos_filtrados
+
+    - archive:
+        path: "{{ archivos_filtrados.files | map(attribute='path') | list }}"
+        dest: "{{ gdmmailrepo }}{{ idcrqincreq }}_totales_previas.zip"
+        format: zip
+        mode: '0644'
+      with_items: "{{ archivos_filtrados.files }}"
+
+    - shell: ls {{ gdmmailrepo }}{{ idcrqincreq }}*totales_previas.zip
+      register: listfltxt
+
+    - mail:
+        host: "{{ smtp }}"
+        port: "{{ smtpport }}"
+        from: "{{ mailfrom }}"
+        to: "{{ mailto }}"
+        subject: "Reportes GDM Linux Patching"
+        body: "Se adjuntan todas las evidencias del {{ idcrqincreq }} previas al IPL"
+        attach: "{{ listfltxt.stdout_lines }}"
+  when: "send_mail == 'Fotos_previas_IPL'"
+
+#---
+
+- name: Busca, comprimir y envia correo con evidencias totales
+  block:
+    - name: Buscar archivos que contengan el {{ idcrqincreq }}, comprimir en zip y enviar correo
+      find:
+        paths: "{{ gdmmailrepo }}"
+        patterns: "{{ idcrqincreq }}*intermedia*"
+      register: archivos_filtrados
+
+    - archive:
+        path: "{{ archivos_filtrados.files | map(attribute='path') | list }}"
+        dest: "{{ gdmmailrepo }}{{ idcrqincreq }}_totales_intermedias.zip"
+        format: zip
+        mode: '0644'
+      with_items: "{{ archivos_filtrados.files }}"
+
+    - shell: ls {{ gdmmailrepo }}{{ idcrqincreq }}*totales.zip
+      register: listfltxt
+
+    - mail:
+        host: "{{ smtp }}"
+        port: "{{ smtpport }}"
+        from: "{{ mailfrom }}"
+        to: "{{ mailto }}"
+        subject: "Reportes GDM Linux Patching"
+        body: "Se adjuntan todas las evidencias del {{ idcrqincreq }}, intermedias al IPL"
+        attach: "{{ listfltxt.stdout_lines }}"
+  when: "send_mail == 'Fotos_intermedias_IPL'"
+
+#---
+
+- name: Busca, comprimir y envia correo con evidencias totales
+  block:
+    - name: Buscar archivos que contengan el {{ idcrqincreq }}, comprimir en zip y enviar correo
+      find:
+        paths: "{{ gdmmailrepo }}"
+        patterns: "{{ idcrqincreq }}*posterior*"
+      register: archivos_filtrados
+
+    - archive:
+        path: "{{ archivos_filtrados.files | map(attribute='path') | list }}"
+        dest: "{{ gdmmailrepo }}{{ idcrqincreq }}_totales_posteriors.zip"
+        format: zip
+        mode: '0644'
+      with_items: "{{ archivos_filtrados.files }}"
+
+    - shell: ls {{ gdmmailrepo }}{{ idcrqincreq }}*totales.zip
+      register: listfltxt
+
+    - mail:
+        host: "{{ smtp }}"
+        port: "{{ smtpport }}"
+        from: "{{ mailfrom }}"
+        to: "{{ mailto }}"
+        subject: "Reportes GDM Linux Patching"
+        body: "Se adjuntan todas las evidencias del {{ idcrqincreq }}, posteriores al IPL"
+        attach: "{{ listfltxt.stdout_lines }}"
+  when: "send_mail == 'Fotos_posteriores_IPL'"

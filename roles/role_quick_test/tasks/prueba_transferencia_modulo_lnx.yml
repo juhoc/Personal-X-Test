@@ -1,0 +1,55 @@
+---
+- name: Remove F-Response and Crowdstrike from BMC Patrol monitoring 
+  block:
+    - name: Transfer rpm from asitsmaop2 to control machine
+      become: true
+      fetch:
+        src: "{{ recurso }}{{ software }}"
+        dest: /tmp/
+        flat: true
+      run_once: true
+      delegate_to: asitsmaop2.bvm.bluecare.kyndryl.net
+
+    - name: Check SentinelOne exist on localhost
+      stat:
+        path: "/tmp/{{ software }}"
+      register: result_file_local
+      run_once: true
+      delegate_to: localhost
+
+    - name: Print File Local Status
+      debug:
+        var: result_file_local.stat.exists
+
+    - name: Copiar archivo de control machine a los nodos remotos
+      become: true
+      copy:
+        src: "/tmp/{{ software }}"
+        dest: "{{ destino }}"
+
+    - name: Check SentinelOne exist on remote node
+      stat:
+        path: "{{ destino }}{{ software }}"
+      register: result_file_remote
+
+    - name: Print File Remote Status
+      debug:
+        var: result_file_remote.stat.exists
+
+    - name: Pause for 2 minutes to build app cache
+      pause:
+        minutes: 2
+
+    - name: Remove SentinelOne Agent rpm file from the control machine
+      local_action:
+        module: file
+        path: /tmp/{{ software }}
+        state: absent
+      run_once: true
+      delegate_to: localhost
+
+    - name: Remove SentinelOne Agent rpm file from remote nodes
+      become: true
+      file:
+        path: "{{ destino }}{{ software }}"
+        state: absent        

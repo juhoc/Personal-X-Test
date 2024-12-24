@@ -1,0 +1,38 @@
+---
+- name: Tareas por bloques - Validacion formato CRQ o ICR
+  block:
+    - name: Validando Formato de Cambio o Incidente
+      assert:
+        that:
+          - idcrqincreq | string | regex_search('(CRQ|INC|REQ)[0-9]{12}')
+        fail_msg: "El CRQ, INC o REQ no cumplen con la condiciones del formato"
+        success_msg: "El CRQ, INC o REQ cumplen con las condiciones del formato"
+      run_once: true
+      delegate_to: localhost
+
+- name: Validar archivos de fotos previas IPL del OS Windows
+  block:
+    - name: Validar rchivos esperados previas IPL del OS Windows
+      set_fact:
+        ruta_base: "{{ gdmmailrepo }}"
+        archivos_esperados:
+          - "{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_svcs.csv"
+          - "{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_undcs.csv"
+          - "{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_salud_os.txt"
+ 
+    - win_stat:
+        path: "{{ ruta_base }}\\{{ item }}"
+      loop: "{{ archivos_esperados }}"
+      register: archivos_verificados
+ 
+    - debug:
+        msg: "El archivo {{ item.item }} existe: {{ item.stat.exists }}"
+      loop: "{{ archivos_verificados.results }}"
+ 
+    - name: Crear archivos si no existen
+      win_file:
+        path: "{{ ruta_base }}\\{{ item.item }}"
+        state: touch
+      when: not item.stat.exists
+      loop: "{{ archivos_verificados.results }}"
+  delegate_to: wvmbao01.bvm.bluecare.kyndryl.net

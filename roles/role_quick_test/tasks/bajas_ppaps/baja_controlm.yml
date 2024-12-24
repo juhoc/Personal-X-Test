@@ -1,0 +1,21 @@
+- name: Baja proceso Control-M_Agent
+  become: yes
+  shell: |
+    ./stop-ag 2>/dev/null -u ag700 -p ALL
+    sleep 10
+  args:
+    chdir: /controlm/ag700/ctm/scripts/
+
+- name: Validar proceso Control-M_Agent
+  shell: |
+      if [ $(ps -eo args | grep ctma\w* | grep -v grep | wc -l) -eq 0 ]
+      then
+      echo INACTIVO
+      fi
+  register: statuscm
+  
+- name: Resultado de la alta del proceso Control-M_Agent
+  debug:
+    msg:
+       - "Control-M_Agent ........{{ statuscm.stdout }}"
+  when: statuscm.stdout == "INACTIVO"

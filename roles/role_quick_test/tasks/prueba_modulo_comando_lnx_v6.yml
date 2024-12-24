@@ -1,0 +1,29 @@
+---
+- name: Bloques Nun. 1 Replace sudoers
+  block:
+    - name: Assing permissions r+x to ansible directory
+      become: true
+      file:
+        path: "{{ fs_varoptasb }}{{ item }}"
+        state: directory
+        owner: ccrbao
+        group: grpcrbao
+        mode: "0755"
+        recurse: true
+      loop:
+        - SSP
+        - PS1A
+        - PS2A
+      when: inventory_hostname == 'asitsmaop2.bvm.bluecare.kyndryl.net'
+
+    - name: Assing permissions r+x to ansible directory
+      become: true
+      file:
+        path: "{{ fs_varoptasb }}SBI"
+        state: directory
+        owner: ccrbao
+        group: grpcrbao
+        mode: "0755"
+        recurse: true
+      when: inventory_hostname == 'asitsmaop1.bvm.bluecare.kyndryl.net'
+  ignore_errors: true

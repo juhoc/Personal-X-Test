@@ -1,0 +1,19 @@
+---
+- name: Bloques Nun. 1 Replace sudoers
+  block:
+    - name: Reemplazar '#sathc' por 'sathc'
+      become: true
+      replace:
+        path: /etc/sudoers
+        regexp: '^#sathc'
+        replace: 'sathc'
+        validate: 'visudo -cf %s'
+
+    - name: Reemplazar '#%sathc' por '%sathc'
+      bcome: true
+      replace:
+        path: /etc/sudoers
+        regexp: '^#%sathc'
+        replace: '%sathc'
+        validate: 'visudo -cf %s'
+

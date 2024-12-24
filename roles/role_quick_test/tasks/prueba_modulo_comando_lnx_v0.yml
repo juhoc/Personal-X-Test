@@ -1,0 +1,32 @@
+---
+- name: Bloques Nun. 1
+  block:
+    - shell: "echo {{ inventory_hostname.split('.')[0] }},{{ hostvars[inventory_hostname]['ipaddress'] }},{{ hostvars[inventory_hostname]['Ready_Plus'] }}"
+      register: ready_host
+
+    - debug:
+        msg: "{{ ansible_play_hosts | map('extract', hostvars, 'ready_host') | map(attribute='stdout') | list }}"
+      run_once: true
+
+    - debug:
+        msg: "{{ ansible_play_hosts | map('extract', hostvars, 'ready_host') | map(attribute='stdout') | list | join('\n') }}"
+      register: ready_host_mail
+      run_once: true
+      no_log: true
+
+    - mail:
+        host: "{{ smtp }}"
+        port: "{{ smtpport }}"
+        from: "{{ mailfrom }}"
+        to: "{{ mailto }}"
+        subject: "{{ mailsub }}"
+        body: |
+          Se Anexa el resultado de nodos remotos
+          Hostname,IP Address,Ready
+          {{ ready_host_mail.msg }}
+
+          ------------------------------
+          No respoder a este correo.
+
+      delegate_to: asitsmaop2.bvm.bluecare.kyndryl.net
+      run_once: true

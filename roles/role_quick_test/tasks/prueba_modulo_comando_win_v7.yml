@@ -1,0 +1,40 @@
+---
+- name: Test Transferir - Descargar
+  block:
+#    - name: Buscar todos los archivos .zip para borra
+#      win_find:
+#        paths: "{{ gdmmailrepo }}"
+#        patterns: 'split_TSCOAgent_*'
+#      delegate_to: 
+
+    - name: Transferir archivo prueba
+      fetch:
+        src: /bmc/soft3ros/bmcsoftware/capacity/agent/TSCO_Agent_ver20.02.00_MSWindows_new.zip
+        dest: /tmp/
+        flat: true
+        remote_src: true
+        checksum: sha256
+#      delegate_to: asitsmaop2.bvm.bluecare.kyndryl.net
+
+#    - name: Descargar archivo prueba
+#      win_copy:
+#        src: /tmp/Basic-Computer-Information-Report-WVDAPICOS4GMX10-15-10-2024_10-10.html
+#        dest: V:/Ansible/
+#      delegate_to: wvmbao01.bvm.bluecare.kyndryl.net
+
+
+#    - name: Transfer rpm from asitsmaop2 to control machine
+#      become: true
+#      fetch:
+#        src: "{{ recurso }}{{ software }}"
+#        dest: /tmp/
+#        flat: true
+#      run_once: true
+#      delegate_to: asitsmaop2.bvm.bluecare.kyndryl.net
+
+#    - name: Copiar archivo de control machine a los nodos remotos
+#      become: true
+#      copy:
+#        src: "/tmp/{{ software }}"
+#        dest: "{{ destino }}"
+#      failed_when: sentinelctl_exists.stat.exists == true

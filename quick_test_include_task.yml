@@ -1,0 +1,19 @@
+---
+#- name: Socks tunnel setup
+#  hosts: all
+#  gather_facts: false
+#  roles:
+#  - role: ansible-role-event-socks-tunnel
+#    run_once: true
+#    delegate_to: localhost
+#    vars:
+#      acc_id: "{{ account_triname }}"
+#      transaction_id: "{{ tower_job_id }}"
+
+- name: PlayBook Maestro de Programas Producto
+  hosts: lvpapansiblmx01.bvm.bluecare.kyndryl.net
+  gather_facts: false
+
+  tasks:
+   - name: Test command
+     shell: uname -n

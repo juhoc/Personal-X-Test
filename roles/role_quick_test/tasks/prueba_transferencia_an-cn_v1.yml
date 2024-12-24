@@ -1,0 +1,15 @@
+---
+- name: Test Transferir - Descargar
+  block:
+    - name: Eliminar archivos split en el nodo de control
+      local_action:
+        module: file
+        path: /tmp/splitcapacityw2k2002.zip
+        state: absent
+
+    - name: Validar elimininacion de archivos split en el nodo de control
+      local_action:
+        module: shell
+        args: "ls -lrt /tmp | grep -i split | wc -l"
+  run_once: true
+  delegate_to: localhost

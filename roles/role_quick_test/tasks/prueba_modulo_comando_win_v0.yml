@@ -1,0 +1,28 @@
+---
+- name: Bloques Nun. 1
+  block:
+    - name: Search Uninstall software
+      win_shell: wmic product get name | FINDSTR /I "{{ item }}"
+      args:
+        chdir: C:\
+      loop:
+#        - fireeye
+        - trellix
+#        - ipv6
+        - f-response
+      register: result_search
+      failed_when: result_search.rc not in [0, 1]
+
+    - debug:
+        var: result_search
+
+    - name: Run Uninstall FireEye
+      win_shell: |
+        $app = '{{ item | trim }}'
+        if ($app -ne '') {
+          echo 'wmic product cuando nombre=$app llama desinstala'
+        }
+      args:
+        chdir: C:\
+      loop: "{{ result_search.stdout_lines }}" # | select('search', '.*') | list }}"
+#      when: result_ipv6.stdout != ""        

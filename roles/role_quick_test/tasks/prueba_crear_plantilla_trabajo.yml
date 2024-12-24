@@ -1,0 +1,66 @@
+- name: Tareas por bloques - Obtencion lista de plantillas de trabajo
+  block:
+    - name: Guardar la información en un archivo
+      become: true
+      shell: |
+        cat {{ remote_path }}job_templates_info.txt | egrep "bao_mx_ipl|bao_mx_pp" > {{ remote_path }}job_templates_id_bao.txt
+        cat {{ remote_path }}baoAnsible.log | sed "s/:/_/g" | cut -d " " -f1 | sort > {{ remote_path }}baoAnsible.out1
+        cat {{ remote_path }}baoAnsible.out1 | {{ sed_com }} | sort > {{ remote_path }}baoAnsible.out2
+        for i in $(cat {{ remote_path }}baoAnsible.out2); do echo "$(grep $i {{ remote_path }}baoAnsible.out2 | grep $i | wc -l),bvm_jobtemplate_bao_mx_$i"; done | sort | uniq | cut -d "," -f2 > {{ remote_path }}baoAnsible.out3
+        cat {{ remote_path }}baoAnsible.out3
+      register: plantilla_trabajo
+
+- name: Tareas por bloques - Creacion de plantillas de trabajo
+  block:
+    - name: Crear plantilla de trabajo
+      uri:
+        url: "{{ api_rest_at }}/api/v2/job_templates/"
+        method: POST
+        headers:
+          Authorization: "Bearer {{ api_rest_at_tk }}"
+          Content-Type: "application/json"
+        validate_certs: no
+        body:
+          name: '{{ item }}'
+          description: '{{ item }}'
+          job_type: "run"
+          inventory: 125
+          project: 94549
+          playbook: 'quick_test_lanzar_pb.yml'
+          credential: '[2463, 513, 3886]'
+          #survey_enabled: true
+          #survey_spec:  # Especificación de la encuesta
+          #  name: "Encuesta de ejemplo"
+          #  description: "Una encuesta de ejemplo para esta plantilla"
+          #  spec:
+          #    - question_name: "¿Cuál es tu nombre?"
+          #      question_description: "Por favor, proporciona tu nombre."
+          #      required: true
+          #      type: "text"
+        body_format: json
+        return_content: yes
+        status_code: [200, 201]
+      loop: "{{ plantilla_trabajo.stdout_lines }}"
+      register: resultado
+  delegate_to: localhost
+  ignore_errors: true
+
+- name: Tareas por bloques - Mostrar plantillas de trabajo
+  block:
+    - name: Mostrar resultado de la creación de la plantilla
+      debug:
+        var: resultado
+
+- name: Tareas por bloques - Cambio de permisos a logs plantillas de trabajo
+  block:
+    - name: Lista de nombres para nuevas plantilla de trabajo
+      become: true
+      file:
+        path: "{{ remote_path }}{{ item }}"
+        owner: ccrbao
+        group: grpcrbao
+        mode: 0755
+      loop:
+        - baoAnsible.out1
+        - baoAnsible.out2
+        - baoAnsible.out3

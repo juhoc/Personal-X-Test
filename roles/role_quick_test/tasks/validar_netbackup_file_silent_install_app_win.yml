@@ -1,0 +1,70 @@
+---
+- name: Valida directorio TEMP en Windows
+  block:
+    - name: Valida si existe el directorio TEMP en C:\
+      win_stat:
+        path: "{{ destino }}"
+      register: valtemp
+
+    - name: Crear directorio bin en C:\
+      win_file:
+        path: "{{ destino }}"
+        state: directory
+      when: not valtemp.stat.exists
+
+- name: Instalar NetBackup
+  block:
+    - name: Validar IP Robotica 172.10 para crear archivo de NBInstallAnswer.conf.
+      set_fact:
+        server: "cbnocbakccr02"
+        client_name: "{{ ansible_hostname | lower }}_les1"
+        machine_role: "CLIENT"
+        ca_certificate_fingerprint: "CA:D7:AD:9C:67:33:76:8C:28:50:A5:41:B0:05:2F:5A:89:E2:4E:F7"
+        authorization_token: "KCCNXSPCFKKGADSE"
+      when: ip_permitidas | select("match", "^172.10.") | list
+
+    - name: Validar IP Robotica 172.13 para crear archivo de NBInstallAnswer.conf.
+      set_fact:
+        server: "cbnocbakccr02"
+        client_name: "{{ ansible_hostname | lower }}_mty1"
+        machine_role: "CLIENT"
+        ca_certificate_fingerprint: "CA:D7:AD:9C:67:33:76:8C:28:50:A5:41:B0:05:2F:5A:89:E2:4E:F7"
+        authorization_token: "KCCNXSPCFKKGADSE"
+      when: ip_permitidas | select("match", "^172.13.") | list
+
+    - name: Validar IP Robotica 172.214 para crear archivo de NBInstallAnswer.conf.
+      set_fact:
+        server: "vxnbuqro"
+        client_name: "{{ ansible_hostname | lower }}_qro"
+        machine_role: "CLIENT"
+        ca_certificate_fingerprint: "94:FA:1A:78:3C:53:3E:7F:B8:30:D9:01:3B:A7:6F:F5:85:34:32:AC"
+        authorization_token: "WRNSILLYILULOZAB"
+      when: ip_permitidas | select("match", "^172.214.") | list
+
+    - name: Validar IP No Robotica 150.100 para crear archivo de NBInstallAnswer.conf.
+      set_fact:
+        server: "cbnocbakccr02"
+        client_name: "{{ ansible_hostname | lower }}"
+        machine_role: "CLIENT"
+        ca_certificate_fingerprint: "CA:D7:AD:9C:67:33:76:8C:28:50:A5:41:B0:05:2F:5A:89:E2:4E:F7"
+        authorization_token: "KCCNXSPCFKKGADSE"
+      when: ip_permitidas | select("match", "^150.100.") | list
+
+    - name: Validar IP No Robotica 150.214 para crear archivo de NBInstallAnswer.conf.
+      set_fact:
+        server: "cbnocbakccr02"
+        client_name: "{{ ansible_hostname | lower }}"
+        machine_role: "CLIENT"
+        ca_certificate_fingerprint: "CA:D7:AD:9C:67:33:76:8C:28:50:A5:41:B0:05:2F:5A:89:E2:4E:F7"
+        authorization_token: "KCCNXSPCFKKGADSE"
+      when: ip_permitidas | select("match", "^150.214.") | list
+
+    - name: Crear archivo de respuesta para la instalación de NetBackup
+      win_copy:
+        content: |
+          SERVER={{ server }}
+          CLIENT_NAME={{ client_name }}
+          MACHINE_ROLE={{ machine_role }}
+          CA_CERTIFICATE_FINGERPRINT={{ ca_certificate_fingerprint }}
+          AUTHORIZATION_TOKEN={{ authorization_token }}
+        dest: "{{ destino }}{{ instala }}/NBInstallAnswer.conf"

@@ -1,0 +1,27 @@
+---
+#- name: Socks tunnel setup
+#  hosts: all
+#  gather_facts: false
+#  roles:
+#  - role: ansible-role-event-socks-tunnel
+#    run_once: true
+#    delegate_to: localhost
+#    vars:
+#      acc_id: "{{ account_triname }}"
+#      transaction_id: "{{ tower_job_id }}"
+
+
+#- name: PlayBook HttpServer Start
+#  import_playbook: iniciar_python_simplehttpserver.yml
+
+- name: PlayBook Maestro de Programas Producto
+  hosts: all
+  gather_facts: true
+  strategy: linear
+
+  tasks:
+    - include_role:
+        name: role_quick_test
+
+#- name: PlayBook HttpServer Stop
+#  import_playbook: finalizar_python_simplehttpserver.yml

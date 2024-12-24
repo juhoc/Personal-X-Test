@@ -1,0 +1,40 @@
+- name: Tareas por bloques - Llammada Rest API
+  block:
+    - name: Enviar solicitud POST a la API de inicio de sesión
+      uri:
+        url: "{{ api_rest_bao }}:{{ api_rest_bao_port }}/baocdp/rest/login"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+        body: '{ "username" : "admin", "password" : "TsoIBM2k21" }'
+        body_format: json
+        validate_certs: no
+        return_content: yes
+      register: api_reult
+
+    - name: Obtener token de autenticación del set_cookie
+      set_fact:
+        auth_token1: "{{ api_reult.cookies['Authentication-Token'] }}"
+
+    - name: Mostrar token de autenticación v1
+      debug:
+        var: auth_token1
+
+    - name: Extraer el valor del token del set_cookie
+      set_fact:
+        auth_token2: "{{ api_reult.set_cookie.split(',') | select('search', 'Authentication-Token=') | list | first | regex_replace('.*Authentication-Token=([^;]+).*', '\\1') }}"
+
+    - name: Mostrar token de autenticación v2
+      debug:
+        var: auth_token2
+
+    - name: Mostrar token de autenticación vt
+      debug:
+       msg: 
+         - "{{ auth_token1 }}"
+         - "{{ auth_token2 }}"
+
+    - name: Mostrar token de autenticación comando
+      shell: |
+        echo {{ auth_token1 }}
+        echo {{ auth_token2 }}

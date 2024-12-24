@@ -1,0 +1,19 @@
+---
+- name: Ontener version de NetBackup
+  block:
+    - name: Obtener version NetBackup con comando bpclntcmd
+      become: true
+      shell: |
+        NVGS=$(vgs | head -4 | awk '{print $1}' | grep -v VG$ | grep VGAPPS)
+        echo -e "\033[1;31mEl VolumeGroup $NVGS no tiene espacio libre\033[m"
+      environment:
+        PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:{{ ansible_env.PATH }}"
+      register: vginfo
+
+    - name: Separa mensaje
+      debug:
+       msg: "{{ vginfo.stdout.split(' ')[2] }}"
+
+    - name:
+      set_fact:
+        vgname: "{{ vginfo.stdout.split(' ')[2] }}"

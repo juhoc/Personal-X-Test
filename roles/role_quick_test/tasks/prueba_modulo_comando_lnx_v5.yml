@@ -1,0 +1,16 @@
+---
+- name: Run a command raw
+  become: true
+  raw: |
+    if [ "$(uname -s)" = "AIX" ] || [ "$(uname -s)" = "Linux" ]; then
+      echo "Discovery version python: $(ls -1R /usr/bin | egrep -i '^python[1-9]\.[1-9]$|^python[1-9]$' | paste -sd ' ' - | tr ' ' ',')";
+    elif [ "$(uname -s)" = "SunOS" ]; then
+      echo "Discovery version python: $(ls -1R /usr/lib | egrep -i '^python[1-9]\.[1-9]$|^python[1-9]$' | paste -sd ' ' - | tr ' ' ',')";
+    fi
+  args:
+    executable: /bin/bash
+  register: python_discovery_output
+
+- name: Mostrar la salida del comando
+  debug:
+    msg: "{{ python_discovery_output.stdout }}"

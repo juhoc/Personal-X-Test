@@ -1,0 +1,150 @@
+- name: Tareas por bloques - obtencion contadores de plantillas de trabajo BAO
+  block:
+    - name: Guardar la información en un archivo
+      become: true
+      shell: |
+        cat {{ remote_path }}job_templates_info.txt | egrep "bao_mx_ipl|bao_mx_pp" > {{ remote_path }}job_templates_id_bao.txt
+        cat {{ remote_path }}baoAnsible.log | sed "s/:/_/g" | cut -d " " -f1 | sort > {{ remote_path }}baoAnsible.out1
+        cat {{ remote_path }}baoAnsible.out1 | {{ sed_com }} | sort > {{ remote_path }}baoAnsible.out2
+        for i in $(cat {{ remote_path }}baoAnsible.out2); do echo "$(grep $i {{ remote_path }}baoAnsible.out2 | grep $i | wc -l),bvm_jobtemplate_bao_mx_$i"; done | sort | uniq > {{ remote_path }}baoAnsible.out3
+        cat {{ remote_path }}baoAnsible.out3
+      register: job_templates_id_bao
+#------------------------------
+- name: Tareas por bloques - Obtencion valor contador y ejecucion plabook Rest API
+  block:
+    - name: Ontener el contador plantilla (IPL Alta)
+      become: true
+      shell: |
+        if grep -q bvm_jobtemplate_bao_mx_ipl_alta {{ remote_path }}baoAnsible.out3
+          then
+          cat {{ remote_path }}baoAnsible.out3 | grep bvm_jobtemplate_bao_mx_ipl_alta | cut -d ',' -f1
+        fi
+      register: contador_plantilla
+      
+    - name: Iniciar el Job Template
+      uri:
+        url: "{{ api_rest_at }}/api/v2/job_templates/112860/launch/"
+        method: POST
+        headers:
+          Authorization: "Bearer {{ api_rest_at_tk }}"
+          Content-Type: "application/json"
+        validate_certs: no
+        return_content: yes
+        status_code: [200, 201]
+      loop: "{{ range(contador_plantilla.stdout | int ) | list }}"
+      register: job_template_count
+      delegate_to: localhost
+#------------------------------
+- name: Tareas por bloques - Obtencion valor contador y ejecucion plabook Rest API
+  block:
+    - name: Ontener el contador plantilla (IPL baja)
+      become: true
+      shell: |
+        if grep -q bvm_jobtemplate_bao_mx_ipl_baja {{ remote_path }}baoAnsible.out3
+          then
+          cat {{ remote_path }}baoAnsible.out3 | grep bvm_jobtemplate_bao_mx_ipl_baja | cut -d ',' -f1
+        fi
+      register: contador_plantilla
+      
+    - name: Iniciar el Job Template
+      uri:
+        url: "{{ api_rest_at }}/api/v2/job_templates/112861/launch/"
+        method: POST
+        headers:
+          Authorization: "Bearer {{ api_rest_at_tk }}"
+          Content-Type: "application/json"
+        validate_certs: no
+        return_content: yes
+        status_code: [200, 201]
+      loop: "{{ range(contador_plantilla.stdout | int ) | list }}"  
+      register: job_template_count
+      delegate_to: localhost
+#------------------------------
+- name: Tareas por bloques - Obtencion valor contador y ejecucion plabook Rest API
+  block:
+    - name: Ontener el contador plantilla (IPL Validacion)
+      become: true
+      shell: |
+        if grep -q bvm_jobtemplate_bao_mx_ipl_validacion {{ remote_path }}baoAnsible.out3
+          then
+          cat {{ remote_path }}baoAnsible.out3 | grep bvm_jobtemplate_bao_mx_ipl_validacion | cut -d ',' -f1
+        fi
+      register: contador_plantilla
+      
+    - name: Iniciar el Job Template
+      uri:
+        url: "{{ api_rest_at }}/api/v2/job_templates/112859/launch/"
+        method: POST
+        headers:
+          Authorization: "Bearer {{ api_rest_at_tk }}"
+          Content-Type: "application/json"
+        validate_certs: no
+        return_content: yes
+        status_code: [200, 201]
+      loop: "{{ range(contador_plantilla.stdout | int ) | list }}"  
+      register: job_template_count
+      delegate_to: localhost
+#------------------------------
+- name: Tareas por bloques - Obtencion valor contador y ejecucion plabook Rest API
+  block:
+    - name: Ontener el contador plantilla (PP Alta/Baja)
+      become: true
+      shell: |
+        if grep -q bvm_jobtemplate_bao_mx_pp_alta_baja {{ remote_path }}baoAnsible.out3
+          then
+          cat {{ remote_path }}baoAnsible.out3 | grep bvm_jobtemplate_bao_mx_pp_alta_baja | cut -d ',' -f1
+        fi
+      register: contador_plantilla
+      
+    - name: Iniciar el Job Template
+      uri:
+        url: "{{ api_rest_at }}/api/v2/job_templates/112857/launch/"
+        method: POST
+        headers:
+          Authorization: "Bearer {{ api_rest_at_tk }}"
+          Content-Type: "application/json"
+        validate_certs: no
+        return_content: yes
+        status_code: [200, 201]
+      loop: "{{ range(contador_plantilla.stdout | int ) | list }}"  
+      register: job_template_count
+      delegate_to: localhost
+#------------------------------
+- name: Tareas por bloques - Obtencion valor contador y ejecucion plabook Rest API
+  block:
+    - name: Ontener el contador plantilla (PP Validacion)
+      become: true
+      shell: |
+        if grep -q bvm_jobtemplate_bao_mx_pp_validacion {{ remote_path }}baoAnsible.out3
+          then
+          cat {{ remote_path }}baoAnsible.out3 | grep bvm_jobtemplate_bao_mx_pp_validacion | cut -d ',' -f1
+        fi
+      register: contador_plantilla
+      
+    - name: Iniciar el Job Template
+      uri:
+        url: "{{ api_rest_at }}/api/v2/job_templates/112858/launch/"
+        method: POST
+        headers:
+          Authorization: "Bearer {{ api_rest_at_tk }}"
+          Content-Type: "application/json"
+        validate_certs: no
+        return_content: yes
+        status_code: [200, 201]
+      loop: "{{ range(contador_plantilla.stdout | int ) | list }}"  
+      register: job_template_count
+      delegate_to: localhost
+#------------------------------
+- name: Tareas por bloques - Cambio de permisos a logs plantillas de trabajo
+  block:
+    - name: Lista de nombres para nuevas plantilla de trabajo
+      become: true
+      file:
+        path: "{{ remote_path }}{{ item }}"
+        owner: ccrbao
+        group: grpcrbao
+        mode: 0755
+      loop:
+        - baoAnsible.out1
+        - baoAnsible.out2
+        - baoAnsible.out3

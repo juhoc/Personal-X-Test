@@ -1,0 +1,78 @@
+- name: Obtener salidas de evidencias previas al IPL de servicios, discos y salud del OS Windows
+  block:
+    - win_shell: type {{ unidadvasb }}foto_servicios_previa.txt
+      register: eservicios_total
+
+    - win_shell: type {{ unidadvasb }}foto_disco_previa.txt
+      register: ediscos_total
+
+    - win_shell: type {{ unidadvasb }}foto_salud_servidor_previa.txt
+      register: esalud_total
+
+    - set_fact:
+        salud_svc: "{{ eservicios_total.stdout_lines }}"
+        salud_dsk: "{{ ediscos_total.stdout_lines }}"
+        salud_srv: "{{ esalud_total.stdout_lines }}"
+
+    - win_file:
+        path: "{{ unidadvasb }}{{ item }}"
+        state: absent
+      loop:
+        - foto_servicios_previa.txt
+        - foto_disco_previa.txt
+        - foto_salud_servidor_previa.txt
+
+- name: Almacenar evidencias previas al IPL de servicios, discos y salud del OS Windows
+  block:
+    - name: Validar archivos esperados previas IPL del OS Windows
+      set_fact:
+        ruta_base: "{{ gdmmailrepo }}"
+        archivos_esperados:
+          - "{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_svcs.csv"
+          - "{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_undcs.csv"
+          - "{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_salud_os.txt"
+ 
+    - win_stat:
+        path: "{{ ruta_base }}\\{{ item }}"
+      loop: "{{ archivos_esperados }}"
+      register: archivos_verificados
+ 
+    - debug:
+        msg: "El archivo {{ item.item }} existe: {{ item.stat.exists }}"
+      loop: "{{ archivos_verificados.results }}"
+ 
+    - name: Crear archivos si no existen
+      win_file:
+        path: "{{ ruta_base }}\\{{ item.item }}"
+        state: touch
+      when: not item.stat.exists
+      loop: "{{ archivos_verificados.results }}"
+
+    - win_copy:
+        content: "{{ salud_svc | join('\n') }}"
+        dest: "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_svcs.csv"
+
+    - win_copy:
+        content: "{{ salud_dsk | join('\n') }}"
+        dest: "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_undcs.csv"
+
+    - win_copy:
+        content: "{{ salud_srv | join('\n') }}"
+        dest: "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_salud_os.txt"
+  delegate_to: wvmbao01.bvm.bluecare.kyndryl.net
+#Autor Julio Hoyos
+
+
+#    - name: Obtener numero total de Servicios previo al IPL de OS Windows
+#      win_shell: |
+#        $flpvsvn = "{{ gdmmailrepo }}\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_svcs.csv"
+#        $flpvsvc = (Get-Content $flpvsvn | Select-String "Running" | Measure-Object).Count
+#        $flpvsvc
+#      register: svcs_prev_num
+#
+#    - name: Obtener numero total de Discos previo al IPL de OS Windows
+#      win_shell: |
+#        $flpvudn = "{{ gdmmailrepo }}\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_undcs.csv"
+#        $flpvudc = (Get-Content $flpvudn | Select-String ":" | Measure-Object).Count
+#        $flpvudc
+#      register: undcs_prev_num

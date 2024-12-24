@@ -1,0 +1,62 @@
+---
+- name: Tareas por bloques - Validacion formato CRQ o ICR
+  block:
+    - name: Validando Formato de Cambio o Incidente
+      assert:
+        that:
+          - idcrqincreq | string | regex_search('(CRQ|INC|REQ)[0-9]{12}')
+        fail_msg: "El CRQ, INC o REQ no cumplen con la condiciones del formato"
+        success_msg: "El CRQ, INC o REQ cumplen con las condiciones del formato"
+      run_once: true
+      delegate_to: localhost
+
+- name: Ejecucion de IPL Total con evidencias previas y posteriores de reinicio, tiempo activo de OS Linux
+  block:
+    - include_tasks: prueba_modulo_comando_lnx_gdm_v1.1.yml
+    - include_tasks: prueba_modulo_comando_lnx_gdm_v1.6.yml
+    - include_tasks: prueba_modulo_comando_lnx_gdm_v1.2.yml
+
+    - name: Ejecucion IPL Total por Conexion OS Linux
+      become: true
+      reboot:
+        reboot_timeout: 3600
+      register: reboot_result
+      ignore_errors: true
+
+    - name: Regreso del OS Linux despues del IPL
+      debug:
+        msg: "El equipo {{ inventory_hostname }} ha regresado después del IPL"
+      when: reboot_result is not failed
+
+    - name: Ejecucion de IPL Total con evidencias previas y posteriores de reinicio, tiempo activo de OS Linux
+      shell: |
+        uptime | awk -F'(up|,)' '{
+        split($2, time, ":"); 
+        hours = time[1] + 0; 
+        minutes = time[2] + 0; 
+        printf "up %d hours, %d minutes\n", hours, minutes
+        }'
+      register: tiempo_activo
+
+    - include_tasks: prueba_modulo_comando_lnx_gdm_v1.7.yml
+    - include_tasks: prueba_modulo_comando_lnx_gdm_v1.3.yml
+
+- name: Colectar informacion porterior al IPL OS Windows
+  block:
+    - set_fact:
+        nombre_servidor: "{{ hostvars[inventory_hostname].ansible_hostname }}"
+        direccion_ip: "{{ hostvars[inventory_hostname].ipaddress }}"
+        tiempo_de_reinicio: "{{ tiempo_activo.stdout | replace('\r\n', '') | replace('\n\r', '') | trim }}"
+
+    - shell: |
+        echo "{{ nombre_servidor }},{{ direccion_ip }},{{ tiempo_de_reinicio | replace('\r', '') | replace('\n', '') | trim }}"
+      register: reporte_pre_post_total
+
+- name: Colectar informacion porterior al IPL OS Windows
+  block:
+    - name: Reporte - Hostname, IPs, Uptime posterior IPL
+      debug: 
+        msg: "{{ ansible_play_hosts | map('extract', hostvars, 'reporte_pre_post_total') | map(attribute='stdout' | replace('\r', '') | replace('\n', '')) | list }}"
+      run_once: true
+  delegate_to: localhost
+#Autor Julio Hoyos    

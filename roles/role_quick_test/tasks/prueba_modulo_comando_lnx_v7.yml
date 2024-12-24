@@ -1,0 +1,59 @@
+---
+- name: Bloques Nun. 1 Borrar evidencias
+  block:
+    - file:
+        path: "{{ gdmlcfsasb }}{{ item }}"
+        state: absent
+      loop:
+        - pp_status.sh
+        - aps_status.sh
+        - sso_status.sh
+      become: true
+
+    - name: Buscar archivos .asb en la ruta especificada
+      become: yes
+      find:
+        paths: "{{ gdmlcfsasb }}"
+        recurse: yes
+        patterns: "*.asb"
+      register: archivos_asb
+
+    - name: Borrar archivos .asb encontrados
+      become: yes
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ archivos_asb.files }}"
+      when: archivos_asb.matched > 0
+
+    - name: Buscar archivos CRQ en la ruta especificada
+      become: yes
+      find:
+        paths: "{{ gdmlcfsasb }}"
+        recurse: yes
+        patterns: "CRQ*"
+      register: archivos_crq
+
+    - name: Borrar archivos CRQ encontrados
+      become: yes
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ archivos_crq.files }}"
+      when: archivos_crq.matched > 0
+
+    - name: Buscar archivos foto en la ruta especificada
+      become: yes
+      find:
+        paths: "{{ gdmlcfsasb }}"
+        recurse: yes
+        patterns: "foto_*"
+      register: archivos_foto
+
+    - name: Borrar archivos foto encontrados
+      become: yes
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ archivos_foto.files }}"
+      when: archivos_foto.matched > 0      

@@ -1,0 +1,21 @@
+---
+- name: Tareas por bloques - Validacion formato CRQ o ICR
+  block:
+    - name: Validando Formato de Cambio o Incidente
+      assert:
+        that:
+          - idcrqincreq | string | regex_search('(CRQ|INC|REQ)[0-9]{12}')
+        fail_msg: "El CRQ, INC o REQ no cumplen con la condiciones del formato"
+        success_msg: "El CRQ, INC o REQ cumplen con las condiciones del formato"
+      run_once: true
+      delegate_to: localhost
+
+    - name: Validacion del Tiempo del OS Windows previo al IPL
+      shell: echo "soy equipo de desarrollo, calidad o test"
+      register: tiempo_activo
+      when: hostvars[inventory_hostname].tier in ["desarrollo", "calidad", "test"]
+
+    - name: Validacion del Tiempo del OS Windows previo al IPL
+      shell: echo "soy equipo de produccion"
+      register: tiempo_activo
+      when: hostvars[inventory_hostname].tier == "produccion"

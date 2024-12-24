@@ -1,0 +1,4 @@
+---
+- name: Test dir
+  block:
+    - win_shell: "dir {{ gdmmailrepo }}"

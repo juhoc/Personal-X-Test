@@ -1,0 +1,49 @@
+---
+- name: Bloques Nun. 1
+  block:
+    - name: Windows command 1
+      win_shell: |
+        echo "Fecha actual: $fecha
+        Hostname: $nombre_server"
+      register: esalud_fecha_server
+
+    - name: Windows command 2
+      win_shell: echo "Las direcciones IPs son:"; (Get-NetIPConfiguration).IPv4Address.IPAddress
+      register: result_comm2
+
+    - name: Windows command 3
+      win_shell: |
+        $Uptime = (Get-Date) - (Get-CimInstance -ClassName win32_operatingsystem).LastBootUpTime
+        "$($Uptime.Days)-Days:$($Uptime.Hours)-Hours:$($Uptime.Minutes)-Minutes:$($Uptime.Seconds)-Seconds"
+      register: result_comm3
+
+    - name: Windows command 4
+      win_shell: |
+        $cpuLoad = (Get-WmiObject -Class Win32_Processor | Measure-Object -Property LoadPercentage -Average).Average
+        echo "Porcentaje de CPU en uso: $([math]::Round($cpuLoad, 2))%"
+      register: result_comm4
+
+    - name: Windows command 5
+      win_shell: |
+        echo "Uso de Memoria"; 
+        Get-WmiObject -Class Win32_OperatingSystem | 
+        Select-Object @{Name="TotalVisibleMemory(GB)";Expression={[math]::Round($_.TotalVisibleMemorySize / 1MB, 2)}}, 
+        @{Name="FreePhysicalMemory(GB)";Expression={[math]::Round($_.FreePhysicalMemory / 1MB, 2)}}
+      register: result_comm5
+
+    - name: Windows command 6
+      win_shell: echo "Estado del firewall"; Get-NetFirewallProfile | format-table Name, Enabled
+      register: result_comm6
+
+    - name: Windows command 7
+      win_shell: |
+        echo "Estado de los discos lógicos"; 
+        Get-WmiObject -Class Win32_LogicalDisk | 
+        Select-Object DeviceID, 
+        @{Name="Size(GB)";Expression={[math]::Round($_.Size / 1GB, 2)}}, 
+        @{Name="FreeSpace(GB)";Expression={[math]::Round($_.FreeSpace / 1GB, 2)}}
+      register: result_comm7
+
+    - name: Windows command 8
+      win_shell: echo "Ultimas actualizaciones de seguridad instaladas";Get-WmiObject -Class Win32_QuickFixEngineering | Sort-Object -Property InstalledOn -Descending
+      register: result_comm8

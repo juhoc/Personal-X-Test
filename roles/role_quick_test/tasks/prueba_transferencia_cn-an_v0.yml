@@ -1,0 +1,15 @@
+---
+- name: Test Transferir - Descargar
+  block:
+    - name: Copiar archivo media del nodo de control al nodo administrado
+      win_file:
+        path: "{{ unidadpaca }}"
+        state: directory
+
+    - name: Copiar archivo media del nodo de control al nodo administrado
+      win_copy:
+        src: /tmp/splitcapacityw2k2002.zip
+        dest: "{{ unidadpaca }}"
+#        force: yes
+#        remote_src: true
+#      delegate_to: wvdapicos4gmx10.bvm.bluecare.kyndryl.net

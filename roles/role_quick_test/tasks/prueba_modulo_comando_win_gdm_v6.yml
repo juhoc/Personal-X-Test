@@ -1,0 +1,229 @@
+---
+- name: Tareas por bloques - Validacion formato CRQ o ICR
+  block:
+    - name: Validando Formato de Cambio o Incidente
+      assert:
+        that:
+          - idcrqincreq | string | regex_search('(CRQ|INC|REQ)[0-9]{12}')
+        fail_msg: "El CRQ, INC o REQ no cumplen con la condiciones del formato"
+        success_msg: "El CRQ, INC o REQ cumplen con las condiciones del formato"
+      run_once: true
+      delegate_to: localhost
+
+- name: Obtener salidas de evidencias previas al IPL de servicios, discos y salud del OS Windows
+  block:
+    - win_shell: type {{ unidadvasb }}foto_servicios_previa.txt
+      register: eservicios_total_pre
+
+    - win_shell: type {{ unidadvasb }}foto_disco_previa.txt
+      register: ediscos_total_pre
+
+    - win_shell: type {{ unidadvasb }}foto_salud_servidor_previa.txt
+      register: esalud_total_pre
+
+    - win_shell: type {{ unidadvasb }}foto_servicios_posterior.txt
+      register: eservicios_total_post
+
+    - win_shell: type {{ unidadvasb }}foto_disco_posterior.txt
+      register: ediscos_total_post
+
+    - win_shell: type {{ unidadvasb }}foto_salud_servidor_posterior.txt
+      register: esalud_total_post
+
+    - set_fact:
+        salud_svc_pre: "{{ eservicios_total_pre.stdout_lines }}"
+        salud_dsk_pre: "{{ ediscos_total_pre.stdout_lines }}"
+        salud_srv_pre: "{{ esalud_total_pre.stdout_lines }}"
+        salud_svc_post: "{{ eservicios_total_post.stdout_lines }}"
+        salud_dsk_post: "{{ ediscos_total_post.stdout_lines }}"
+        salud_srv_post: "{{ esalud_total_post.stdout_lines }}"
+
+#    - win_file:
+#        path: "{{ unidadvasb }}{{ item }}"
+#        state: absent
+#      loop:
+#        - foto_servicios_previa.txt
+#        - foto_disco_previa.txt
+#        - foto_salud_servidor_previa.txt
+#        - foto_servicios_posterior.txt
+#        - foto_disco_posterior.txt
+#        - foto_salud_servidor_posterior.txt
+
+- name: Almacenar evidencias previas al IPL de servicios, discos y salud del OS Windows
+  block:
+    - name: Validar archivos esperados previas IPL del OS Windows
+      set_fact:
+        ruta_base: "{{ gdmmailrepo }}"
+        archivos_esperados:
+          - "{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_svcs.csv"
+          - "{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_undcs.csv"
+          - "{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_salud_os.txt"
+          - "{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_posterior_svcs.csv"
+          - "{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_posterior_undcs.csv"
+          - "{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_posterior_salud_os.txt"
+ 
+    - win_stat:
+        path: "{{ ruta_base }}\\{{ item }}"
+      loop: "{{ archivos_esperados }}"
+      register: archivos_verificados
+ 
+    - debug:
+        msg: "El archivo {{ item.item }} existe: {{ item.stat.exists }}"
+      loop: "{{ archivos_verificados.results }}"
+ 
+    - name: Crear archivos si no existen
+      win_file:
+        path: "{{ ruta_base }}\\{{ item.item }}"
+        state: touch
+      when: not item.stat.exists
+      loop: "{{ archivos_verificados.results }}"
+
+    - win_copy:
+        content: "{{ salud_svc_pre | join('\n') }}"
+        dest: "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_svcs.csv"
+
+    - win_copy:
+        content: "{{ salud_dsk_pre | join('\n') }}"
+        dest: "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_undcs.csv"
+
+    - win_copy:
+        content: "{{ salud_srv_pre | join('\n') }}"
+        dest: "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_salud_os.txt"
+
+    - win_copy:
+        content: "{{ salud_svc_post | join('\n') }}"
+        dest: "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_posterior_svcs.csv"
+
+    - win_copy:
+        content: "{{ salud_dsk_post | join('\n') }}"
+        dest: "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_posterior_undcs.csv"
+
+    - win_copy:
+        content: "{{ salud_srv_post | join('\n') }}"
+        dest: "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_posterior_salud_os.txt"
+
+    - win_shell: Get-Date -Format "ddMMyyyy_HHss"
+      register: hrfchaps
+
+    - set_fact:
+        clean_hrfchaps: "{{ hrfchaps.stdout | replace('\r', '') | replace('\n', '') | trim }}"
+
+    - win_file:
+        path: "{{ item }}"
+        state: touch
+      loop:
+        - "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_diff_svcs_{{ clean_hrfchaps }}.txt"
+        - "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_diff_undcs_{{ clean_hrfchaps }}.txt"
+        - "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_diff_srvs_{{ clean_hrfchaps }}.txt"
+
+    - name: Compara evidencia de servicios previas y posteriores al IPL del OS Windows
+      win_shell: |
+        Compare-Object -ReferenceObject (Get-Content -Path {{ gdmmailrepo }}\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_svcs.csv) -DifferenceObject (Get-Content -Path {{ gdmmailrepo }}\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_posterior_svcs.csv)
+        echo "
+        NOTA:
+        (<=) Indica, servicios que no estaban activos posterior al IPL, favor solicitar la activacion de los servicios.
+        (=>) Indica, servicios que no estaban activos previo IPL y activos posterior al IPL, favor de contactar a InfraWindows.
+        (== o ' ') Indica, todos los servicios activos previo y posterrios al IPL
+
+        IMPORTAMTE:
+        Activar servicios en Windows utilizando PowerShell.
+        1. En una ventada Powershell como Administrador.
+        2. Ejecutar, Start-Service -Name [Nombre del Servicio]
+        3. Ver servicios [Nombre del Servicio]
+           Referencia lo que ve entre Running y Automatic/Manual
+           Ejemplo
+           Start-Service -Name PatrolAgent"
+      register: dif_svcs_ipl  
+      
+    - set_fact:
+        dif_svcs_total_ipl: "{{ dif_svcs_ipl.stdout_lines }}"
+
+    - win_copy:
+        content: "{{ dif_svcs_total_ipl  | join('\n') }}"
+        dest: "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_diff_svcs_{{ clean_hrfchaps }}.txt"
+      
+    - name: Compara evidencias de unidades de discos previas y posteriores al IPL del OS Windows
+      win_shell: |
+        Compare-Object -ReferenceObject (Get-Content -Path {{ gdmmailrepo }}\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_undcs.csv) -DifferenceObject (Get-Content -Path {{ gdmmailrepo }}\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_posterior_undcs.csv)
+        echo "
+        NOTA:
+        (<=) Indica, unidades de discos con diferencias en la evidencia posterior al IPL.
+        (=>) Indica, unidades de discos con diferencias en la evidencia previa al IPL.
+        (== o ' ') Indica, unidades de discos sin diferencias en previa y posterior al IPL.
+
+        IMPORTANTE. 
+        Las diferencias del espacio en discos puede deberse a:
+        1. Proceso de parcheo por descarga de parches al OS Windows.
+        2. Instalacion de software o aplicaciones."
+      register: dif_undcs_ipl  
+      
+    - set_fact:
+        dif_undcs_total_ipl: "{{ dif_undcs_ipl.stdout_lines }}"
+
+    - win_copy:
+        content: "{{ dif_undcs_total_ipl  | join('\n') }}"
+        dest: "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_diff_undcs_{{ clean_hrfchaps }}.txt"
+
+    - name: Compara evidencias de estado de salud servidor previa y posterior al IPL del OS Windows
+      win_shell: |
+        Compare-Object -ReferenceObject (Get-Content -Path {{ gdmmailrepo }}\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_salud_os.txt) -DifferenceObject (Get-Content -Path {{ gdmmailrepo }}\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_posterior_salud_os.txt)
+        echo "
+        NOTA:
+        (<=) Indica, diferencias en el reporte de salud del servidor posterior al IPL.
+        (=>) Indica, diferencias en el reporte de salud del servidor previa al IPL.
+        (== o ' ') Indica, sin diferencias en el reporte previa y posterior al IPL.
+
+        IMPORTANTE. 
+        Las diferencias en el reporte de estado de salud de servidor pueden deberse a:
+        1. Variación en memoria, cpu o discos, por procesos en segundo plano que esten finalizando despues IPL."
+      register: dif_srvs_ipl  
+      
+    - set_fact:
+        dif_srvs_total_ipl: "{{ dif_srvs_ipl.stdout_lines }}"
+
+    - win_copy:
+        content: "{{ dif_srvs_total_ipl  | join('\n') }}"
+        dest: "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_diff_srvs_{{ clean_hrfchaps }}.txt"
+
+    - name: Buscar todos los archivos .zip para borra
+      win_find:
+        paths: "{{ gdmmailrepo }}"
+        patterns: '*.zip'
+      register: zip_files
+
+    - win_file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ zip_files.files }}"
+      when: zip_files.matched > 0
+
+    - win_shell: Compress-Archive "{{ gdmmailrepo }}\{{ idcrqincreq }}*foto*" -DestinationPath "{{ gdmmailrepo }}\{{ idcrqincreq }}_totales.zip"
+
+    - name: Envio de evidencias por CRQ, INC o REQ
+      win_shell: |
+        $archivos = Get-ChildItem "{{ gdmmailrepo }}" | Where-Object {$_.Name -match "{{ idcrqincreq }}_totales.zip"} | Select-Object -ExpandProperty FullName
+        $sendMailMessageSplat = @{
+        From = 'IT-OPERATORATION <itoperationintegration.mx@bbva.com>'
+        To = {{ mail_to }}
+        Subject = "Reportes GDM Windows Patching"
+        Body = "Se adjuntan todas las evidencias por CRQ o INC o REQ previas y posteriores al IPL"
+        SmtpServer = '150.100.207.52'
+        Attachments = $archivos
+        }
+        Send-MailMessage @sendMailMessageSplat
+#  when: "send_mail == 'Fotos_x_CRQ_INC_REC_IPL'"
+  delegate_to: wvmbao01.bvm.bluecare.kyndryl.net
+#Autor Julio Hoyos
+#    - name: Obtener numero total de Servicios previo al IPL de OS Windows
+#      win_shell: |
+#        $flpvsvn = "{{ gdmmailrepo }}\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_svcs.csv"
+#        $flpvsvc = (Get-Content $flpvsvn | Select-String "Running" | Measure-Object).Count
+#        $flpvsvc
+#      register: svcs_prev_num
+#
+#    - name: Obtener numero total de Discos previo al IPL de OS Windows
+#      win_shell: |
+#        $flpvudn = "{{ gdmmailrepo }}\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_undcs.csv"
+#        $flpvudc = (Get-Content $flpvudn | Select-String ":" | Measure-Object).Count
+#        $flpvudc
+#      register: undcs_prev_num

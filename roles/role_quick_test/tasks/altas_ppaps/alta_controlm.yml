@@ -1,0 +1,23 @@
+---
+- name: Alta proceso Control-M 
+  become: yes
+  shell: |
+      if [ $(ps -eo args | grep ctm  | cut -d " " -f1 | grep ctmag$) = "" ] || [ $(ps -eo args | grep ctm  | cut -d " " -f1 | grep ctmat$) = "" ]
+      then
+      /controlm/ag700/ctm/scripts/shut-ag 2>/dev/null -u ag700 -p ALL
+      /controlm/ag700/Linux-i386/ctm/scripts/shut-ag 2>/dev/null -u ag700 -p ALL
+      /ctrlmagt/ctm/scripts/shut-ag 2>/dev/null -u ag700 -p ALL
+      /home/agt613/ctm/scripts/shut-ag 2>/dev/null -u ag700 -p ALL
+      sleep 10
+      /controlm/ag700/ctm/scripts/shut-ag 2>/dev/null -u ag700 -p ALL
+      /controlm/ag700/Linux-i386/ctm/scripts/shut-ag 2>/dev/null -u ag700 -p ALL
+      /ctrlmagt/ctm/scripts/shut-ag 2>/dev/null -u ag700 -p ALL
+      /home/agt613/ctm/scripts/shut-ag 2>/dev/null -u ag700 -p ALL
+      fi
+      /controlm/ag700/ctm/scripts/start-ag 2>/dev/null -u ag700 -p ALL
+      /controlm/ag700/Linux-i386/ctm/scripts/start-ag 2>/dev/null -u ag700 -p ALL
+      /ctrlmagt/ctm/scripts/start-ag 2>/dev/null -u ag700 -p ALL
+      /home/agt613/ctm/scripts/start-ag 2>/dev/null -u ag700 -p ALL
+  args:
+    executable: /bin/bash
+  ignore_errors: yes

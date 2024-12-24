@@ -1,0 +1,135 @@
+---
+#--------------validar prerequisitos
+- name: Tareas por bloques - Prerequisitos NetBackup
+  block:
+    - name: Obtener información del FS-NetBackup /usr/openv
+      become: true
+      shell: df 2>/dev/null /usr/openv | grep -v ^"[A-Z]" >/dev/null && echo OK || echo KO
+      register: fsvnbmpv1
+
+    - name: Resultado de la validacion del FS-NetBackup /usr/openv
+      assert:
+        that:
+          - "'OK' in fsvnbmpv1.stdout | string"
+        fail_msg: "El FS-NetBackup /usr/openv no existe"
+        success_msg: "El FS-NetBackup /usr/openv existe"
+
+    - name: Obtener información del tamaño del FS-NetBackup /usr/openv
+      become: true
+      shell: df 2>/dev/null -H | grep "/usr/openv" | awk -F ' ' '{print $2}' | cut -d. -f1
+      register: fsvnbszv1
+
+    - name: Validar el tamaño del FS-NetBackup /usr/openv
+      assert:
+        that:
+          - fsvnbszv1.stdout | int >= 4
+        fail_msg: "El tamaño del FS-NetBackup /usr/openv es menor a 5.0G"
+        success_msg: "El tamaño del FS-NetBackup /usr/openv es mayor o igual a 5.0G"
+
+    - name: Obtener informacion dueño y grupo del FS-NetBackup /usr/openv
+      become: true
+      shell: |
+          if ls 2>/dev/null -ld /usr/openv/ | grep -E "root\\s+root" || ls 2>/dev/null -ld /usr/openv/ | grep -E "root\\s+bin"
+          then
+          echo OK
+          else
+          echo KO
+          fi
+      register: fsctmusrgrpv1
+
+    - name: Validar el dueño y grupo del FS-NetBackup /usr/openv
+      assert:
+        that:
+          - "'OK' in fsctmusrgrpv1.stdout | string"
+        fail_msg: "El FS-NetBackup /usr/openv no es dueño y grupo de root-bin"
+        success_msg: "El FS-NetBackup /usr/openv es dueño y grupo de root-bin"
+#----------Validar ip robotica
+- name: Tareas por bloques - Validar si existe IP Robotica para NetBackup
+  block:
+    - name: Filtrar IP de Robotica
+      set_fact:
+        ip_permitidas: "{{ ansible_all_ipv4_addresses | select('match', '^172.10.|^172.13.|^172.214.') | list }}"
+
+    - name: Resultados de la validacion de si existe IP Robotica para NetBackup
+      assert:
+        that:
+          - ip_permitidas | length > 0
+        success_msg: "El servidor {{ ansible_facts['nodename'] }} tiene IP Robotica {{ ip_permitidas[0] }}"
+        fail_msg: "El servidor {{ ansible_facts['nodename'] }} no tiene IP Robotica del rango (172.10.xxx.xxx, 172.13.xxx.xxx, 172.214.xxx.xxx)"
+      when: ip_permitidas | length > 0
+ 
+    - name: Mostrar mensaje si no hay IPs encontradas
+      fail:
+        msg: "El servidor {{ ansible_facts['nodename'] }} no tiene ninguna IP Robotica permitida del rango (172.10.xxx.xxx, 172.13.xxx.xxx, 172.214.xxx.xxx)"
+      when: ip_permitidas | length == 0
+ #----------Validar comunicacion
+- name: Tareas por bloques - Validar comunicacion con NetBackup
+  block:
+    - name: Validacion de la comunicacion con NetBackup por IP Robotica
+      become: true
+      shell: |
+        ip_rtcprefix=$(echo {{ ip_permitidas[0] }} | cut -d '.' -f1,2)
+        if [ "$ip_rtcprefix" = "172.10" ]; then
+          server_ip="172.10.107.11"
+          msnetbackup="cbnocbakccr02"
+          clprefix="_les1"
+        elif [ "$ip_rtcprefix" = "172.13" ]; then
+          server_ip="172.13.101.26"
+          msnetbackup="cbnocbakccr02"
+          clprefix="_mty1"
+        elif [ "$ip_rtcprefix" = "172.214" ]; then
+          server_ip="172.214.102.81"
+          msnetbackup="vxnbuqro"
+          clprefix="_qro"
+        else
+          echo "Puerto 1556 Necesita Reglas de Firewall con NetBackup"
+        fi
+        timeout 2>/dev/null 5 bash -c "</dev/tcp/$server_ip/1556" && \
+        echo "1556,open,{{ ip_permitidas[0] }},{{ inventory_hostname.split('.')[0] }}$clprefix,$server_ip,$msnetbackup" || \
+        echo "1556,close,{{ ip_permitidas[0] }},{{ inventory_hostname.split('.')[0] }}$clprefix,$server_ip,$msnetbackup"
+      register: vnbconprtrob
+  
+    - name: Resultados de la validacion de comunicacion con NetBackup por IP Robotica
+      assert:
+        that:
+          - "'open' in vnbconprtrob.stdout | string"
+        fail_msg: "El puerto {{ vnbconprtrob.stdout.split(',')[0] }} esta {{ vnbconprtrob.stdout.split(',')[1] }}, no existe comunicacion con el Maserte NetBackup {{ vnbconprtrob.stdout.split(',')[5] }} a traves de la ip {{ vnbconprtrob.stdout.split(',')[4] }}"
+        success_msg: "El puerto {{ vnbconprtrob.stdout.split(',')[0] }} esta {{ vnbconprtrob.stdout.split(',')[1] }}, existe comunicacion con el Maserte NetBackup {{ vnbconprtrob.stdout.split(',')[5] }} a traves de la ip {{ vnbconprtrob.stdout.split(',')[4] }}"
+#----------Validar ip hostname en el archivo hosts
+- name: Tareas por bloques - Validar hostname de conectividad para NetBackup Robotica
+  block:
+    - name: Busca hostname MasterServer y Cliente Netbackup
+      shell: |
+        if grep -qE "{{ vnbconprtrob.stdout.split(',')[4] }}\\s+{{ vnbconprtrob.stdout.split(',')[5] }}" /etc/hosts && grep -qE "{{ ip_permitidas[0] }}\\s+{{ vnbconprtrob.stdout.split(',')[3] }}" /etc/hosts; then
+          echo OK
+         else
+          echo KO
+        fi
+      register: valhostrob
+
+    - name: Resultados de la validacion del archivo /etc/hosts para NetBackup
+      assert:
+        that:
+          - "'OK' in valhostrob.stdout | string"
+        fail_msg: "No existen informacion en archivo /etc/hosts con datos de NetBackup"
+        success_msg:
+          - "Cliente y Master Server existe en el archivo /etc/hosts para NetBackup"
+          - "{{ ip_permitidas[0] }} {{ vnbconprtrob.stdout.split(',')[3] }}"
+          - "{{ vnbconprtrob.stdout.split(',')[4] }} {{ vnbconprtrob.stdout.split(',')[5] }}"
+#----------Validar os linux soportados
+- name: Tareas por bloques - Validar OS e IP's para la instalacion de NetBackup
+  block:
+    - name: Resultados de la validacion del archivo /etc/hosts para NetBackup
+      assert:
+        that:
+          - (ansible_facts['distribution_file_variety'] == "SUSE" and ansible_facts['distribution_major_version'] == "12") or
+            (ansible_facts['distribution_file_variety'] == "SUSE" and ansible_facts['distribution_major_version'] == "15") or
+            (ansible_facts['distribution_file_variety'] == "RedHat" and ansible_facts['distribution_major_version'] == "7") or
+            (ansible_facts['distribution_file_variety'] == "RedHat" and ansible_facts['distribution_major_version'] == "8")
+          - ip_permitidas | length > 0
+        fail_msg: 
+          - "Sistema Operato no soportado por NetBackup: {{ ansible_facts['distribution_file_variety'] }} - {{ ansible_facts['distribution_major_version'] }}"
+          - "Sin IP de Robotica"
+        success_msg: 
+          - "Sistema Operatvo sopotado por NetBackup: {{ ansible_facts['distribution_file_variety'] }} - {{ ansible_facts['distribution_major_version'] }}"
+          - "Con IP de Robotica: {{ ip_permitidas[0] }}"

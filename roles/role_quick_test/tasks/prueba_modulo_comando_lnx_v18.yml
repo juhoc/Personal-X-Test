@@ -1,0 +1,21 @@
+---
+- name: Tareas por bloques - borrar evidencias zip
+  block:
+    - name: Buscar archivos y borrar archivos zip
+      become: true
+      find:
+        paths: /patrol
+        patterns: "Base_AIX_Patrol_Without*.*"
+      register: filerm
+
+    - file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ filerm.files }}"
+      when: filerm.matched > 0
+      become: true
+
+    - file:
+        path: /patrol/bmc_products
+        state: absent
+      become: true      

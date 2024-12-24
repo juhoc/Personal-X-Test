@@ -1,0 +1,31 @@
+---
+- name: Ontener version de NetBackup
+  block:
+    - name: Obtener version NetBackup con comando bpclntcmd
+      become: true
+      shell: "./bpclntcmd -get_remote_host_version {{ ansible_facts.nodename }}"
+      args:
+        chdir: "{{ ruta_nbu }}"
+      register: result_version
+      ignore_errors: yes
+
+  rescue:
+    - name: Si no existe comando bpclntcmd, leer archivo version de NetBackup
+      become: true
+      shell: "cat {{ ruta_nbu }}version | cut -d' ' -f2"
+      register: result_version
+      ignore_errors: yes
+
+  alweys:
+    - set_fact:
+        validar_version: "{{ result_version.stdout }}"
+
+    - set_fact:
+        versiones_permitidas: "{{ validar_version | select('match', '^6.|^7.') | list }}"
+
+    - name: Validar version permitida para remover NetBackup
+      assert:
+        that:
+          - versiones_permitidas | length > 0
+        fail_msg: "No procede la desinstalacion en el equipo {{ ansible_facts.nodename }}, la version de NetBackup es {{ result_version.stdout }}"
+        success_msg: "Procede la desinstalacion en el equipo {{ ansible_facts.nodename }}, la version de NetBackup es {{ result_version.stdout }}"

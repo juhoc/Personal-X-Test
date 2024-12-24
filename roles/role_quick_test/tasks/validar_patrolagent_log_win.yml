@@ -1,0 +1,28 @@
+---
+- name: Tareas en bloques Validaciones Finales
+  block:
+    - name: Valida Conexion con Helix
+      win_shell: |
+        $filePath = "{{ ruta_patrol }}"
+        type $filePath
+        $searchStrings = @(
+        "150.100.210.234:8080",
+        "https:MONITORINGHELIXBBVA-ITOM.ONBMC.COM:443",
+        "Received agent guid is"
+        )
+        $fileContent = Get-Content -Path $filePath
+        $allStringsFound = $true
+        foreach ($string in $searchStrings) {
+        if ($fileContent -notcontains $string) {
+        Write-Output "La cadena '$string' no se encontró en el archivo."
+        $allStringsFound = $false
+        } else {
+        Write-Output "La cadena '$string' se encontró correctamente en el archivo."
+        }
+        }
+        if ($allStringsFound) {
+        Write-Output "Todas las cadenas especificadas se encontraron en el archivo."
+        } else {
+        Write-Output "Algunas cadenas no se encontraron en el archivo."
+        }
+      register: valida_logs

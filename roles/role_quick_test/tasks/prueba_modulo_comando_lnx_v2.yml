@@ -1,0 +1,47 @@
+---
+- name: Bloques Nun. 1
+  block:
+    - name: Linux command 1
+      shell: |
+        echo "Fecha actual: $(date)"
+        echo "Hostname:$(hostname)"
+      register: result_comm1
+
+    - name: Linux command 2
+      shell: |
+        echo "Las direcciones IPs son:"
+        echo "$(ifconfig | grep -E "\\s+inet" | awk -F ' ' '{print $2}' | grep -v ^127)"
+      register: result_comm2
+
+    - name: Linux command 3
+      shell: |
+        echo "Ultimo arranque de Sistema Operativo:"
+        echo "$(uptime -s)"
+        echo "$(uptime -p)"
+      register: result_comm3
+
+    - name: Linux command 4
+      shell: |
+        echo -e "Uso de CPU: $(top -bn1 | grep "Cpu(s)" | sed "s/.*, *\([0-9.]*\)%* id.*/\1/" | awk '{print 100 - $1"%"}')"
+        echo -e "Memoria: $(free -h | awk '/Mem:/ {print "\nUsada: "$3 "\nTotal: " $2 " \nRestante: " $4 ""}')"
+      register: result_comm4
+
+    - name: Linux command 5
+      become: true
+      shell: |
+        echo "Estado del firewall"
+        echo "$(firewall-cmd --state)"
+        echo "$(iptables -n -L -v)"
+      register: result_comm5
+
+    - name: Linux command 6
+      shell: |
+        echo "Estado del FileSystems "
+        echo "$(df -h)"
+      register: result_comm6
+
+    - name: Linux command 7
+      shell: |
+        echo "Versión de sistema operativo"
+        echo "$(cat /etc/*release)"
+      register: result_comm7

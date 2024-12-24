@@ -1,0 +1,93 @@
+---
+- name: Test Transferir - Descargar
+  block:
+    - name: Buscar archivos split
+      become: true
+      find:
+        paths: "{{ recurso }}"
+        patterns: "split_*"
+      register: split_files
+
+    - name: Borra archivos split
+      become: true
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ split_files.files }}"
+      when: split_files.matched > 0
+
+    - name: Dividir archivo TSCO Agent Windows en partes de 45MB
+      become: true
+      shell: split -b 45m TSCO_Agent_ver20.02.00_MSWindows_new.zip split_soft3ros_
+      args:
+        chdir: "{{ recurso }}"
+
+    - name: Buscar archivos split
+      become: true
+      find:
+        paths: "{{ recurso }}"
+        patterns: "split_soft3ros_*"
+      register: split_files
+
+    - name: Cambiar usuario y dueño archivos split
+      become: true
+      file:
+        path: "{{ item.path }}"
+#        owner: bvmuxat2
+#        group: automate
+        mode: 0755
+      loop: "{{ split_files.files }}"
+      when: split_files.matched > 0
+
+    - name: Transferir las partes al controlador Ansible
+      become: true
+      fetch:
+        src: "{{ item.path }}"
+        dest: /tmp/
+        flat: yes
+      loop: "{{ split_files.files }}"
+      when: split_files.matched > 0
+
+- name: Test Transferir - Descargar
+  block:
+    - name: Obtener el espacio de /tmp a en localhost
+      local_action:
+        module: command
+        args: "df -h /tmp"
+
+    - name: Validar archivos split en el localhost
+      local_action:
+        module: shell
+        args: "ls -lrt /tmp | grep -i split"
+
+    - name: Unir archivos media TSCO Agent Windows en el localhost
+      local_action:
+        module: shell
+        args: "cat /tmp/split_soft3ros_* > /tmp/splitcapacityw2k2002.zip"
+
+    - name: Validar archivos split en el localhost
+      local_action:
+        module: shell
+        args: "ls -lrt /tmp | grep -i split"
+
+    - name: Validar archivos split en el localhost
+      local_action:
+        module: find
+        path: /tmp/
+        patterns: "split_soft3ros_*"
+      register: split_files
+
+    - name: Borrar archivos split en el localhost
+      local_action:
+        module: file
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ split_files.files }}"
+      when: split_files.matched > 0
+
+    - name: Validar media TSCO Agent Windows en el localhost
+      local_action:
+        module: shell
+        args: "ls -lrt /tmp | grep -i split"
+  run_once: true
+  delegate_to: localhost

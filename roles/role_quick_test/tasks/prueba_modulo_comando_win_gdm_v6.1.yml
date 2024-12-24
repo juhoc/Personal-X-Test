@@ -1,0 +1,69 @@
+---
+- name: Tareas por bloques - Validacion formato CRQ o ICR
+  block:
+    - name: Validando Formato de Cambio o Incidente
+      assert:
+        that:
+          - idcrqincreq | string | regex_search('(CRQ|INC|REQ)[0-9]{12}')
+        fail_msg: "El CRQ, INC o REQ no cumplen con la condiciones del formato"
+        success_msg: "El CRQ, INC o REQ cumplen con las condiciones del formato"
+      run_once: true
+      delegate_to: localhost
+
+- name: Ejecucion de IPL Total con evidencias previas y posteriores de reinicio, tiempo activo de OS Windows
+  block:
+    - name: Incluye la tarea de obtner fotos previa antes del IPL
+      include_tasks: prueba_modulo_comando_win_gdm_v1.yml
+
+#    - name: Ejecucion IPL Total por Tiempo OS Windows
+#      win_reboot:
+#        post_reboot_delay: "{{ tiempo_reboot }}"
+#      when: "tiempo_post == 'Tiempo_post_reboot'"
+#      register: reboot_result
+#      ignore_errors: true
+
+    - name: Ejecucion IPL Total por Conexion OS Windows
+      win_reboot:
+        reboot_timeout: 3600
+#      when: "tiempo_post == 'Tiempo_post_conexion'"
+      register: reboot_result
+      ignore_errors: true
+
+    - name: Regreso del OS Windows despues del IPL
+      debug:
+        msg: "El equipo {{ inventory_hostname }} ha regresado después del IPL"
+      when: reboot_result is not failed
+#---
+- name: Ejecucion de IPL Total con evidencias previas y posteriores de reinicio, tiempo activo de OS Windows
+  block:
+    - name: Validacion del Tiempo del OS Windows despues del IPL
+      win_shell: |
+        $Uptime = (Get-Date) - (Get-CimInstance -ClassName win32_operatingsystem).LastBootUpTime
+        "$($Uptime.Days)-Days:$($Uptime.Hours)-Hours:$($Uptime.Minutes)-Minutes:$($Uptime.Seconds)-Seconds"
+      register: tiempo_activo
+
+    - name: Se incluye playbook para obtener evidencias posteriores al IPL del OS Windows
+      include_tasks: prueba_modulo_comando_win_gdm_v2.yml
+
+#    - name: Se incluye playbook para generar reporte de diferencias posteriores al IPL del OS Windows
+#      include_tasks: Comparar_fotos_IPL.yml
+
+- name: Colectar informacion porterior al IPL OS Windows
+  block:
+    - set_fact:
+        nombre_servidor: "{{ hostvars[inventory_hostname].ansible_hostname }}"
+        direccion_ip: "{{ hostvars[inventory_hostname].ipaddress }}"
+        tiempo_de_reinicio: "{{ tiempo_activo.stdout | replace('\r\n', '') | replace('\n\r', '') | trim }}"
+
+    - win_shell: |
+        echo "{{ nombre_servidor }},{{ direccion_ip }},{{ tiempo_de_reinicio | replace('\r', '') | replace('\n', '') | trim }}"
+      register: reporte_pre_post_total
+
+- name: Colectar informacion porterior al IPL OS Windows
+  block:
+    - name: Reporte - Servidores, Direcciones IPs, servicios pre-post, disco pre-post y tiempo activo posterior al IPL del OS Windows
+      debug: 
+        msg: "{{ ansible_play_hosts | map('extract', hostvars, 'reporte_pre_post_total') | map(attribute='stdout' | replace('\r', '') | replace('\n', '')) | list }}"
+      run_once: true
+  delegate_to: localhost
+#Autor Julio Hoyos

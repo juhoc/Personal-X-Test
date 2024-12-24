@@ -1,0 +1,99 @@
+---
+- name: Tareas por bloques - Validacion formato CRQ o ICR
+  block:
+    - name: Validando Formato de Cambio o Incidente
+      assert:
+        that:
+          - idcrqincreq | string | regex_search('(CRQ|INC|REQ)[0-9]{12}')
+        fail_msg: "El CRQ, INC o REQ no cumplen con la condiciones del formato"
+        success_msg: "El CRQ, INC o REQ cumplen con las condiciones del formato"
+      run_once: true
+      delegate_to: localhost
+
+#- name: Comparar evidencias posterior al IPL del OS Windows
+#  block:
+#    - include_tasks: crea_repositorio_mail.yml
+        
+    - win_shell: Get-Date -Format "ddMMyyyy_HHss"
+      register: hrfchaps
+
+    - set_fact:
+        clean_hrfchaps: "{{ hrfchaps.stdout | replace('\r', '') | replace('\n', '') | trim }}"
+
+    - win_file:
+        path: "{{ item }}"
+        state: touch
+      loop:
+        - "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_diff_svcs_{{ clean_hrfchaps }}.txt"
+        - "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_diff_undcs_{{ clean_hrfchaps }}.txt"
+        - "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_diff_srvs_{{ clean_hrfchaps }}.txt"
+
+    - name: Compara evidencia de servicios previas y posteriores al IPL del OS Windows
+      win_shell: |
+        Compare-Object -ReferenceObject (Get-Content -Path {{ gdmmailrepo }}\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_svcs.csv) -DifferenceObject (Get-Content -Path {{ gdmmailrepo }}\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_posterior_svcs.csv)
+        echo "
+        NOTA:
+        (<=) Indica, servicios que no estaban activos posterior al IPL, favor solicitar la activacion de los servicios.
+        (=>) Indica, servicios que no estaban activos previo IPL y activos posterior al IPL, favor de contactar a InfraWindows.
+        (== o ' ') Indica, todos los servicios activos previo y posterrios al IPL
+
+        IMPORTAMTE:
+        Activar servicios en Windows utilizando PowerShell.
+        1. En una ventada Powershell como Administrador.
+        2. Ejecutar, Start-Service -Name [Nombre del Servicio]
+        3. Ver servicios [Nombre del Servicio]
+           Referencia lo que ve entre Running y Automatic/Manual
+           Ejemplo
+           Start-Service -Name PatrolAgent"
+      register: dif_svcs_ipl  
+      
+    - set_fact:
+        dif_svcs_total_ipl: "{{ dif_svcs_ipl.stdout_lines }}"
+
+    - win_copy:
+        content: "{{ dif_svcs_total_ipl  | join('\n') }}"
+        dest: "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_diff_svcs_{{ clean_hrfchaps }}.txt"
+      
+    - name: Compara evidencias de unidades de discos previas y posteriores al IPL del OS Windows
+      win_shell: |
+        Compare-Object -ReferenceObject (Get-Content -Path {{ gdmmailrepo }}\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_undcs.csv) -DifferenceObject (Get-Content -Path {{ gdmmailrepo }}\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_posterior_undcs.csv)
+        echo "
+        NOTA:
+        (<=) Indica, unidades de discos con diferencias en la evidencia posterior al IPL.
+        (=>) Indica, unidades de discos con diferencias en la evidencia previa al IPL.
+        (== o ' ') Indica, unidades de discos sin diferencias en previa y posterior al IPL.
+
+        IMPORTANTE. 
+        Las diferencias del espacio en discos puede deberse a:
+        1. Proceso de parcheo por descarga de parches al OS Windows.
+        2. Instalacion de software o aplicaciones."
+      register: dif_undcs_ipl  
+      
+    - set_fact:
+        dif_undcs_total_ipl: "{{ dif_undcs_ipl.stdout_lines }}"
+
+    - win_copy:
+        content: "{{ dif_undcs_total_ipl  | join('\n') }}"
+        dest: "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_diff_undcs_{{ clean_hrfchaps }}.txt"
+
+    - name: Compara evidencias de estado de salud servidor previa y posterior al IPL del OS Windows
+      win_shell: |
+        Compare-Object -ReferenceObject (Get-Content -Path {{ gdmmailrepo }}\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_salud_os.txt) -DifferenceObject (Get-Content -Path {{ gdmmailrepo }}\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_posterior_salud_os.txt)
+        echo "
+        NOTA:
+        (<=) Indica, diferencias en el reporte de salud del servidor posterior al IPL.
+        (=>) Indica, diferencias en el reporte de salud del servidor previa al IPL.
+        (== o ' ') Indica, sin diferencias en el reporte previa y posterior al IPL.
+
+        IMPORTANTE. 
+        Las diferencias en el reporte de estado de salud de servidor pueden deberse a:
+        1. Variación en memoria, cpu o discos, por procesos en segundo plano que esten finalizando despues IPL."
+      register: dif_srvs_ipl  
+      
+    - set_fact:
+        dif_srvs_total_ipl: "{{ dif_srvs_ipl.stdout_lines }}"
+
+    - win_copy:
+        content: "{{ dif_srvs_total_ipl  | join('\n') }}"
+        dest: "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_diff_srvs_{{ clean_hrfchaps }}.txt"
+#Autor Julio Hoyos

@@ -1,0 +1,100 @@
+ruta_patrol: P:\BMC\Patrol3\log\PatrolAgent-{{ ansible_facts['hostname'] }}-3181.errs
+software: SentinelAgent_linux_x86_64_v24_1_2_6.rpm
+destino: /var/opt/ansible/
+recurso: /bmc/soft3ros/bmcsoftware/capacity/agent/
+home_ansible: /var/opt/ansible
+bvmuxat2_home: /var/opt/ansible/
+scripfs_in: incrementar_fs_in.sh
+scripfs_out: incrementar_fs_out.sh
+
+recurso1: \\150.100.188.157\x\sentinell\
+software1: SentinelInstaller_windows_64bit_v23_4_4_223-msi
+destino1: V:\ansible
+
+
+#---variables de transferencia sftp
+usuario: ccrbao
+recurso_dim: /bmc/soft3ros/dimensions/agents/
+temporal: /tmp
+destino_dim: /var/opt/ansible
+#---variables de transferencia web
+ipweb: 150.100.43.207
+puertoweb: 31921
+#---variables de soporte duranten la instalacion
+instala: /diminstall
+#---variables de soporte para la instalacion de Dimension
+dim_siop1: 1
+dim_siop2: q
+dim_siop3: 1
+dim_siop4: 0
+dim_siop5: 1
+dim_siop6: 0
+dim_siop7: 1
+dim_siop8: /opt/dimensions/14.5
+dim_siop9: 1
+dim_siop10: 0
+dim_siop11: 1
+dim_siop12: lvpwimwdiawmx01
+dim_siop13: 671
+dim_siop14: 1
+dim_siop15: dmsys
+dim_siop16: 1
+dim_siop17: 1
+dim_siop18: 3
+#---variables correo
+smtp: 150.100.207.52
+smtpport: 25
+mailfrom: "IT OPERATION INTEGRATION <itoperationintegration.mx@bbva.com>"
+mailto: "juliocesar.hoyos.contractor@bbva.com"
+mailsub: "Reporte Equipos Ready"
+
+
+#---variables correo
+#bvmuxat2_home: /var/opt/ansible/
+fs_smtp: 150.100.207.52
+fs_smtpport: 25
+fs_mailfrom: "IT OPERATION INTEGRATION <itoperationintegration.mx@bbva.com>"
+fs_mailto: "ansintel.mx@bbva.com"
+fs_mailsub: "Reporte {{ task_accion }} {{ dmahmsr.stdout }} - ID Cambio {{ idcrqincreq }}"
+#---viejas variables
+#fs_reportes: /tmp/reportes/
+#fs_repovg: /tmp/reportes/vgrepo_
+#fs_repolv: /tmp/reportes/lvrepo_
+#fs_prerepo: _pre
+#fs_postrepo: _post
+#fs_path: /tmp/
+#fs_ext: .csv
+#fs_crq: "Escriba el ID del CRQ"
+#---nuevas variables gestion de evidencias filesystem
+fs_dmahmsr: $(date +"Fecha":" "%d/%m/%Y" Hora":" "%H:%M)
+fs_dmahmsl: $(date +"_"%a%d%B%Y"H"%H"M"%M"S"%S)
+fs_varoptasb: /var/opt/ansible/
+fs_tlvgrepo: vgtotal_
+fs_tllvrepo: lvtotal_
+fs_indvgrepo: vgindividual_
+fs_indlvrepo: lvtindivual_
+fs_reportes: /tmp/reportes/
+fs_repovg: /tmp/reportes/vgrepo_
+fs_repolv: /tmp/reportes/lvrepo_
+fs_prerepo: _pre
+fs_postrepo: _post
+fs_path: /tmp/
+fs_extdt: .txt
+fs_extdr: .csv
+fs_info: df -HT | egrep -v 'Filesystem|#|tmpfs|boot' | sed 's/ \+/,/g;s/\/dev\///g;s/mapper\///g;s/-/,/g' | tr -d '\t' | sort | grep
+
+#---
+
+gdmmailrepo: V:\repomailgdm
+#gdmmailrepo: /var/opt/ansible/gdm/
+gdmlcfsasb: /var/opt/ansible/
+mountfsasb: /var/opt/ansible
+mountfsasb_b: /var/opt/ansible
+unidadvasb: V:\
+ruta_nbu: /usr/openv/netbackup/bin/
+unidadpaca: P:\installers\
+
+#--bao datos api rest
+api_rest_bao: https://150.100.43.207
+api_rest_bao_port: 38080
+remote_path: /aplicativo/home/ccrbao/baoAnsible/

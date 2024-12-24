@@ -1,0 +1,44 @@
+---
+- name: Validari puertos http
+  block:
+    - name: Validacion de puertos http
+      become: true
+      shell: |
+        ss -ltpn | egrep -E ":1025\\s+|:2000\\s+|:2025\\s+|:3000\\s+|:3025\\s+|:4000\\s+|:4025\\s+|:5000\\s+" | cut -d: -f2 | cut -d' ' -f1 | paste -sd ' ' -
+      register: vprochttppre
+
+    - name: Iniciar el proceso Simple HTTTP Server Python
+      shell: |
+         cd /bmc/soft3ros
+         nohup python3 -m http.server {{ item }} --bind 150.100.43.207 &
+         sleep 18000
+      async: 18000
+      poll: 0
+      loop:
+       - 1025
+       - 2000
+       - 2025
+       - 3000
+       - 3025
+       - 4000
+       - 4025
+       - 5000
+      when: "'1025 2000 2025 3000 3025 4000 4025 5000' not in vprochttppre.stdout"
+
+    - shell: |
+        ss -ltpn | egrep -E ":1025\\s+|:2000\\s+|:2025\\s+|:3000\\s+|:3025\\s+|:4000\\s+|:4025\\s+|:5000\\s+" | cut -d: -f2 | cut -d' ' -f1 | paste -sd ' ' -
+      become: true
+      register: vprochttppost
+
+    - assert:
+        that:
+          - "'1025' in vprochttppost.stdout"
+          - "'2000' in vprochttppost.stdout"
+          - "'2025' in vprochttppost.stdout"
+          - "'3000' in vprochttppost.stdout"
+          - "'3025' in vprochttppost.stdout"
+          - "'4000' in vprochttppost.stdout"
+          - "'4025' in vprochttppost.stdout"
+          - "'5000' in vprochttppost.stdout"
+        fail_msg: "No se todo los puertos de http server se iniciaron {{ vprochttppost.stdout }}"
+        success_msg: "Todo los puertos de http server se iniciaron {{ vprochttppost.stdout }}"      

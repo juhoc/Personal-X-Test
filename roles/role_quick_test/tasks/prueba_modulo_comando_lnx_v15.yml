@@ -1,0 +1,26 @@
+---
+- name: Tareas por bloques - Validacion formato CRQ o ICR
+  block:
+    - name: Validando Formato de Cambio o Incidente
+      assert:
+        that:
+          - idcrqincreq | string | regex_search('(CRQ|INC|REQ)[0-9]{12}')
+        fail_msg: "El CRQ, INC o REQ no cumplen con la condiciones del formato"
+        success_msg: "El CRQ, INC o REQ cumplen con las condiciones del formato"
+      run_once: true
+      delegate_to: localhost
+
+- name: Archivos de evidencias servidores
+  block:
+    - name: Transferir archivo del equipo A al equipo B
+      become: true
+      copy:
+        src: /bmc/soft3ros/bmcsoftware/capacity/agent/TSCO_Agent_ver20.02.00_Linux.tar
+        dest: /var/opt/ansuble/TSCO_Agent_ver20.02.00_Linux.tar
+        remote_src: true
+      delegate_to: "{{ item }}"
+      loop: "{{ lista_hosts_ips.split(' ') }}"
+#      loop: "{{ lista_hosts_ips.split(',') | map('trim') | list }}"
+#      loop: "{{ lista_hosts_ips.splitlines() }}"
+#      vars:
+#        equipoB_ip: "150.100.43.207"  # Dirección IP del equipo B

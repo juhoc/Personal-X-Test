@@ -1,0 +1,81 @@
+---
+#----------Validar ip robotica
+- name: Tareas por bloques - Validar si existe IP Robotica para NetBackup
+  block:
+    - name: Filtrar IP de Robotica
+      set_fact:
+        nombre_servidor: "{{ inventory_hostname.split('.')[0] }}"
+        ip_permitidas: "{{ ansible_ip_addresses | select('match', '^172.10.|^172.13.|^172.214.') | list }}"
+
+    - name: Resultados de la validacion de si existe IP Robotica para NetBackup
+      assert:
+        that:
+          - ip_permitidas | length > 0
+        success_msg: "El servidor {{ nombre_servidor }} tiene IP Robotica {{ ip_permitidas[0] }}"
+        fail_msg: "El servidor {{ nombre_servidor }} no tiene IP Robotica del rango (172.10.xxx.xxx, 172.13.xxx.xxx, 172.214.xxx.xxx)"
+      when: ip_permitidas | length > 0
+ 
+    - name: Mostrar mensaje si no hay IPs encontradas
+      fail:
+        msg: "El servidor {{ nombre_servidor }} no tiene ninguna IP Robotica permitida del rango (172.10.xxx.xxx, 172.13.xxx.xxx, 172.214.xxx.xxx)"
+      when: ip_permitidas | length == 0
+#----------Validar comunicacion
+- name: Tareas por bloques - Validar si existe IP Robotica para NetBackup
+  block:
+    - name: Determinar IP del servidor maestro según el rango
+      set_fact:
+        ip_master: >-
+          {% if ip_permitidas[0].split('.')[:2] | join('.') == '172.10' %}
+            172.10.107.11
+          {% elif ip_permitidas[0].split('.')[:2] | join('.') == '172.13' %}
+            172.13.101.26
+          {% elif ip_permitidas[0].split('.')[:2] | join('.') == '172.214' %}
+            172.214.102.81
+          {% else %}
+            None
+          {% endif %}
+        servidor_master: >-
+          {% if ip_permitidas[0].split('.')[:2] | join('.') == '172.10' %}
+            cbnocbakccr02
+          {% elif ip_permitidas[0].split('.')[:2] | join('.') == '172.13' %}
+            cbnocbakccr02
+          {% elif ip_permitidas[0].split('.')[:2] | join('.') == '172.214' %}
+            vxnbuqro
+          {% else %}
+            None
+          {% endif %}
+
+    - fail:
+        msg: "No se pudo determinar el servidor maestro para la IP {{ ip_permitidas[0] }}"
+      when: ip_master == 'None'
+
+    - win_shell: "(Test-NetConnection -ComputerName {{ ip_master | replace('\n', '') | trim }} -Port 1556).TcpTestSucceeded"
+      register: val_puerto
+
+    - name: Resultados de la validacion de comunicacion con NetBackup por IP Robotica
+      assert:
+        that:
+          - "'True' in val_puerto.stdout | regex_replace('\\r|\\n', '') | string"
+        fail_msg: "El puerto 1556 esta close, no existe comunicacion con el Maserte NetBackup {{ servidor_master | replace('\n', '') | trim }} a traves de la ip {{ ip_permitidas[0] }}"
+        success_msg: "El puerto 1556 esta open, existe comunicacion con el Maserte NetBackup {{ servidor_master | replace('\n', '') | trim }} a traves de la ip {{ ip_permitidas[0] }}"
+
+- name: Tareas por bloques - Validar OS compatible para NetBackup Windows
+  block:
+    - name: Resultados del soporte para instalacion del cliente NetBackup para Windows
+      assert:
+        that:
+          - "ansible_distribution is defined"
+          - "'2016' in ansible_distribution or
+             '2019' in ansible_distribution or
+             '2022' in ansible_distribution"
+          - ip_permitidas | length > 0
+        fail_msg: >-
+          {% if ansible_distribution is not defined %}
+            No se detectó la distribución del sistema operativo.
+          {% else %}
+            El Sistema Operativo {{ ansible_distribution }} no esta soportado por NetBackup 10.
+          {% endif %}
+          Sin IP de Robótica.
+        success_msg: >-
+          El Sistema Operativo {{ ansible_distribution }} esta soportado por NetBackup 10
+          y con IP de Robótica: {{ ip_permitidas[0] }}.

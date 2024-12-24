@@ -1,0 +1,40 @@
+---
+- name: Tareas por bloques - Validacion formato CRQ o ICR
+  block:
+    - name: Validando Formato de Cambio o Incidente
+      assert:
+        that:
+          - idcrqincreq | string | regex_search('(CRQ|INC|REQ)[0-9]{12}')
+        fail_msg: "El CRQ, INC o REQ no cumplen con la condiciones del formato"
+        success_msg: "El CRQ, INC o REQ cumplen con las condiciones del formato"
+      run_once: true
+      delegate_to: localhost
+
+- name: Tareas por bloques - Validar Status SSO, PPs y APP's intermedia al IPL OS Linux
+  block:
+    - file:
+        path: "{{ gdmlcfsasb }}report_pp_aps.sh"
+        state: absent
+
+    - name: Copiando script foto intermedia IPL OS Linux
+      become: yes
+      copy:
+        src: "files/gdm/inter/{{ item }}"
+        dest: "{{ gdmlcfsasb }}"
+        mode: 0750
+        owner: bvmuxat2
+        group: automate
+      loop:
+        - report_pp_aps.sh
+
+    - name: Ejecutar script foto intermedia IPL OS Linux
+      become: true
+      shell: "export PATH=$PATH:/sbin:/usr/sbin && {{ gdmlcfsasb }}report_pp_aps.sh"
+      register: result_accion
+      environment:
+        PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:{{ ansible_env.PATH }}"
+
+    - file:
+        path: "{{ gdmlcfsasb }}report_pp_aps.sh"
+        state: absent
+

@@ -1,0 +1,64 @@
+---
+- name: Tareas por bloques - Validacion formato CRQ o ICR
+  block:
+    - name: Validando Formato de Cambio o Incidente
+      assert:
+        that:
+          - idcrqincreq | string | regex_search('(CRQ|INC|REQ)[0-9]{12}')
+        fail_msg: "El CRQ, INC o REQ no cumplen con la condiciones del formato"
+        success_msg: "El CRQ, INC o REQ cumplen con las condiciones del formato"
+      run_once: true
+      delegate_to: localhost
+
+#- name: Tareas por bloques - Validar Status PPs previa al IPL OS Linux
+#  block:
+#    - name: Validar que se esta ejecutando antes del IPL del OS Linux
+#      shell: ps -eo args | grep -v "\["
+
+
+- name: Tareas por bloques - Validar Status PPs previa al IPL OS Linux
+  block:
+#    - name: Validar archivos scritps IPL status ssoo, pps y aps
+#      set_fact:
+#        ruta_base: "{{ mountfsasb }}"
+#        script_estado:
+#            - sso_status.sh
+#            - pp_status.sh
+#            - aps_status.sh
+
+#    - stat:
+#        path: "{{ mountfsasb }}{{ item }}"
+#      loop: "{{ script_estado }}"
+#      register: scripts_verificados
+
+    - name: Copiando script foto previa IPL OS Linux
+      become: yes
+      copy:
+        src: "files/gdm/prepost/{{ item }}"
+        dest: "{{ mountfsasb }}"
+        mode: 0750
+        owner: bvmuxat2
+        group: automate
+#      when: not item.stat.exists
+#      loop: "{{ scripts_verificados.results }}"
+      loop:
+        - sso_status.sh
+        - pp_status.sh
+        - aps_status.sh
+
+    - name: Ejecutar script foto previa IPL OS Linux
+      become: true
+      shell: "export PATH=$PATH:/sbin:/usr/sbin && {{ mountfsasb }}{{ item }}"
+      register: result_accion
+      environment:
+        PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:{{ ansible_env.PATH }}"
+      loop:
+        - sso_status.sh
+        - pp_status.sh
+        - aps_status.sh        
+
+#    - file:
+#        path: "{{ mountfsasb }}aps_status.sh"
+#        state: absent
+#      when: shell_script_file.stat.exists == tr
+

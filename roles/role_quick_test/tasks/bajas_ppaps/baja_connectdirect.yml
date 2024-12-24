@@ -1,0 +1,24 @@
+- name: Alta proceso Connect Direct
+  become: yes
+  become_user: ndm36
+  become_method: su
+  become_exe: sudo su -
+  shell: |
+      ./stopcd.sh
+      sleep 10
+  args:
+    chdir: /NDM36/depura/
+
+- name: Validar proceso Connect Direct
+  shell: |
+      if [ $(ps -eo args | egrep -wi "cdpmgr|cdstatm" | grep -v grep | wc -l) -eq 0 ]
+      then
+      echo INACTIVO
+      fi  
+  register: statuscd
+
+- name: Resultado de la alta del proceso Connrect Direct
+  debug:
+    msg:
+       - "ConnectDirect ........{{ statuscm.stdout }}"
+  when: statuscd.stdout == "INACTIVO"

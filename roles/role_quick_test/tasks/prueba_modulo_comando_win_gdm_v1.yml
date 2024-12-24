@@ -1,0 +1,149 @@
+---
+- name: Tareas por bloques - Validacion formato CRQ o ICR
+  block:
+    - name: Validando Formato de Cambio o Incidente
+      assert:
+        that:
+          - idcrqincreq | string | regex_search('(CRQ|INC|REQ)[0-9]{12}')
+        fail_msg: "El CRQ, INC o REQ no cumplen con la condiciones del formato"
+        success_msg: "El CRQ, INC o REQ cumplen con las condiciones del formato"
+      run_once: true
+      delegate_to: localhost
+
+#- name: Obtener informacion previa al IPL del servidor remotos - servicios - discos del OS Windows
+#  block:
+#    - include_tasks: crea_repositorio_mail.yml
+
+- name: Archivos de evidencias servidores
+  block:
+    - win_file:
+        path: "{{ unidadvasb }}{{ item }}"
+        state: touch
+      loop:
+        - foto_servicios_previa.txt
+        - foto_disco_previa.txt
+        - foto_salud_servidor_previa.txt
+
+    - name: Obtener lista total de Servicios previa al IPL de OS Windows
+      win_shell: echo "Status,Service Name,Service Mode"; Get-Service | Where-Object {$_.Status -eq 'Running'} | Select-Object Status, Name, StartType | ForEach-Object { "$($_.Status),$($_.Name),$($_.StartType)" } > {{ unidadvasb }}foto_servicios_previa.txt
+
+    - name: Obtener lista total de Unidades de Disco previa al IPL de OS Windows
+      win_shell: |
+        $cultureInfo = [System.Globalization.CultureInfo]::InvariantCulture
+        [System.Threading.Thread]::CurrentThread.CurrentCulture = $cultureInfo
+        [System.Threading.Thread]::CurrentThread.CurrentUICulture = $cultureInfo
+        Get-CimInstance -Class win32_logicaldisk |
+        Select-Object DeviceId, 
+        @{n="Size";e={[math]::Round($_.Size/1GB,2).ToString($cultureInfo)}}, 
+        @{n="FreeSpace";e={[math]::Round($_.FreeSpace/1GB,2).ToString($cultureInfo)}} |
+        ConvertTo-Csv -NoTypeInformation |
+        % { $_ -replace '"', '' } > {{ unidadvasb }}foto_disco_previa.txt
+
+    - name: Obtener estado de salud previa al IPL del OS Windows
+      win_shell:  echo "Iniciando obtencion IP's, UpTime, CPU, Memoria, Firewall, Discos y Ultimas HotFix de Segiodad instalados"
+
+    - win_shell: |
+        $fecha = date
+        $nombre_server = hostname
+        echo "Fecha actual: $fecha" > {{ unidadvasb }}foto_salud_servidor_previa.txt
+        echo "Hostname: $nombre_server" >> {{ unidadvasb }}foto_salud_servidor_previa.txt
+        echo " " > {{ unidadvasb }}foto_salud_servidor_previa.txt
+
+    - win_shell: |
+        $ips = (Get-NetIPConfiguration).IPv4Address.IPAddress
+        echo "Las direcciones IPs son:" >> {{ unidadvasb }}foto_salud_servidor_previa.txt
+        echo $ips >> {{ unidadvasb }}foto_salud_servidor_previa.txt
+        echo " " >> {{ unidadvasb }}foto_salud_servidor_previa.txt
+
+    - win_shell: |
+        $Uptime = (Get-Date) - (Get-CimInstance -ClassName win32_operatingsystem).LastBootUpTime
+        echo "Tiempo Activo IPL: $($Uptime.Days)-Days:$($Uptime.Hours)-Hours:$($Uptime.Minutes)-Minutes:$($Uptime.Seconds)-Seconds" >> {{ unidadvasb }}foto_salud_servidor_previa.txt
+        echo " " >> {{ unidadvasb }}foto_salud_servidor_previa.txt
+
+    - win_shell: |
+        $cpuLoad = (Get-WmiObject -Class Win32_Processor | Measure-Object -Property LoadPercentage -Average).Average
+        echo "Porcentaje de CPU en uso: $([math]::Round($cpuLoad, 2))%"  >> {{ unidadvasb }}foto_salud_servidor_previa.txt
+        echo " " >> {{ unidadvasb }}foto_salud_servidor_previa.txt
+
+    - win_shell: |
+        $memoryInfo = Get-WmiObject -Class Win32_OperatingSystem | Select-Object @{
+        Name="TotalVisibleMemory(GB)";Expression={[math]::Round($_.TotalVisibleMemorySize / 1MB, 2)}
+        }, @{
+        Name="FreePhysicalMemory(GB)";Expression={[math]::Round($_.FreePhysicalMemory / 1MB, 2)}
+        }
+        echo "Uso de Memoria:" >> {{ unidadvasb }}foto_salud_servidor_previa.txt
+        echo $memoryInfo >> {{ unidadvasb }}foto_salud_servidor_previa.txt
+
+    - win_shell: |
+        $fwstatus = Get-NetFirewallProfile | format-table Name, Enabled
+        echo "Estado del firewall:" >> {{ unidadvasb }}foto_salud_servidor_previa.txt
+        echo $fwstatus >> {{ unidadvasb }}foto_salud_servidor_previa.txt
+
+    - win_shell: |
+        echo "Estado de los discos logicos" >> {{ unidadvasb }}foto_salud_servidor_previa.txt
+        Get-WmiObject -Class Win32_LogicalDisk | Select-Object DeviceID, @{Name="Size(GB)";Expression={[math]::Round($_.Size / 1GB, 2)}}, @{Name="FreeSpace(GB)";Expression={[math]::Round($_.FreeSpace / 1GB, 2)}} >> {{ unidadvasb }}foto_salud_servidor_previa.txt
+
+    - win_shell: |
+        $kbs = Get-WmiObject -Class Win32_QuickFixEngineering | Sort-Object -Property InstalledOn -Descending
+        echo "Ultimas actualizaciones de seguridad instaladas" >> {{ unidadvasb }}foto_salud_servidor_previa.txt
+        echo $kbs >> {{ unidadvasb }}foto_salud_servidor_previa.txt
+
+#    - win_shell: type {{ unidadvasb }}foto_servicios_previa.txt
+#      register: eservicios_total
+#
+#    - win_shell: type {{ unidadvasb }}foto_disco_previa.txt
+#      register: ediscos_total
+#
+#    - win_shell: type {{ unidadvasb }}foto_salud_servidor_previa.txt
+#      register: esalud_total
+#
+#    - set_fact:
+#        salud_svc: "{{ eservicios_total.stdout_lines }}"
+#        salud_dsk: "{{ ediscos_total.stdout_lines }}"
+#        salud_srv: "{{ esalud_total.stdout_lines }}"
+#
+#    - win_file:
+#        path: "{{ unidadvasb }}{{ item }}"
+#        state: absent
+#      loop:
+#        - foto_servicios_previa.txt
+#        - foto_disco_previa.txt
+#        - foto_salud_servidor_previa.txt
+#
+#- name: Almacenar evidencias previas al IPL de servicios, discos y salud del OS Windows
+#  block:
+#    - win_file:
+#        path: "{{ item }}"
+#        state: touch
+#      loop:
+#        - "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_svcs.csv"
+#        - "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_undcs.csv"
+#        - "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_salud_os.txt"
+#
+#    - win_copy:
+#        content: "{{ salud_svc | join('\n') }}"
+#        dest: "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_svcs.csv"
+#
+#    - win_copy:
+#        content: "{{ salud_dsk | join('\n') }}"
+#        dest: "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_undcs.csv"
+#
+#    - win_copy:
+#        content: "{{ salud_srv | join('\n') }}"
+#        dest: "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_salud_os.txt"
+#
+#    - name: Obtener numero total de Servicios previo al IPL de OS Windows
+#      win_shell: |
+#        $flpvsvn = "{{ gdmmailrepo }}\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_svcs.csv"
+#        $flpvsvc = (Get-Content $flpvsvn | Select-String "Running" | Measure-Object).Count
+#        $flpvsvc
+#      register: svcs_prev_num
+#
+#    - name: Obtener numero total de Discos previo al IPL de OS Windows
+#      win_shell: |
+#        $flpvudn = "{{ gdmmailrepo }}\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_previa_undcs.csv"
+#        $flpvudc = (Get-Content $flpvudn | Select-String ":" | Measure-Object).Count
+#        $flpvudc
+#      register: undcs_prev_num
+#  delegate_to: wvmbao01.bvm.bluecare.kyndryl.net
+#Autor Julio Hoyos

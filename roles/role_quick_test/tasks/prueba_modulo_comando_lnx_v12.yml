@@ -1,0 +1,51 @@
+---
+- name: Validari puertos http
+  block:
+    - name: Validar si los puetyos HTTPServer esta en ejeucucion
+      become: true
+      shell: |
+        ss -ltpn | egrep -E ":1025\\s+|:2000\\s+|:2025\\s+|:3000\\s+|:3025\\s+|:4000\\s+|:4025\\s+|:5000\\s+" | cut -d: -f2 | cut -d' ' -f1 | paste -sd ' ' -
+      register: vprochttppre
+
+    - assert:
+        that:
+          - "'1025' in vprochttppre.stdout"
+          - "'2000' in vprochttppre.stdout"
+          - "'2025' in vprochttppre.stdout"
+          - "'3000' in vprochttppre.stdout"
+          - "'3025' in vprochttppre.stdout"
+          - "'4000' in vprochttppre.stdout"
+          - "'4025' in vprochttppre.stdout"
+          - "'5000' in vprochttppre.stdout"
+        fail_msg: "No se todo los puertos de http server estan inicidos {{ vprochttppre.stdout }}"
+        success_msg: "Todo los puertos de http server estan iniciados {{ vprochttppre.stdout }}, se procede de denterlos"
+      ignore_errors: true
+ 
+    - name: Validar procesos http
+      become: true
+      shell: |
+        ss -ltpn | egrep -E ":1025\\s+|:2000\\s+|:2025\\s+|:3000\\s+|:3025\\s+|:4000\\s+|:4025\\s+|:5000\\s+" | cut -d= -f2 | cut -d, -f1 | paste -sd ' ' -
+      register: vprochttppre
+
+    - shell: "kill -9 {{ vprochttppre.stdout }}"
+      become: true
+ 
+    - name: Validar si los puetyos HTTPServer esta en ejeucucion
+      become: true
+      shell: |
+        ss -ltpn | egrep -E ":1025\\s+|:2000\\s+|:2025\\s+|:3000\\s+|:3025\\s+|:4000\\s+|:4025\\s+|:5000\\s+" | cut -d: -f2 | cut -d' ' -f1 | paste -sd ' ' -
+      register: vprochttppost
+ 
+    - assert:
+        that:
+          - "'1025' not in vprochttppost.stdout"
+          - "'2000' not in vprochttppost.stdout"
+          - "'2025' not in vprochttppost.stdout"
+          - "'3000' not in vprochttppost.stdout"
+          - "'3025' not in vprochttppost.stdout"
+          - "'4000' not in vprochttppost.stdout"
+          - "'4025' not in vprochttppost.stdout"
+          - "'5000' not in vprochttppost.stdout"
+        fail_msg: "Existen puertos abierto {{ vprochttppost.stdout }}"
+        success_msg: "Todo los puertos de http estan cerrados {{ vprochttppost.stdout }}"
+ 

@@ -1,0 +1,67 @@
+---
+- name: Tareas por bloques - Validacion formato CRQ o ICR
+  block:
+    - name: Validando Formato de Cambio o Incidente
+      assert:
+        that:
+          - idcrqincreq | string | regex_search('(CRQ|INC|REQ)[0-9]{12}')
+        fail_msg: "El CRQ, INC o REQ no cumplen con la condiciones del formato"
+        success_msg: "El CRQ, INC o REQ cumplen con las condiciones del formato"
+      run_once: true
+      delegate_to: localhost
+
+    - name: Envio de evidencias por CRQ, INC o REQ
+      win_shell: |
+        $archivos = Get-ChildItem "{{ gdmmailrepo }}" | Where-Object {$_.Name -match "{{ idcrqincreq }}"} | Select-Object -ExpandProperty FullName
+        $sendMailMessageSplat = @{
+        From = 'IT-OPERATORATION <itoperationintegration.mx@bbva.com>'
+        To = {{ mail_to }}
+        Subject = "Reportes GDM Windows Patching"
+        Body = "Se adjuntan todas las evidencias por CRQ o INC o REQ previas y posteriores al IPL"
+        SmtpServer = '150.100.207.52'
+        Attachments = $archivos
+        }
+        Send-MailMessage @sendMailMessageSplat
+      when: "send_mail == 'Fotos_x_CRQ_INC_REC_IPL'"
+
+    - name: Envio de evidencias previas al IPL
+      win_shell: |
+        $archivos = Get-ChildItem "{{ gdmmailrepo }}" | Where-Object {$_.Name -match "{{ idcrqincreq }}" -and $_.Name -match "previa"} | Select-Object -ExpandProperty FullName
+        $sendMailMessageSplat = @{
+        From = 'IT-OPERATORATION <itoperationintegration.mx@bbva.com>'
+        To = {{ mail_to }}
+        Subject = "Reportes GDM Windows Patching"
+        Body = "Se adjuntan los archivos de evidencias de servicios y disco previos al IPL"
+        SmtpServer = '150.100.207.52'
+        Attachments = $archivos
+        }
+        Send-MailMessage @sendMailMessageSplat
+      when: "send_mail == 'Fotos_previas_IPL'"
+
+    - name: Envio de evidencias posterioes al IPL
+      win_shell: |
+        $archivos = Get-ChildItem "{{ gdmmailrepo }}" | Where-Object {$_.Name -match "{{ idcrqincreq }}" -and $_.Name -match "posterior"} | Select-Object -ExpandProperty FullName
+        $sendMailMessageSplat = @{
+        From = 'IT-OPERATORATION <itoperationintegration.mx@bbva.com>'
+        To = {{ mail_to }}
+        Subject = "Reportes GDM Windows Patching"
+        Body = "Se adjuntan los archivos de evidencias de servicios y disco posterior al IPL"
+        SmtpServer = '150.100.207.52'
+        Attachments = $archivos
+        }
+        Send-MailMessage @sendMailMessageSplat
+      when: "send_mail == 'Fotos_posterior_IPL'"
+
+    - name: Envio de evidencias de compara previa vs posterior
+      win_shell: |
+        $archivos = Get-ChildItem "{{ gdmmailrepo }}" | Where-Object {$_.Name -match "{{ idcrqincreq }}" -and $_.Name -match "diff"} | Select-Object -ExpandProperty FullName
+        $sendMailMessageSplat = @{
+        From = 'IT-OPERATORATION <itoperationintegration.mx@bbva.com>'
+        To = {{ mail_to }}
+        Subject = "Reportes GDM Windows Patching"
+        Body = "Se adjuntan los archivos de evidencias de comparar servicios y disco previos vs posterior al IPL"
+        SmtpServer = '150.100.207.52'
+        Attachments = $archivos
+        }
+        Send-MailMessage @sendMailMessageSplat
+      when: "send_mail == 'Fotos_Diferencias_IPL'"

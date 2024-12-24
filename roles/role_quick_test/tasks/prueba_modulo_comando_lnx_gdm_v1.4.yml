@@ -1,0 +1,149 @@
+---
+- name: Tareas por bloques - Validacion formato CRQ o ICR
+  block:
+    - name: Validando Formato de Cambio o Incidente
+      assert:
+        that:
+          - idcrqincreq | string | regex_search('(CRQ|INC|REQ)[0-9]{12}')
+        fail_msg: "El CRQ, INC o REQ no cumplen con la condiciones del formato"
+        success_msg: "El CRQ, INC o REQ cumplen con las condiciones del formato"
+      run_once: true
+      delegate_to: localhost
+
+- name: Obtener salidas de evidencias previas y posteriores al IPL de servicios, discos y salud del OS Linux
+  block:
+
+    - shell: cat {{ gdmlcfsasb }}foto_sso_pp_aps_previa.txt
+      register: sso_pp_aps_total_pre
+
+    - shell: cat {{ gdmlcfsasb }}foto_sso_pp_aps_intermedia.txt
+      register: sso_pp_aps_total_inter
+
+    - shell: cat {{ gdmlcfsasb }}foto_sso_pp_aps_posterior.txt
+      register: sso_pp_aps_total_post
+
+    - set_fact:
+        ssoppapspre: "{{ sso_pp_aps_total_pre.stdout_lines }}"
+        ssoppapsinter: "{{ sso_pp_aps_total_inter.stdout_lines }}"
+        ssoppapspost: "{{ sso_pp_aps_total_post.stdout_lines }}"
+
+- name: Almacenar evidencias previas y posteriores al IPL de servicios, discos y salud del OS Linux
+  block:
+    - name: Validar archivos esperados previas IPL del OS Linux
+      set_fact:
+        ruta_base: "{{ gdmmailrepo }}"
+        archivos_esperados:
+          - "{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_sso_pp_aps_previa.txt"
+          - "{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_sso_pp_aps_intermedia.txt"
+          - "{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_sso_pp_aps_posterior.txt"
+
+    - stat:
+        path: "{{ ruta_base }}\\{{ item }}"
+      loop: "{{ archivos_esperados }}"
+      register: archivos_verificados
+ 
+    - debug:
+        msg: "El archivo {{ item.item }} existe: {{ item.stat.exists }}"
+      loop: "{{ archivos_verificados.results }}"
+ 
+    - name: Crear archivos si no existen
+      file:
+        path: "{{ ruta_base }}\\{{ item.item }}"
+        state: touch
+      when: not item.stat.exists
+      loop: "{{ archivos_verificados.results }}"
+
+    - copy:
+        content: "{{ ssoppapspre | join('\n') }}"
+        dest: "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_sso_pp_aps_previa.txt"
+
+    - copy:
+        content: "{{ ssoppapsinter | join('\n') }}"
+        dest: "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_sso_pp_aps_intermedia.txt"
+
+    - copy:
+        content: "{{ ssoppapspost | join('\n') }}"
+        dest: "{{ gdmmailrepo }}\\{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_sso_pp_aps_posterior.txt"
+
+    - shell: echo $(date +%d%m%Y_%H%M)
+      register: hrfchaps
+
+    - set_fact:
+        clean_hrfchaps: "{{ hrfchaps.stdout }}"
+
+    - file:
+        path: "{{ gdmmailrepo }}{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_diff_sso_pp_aps_{{ clean_hrfchaps }}.txt"
+        state: touch
+
+    - name: Compara evidencia de servicios previas y posteriores al IPL del OS Linux
+      shell: "sdiff {{ gdmmailrepo }}{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_sso_pp_aps_previa.txt {{ gdmmailrepo }}{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_sso_pp_aps_posterior.txt"
+      register: dif_sso_pp_aps
+      failed_when: dif_sso_pp_aps.rc not in [0, 1]
+
+    - set_fact:
+        dif_total_sso_pp_aps: "{{ dif_sso_pp_aps.stdout_lines }}"
+
+    - copy:
+        content: "{{ dif_total_sso_pp_aps  | join('\n') }}"
+        dest: "{{ gdmmailrepo }}{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}_{{ hostvars[inventory_hostname].ipaddress }}_foto_diff_sso_pp_aps_{{ clean_hrfchaps }}.txt"
+        mode: '0644'
+  delegate_to: lvpapansiblmx01.bvm.bluecare.kyndryl.net
+
+- name: Envio de evidencias IPL Total
+  block:
+    - name: Buscar archivos y borrar archivos zip
+      find:
+        paths: "{{ gdmmailrepo }}"
+        patterns: "*.zip"
+      register: zip_files
+
+    - file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ zip_files.files }}"
+      when: zip_files.matched > 0
+
+    - find:
+        paths: "{{ gdmmailrepo }}"
+        patterns: "{{ idcrqincreq }}*"
+      register: archivos_filtrados
+
+    - archive:
+        path: "{{ archivos_filtrados.files | map(attribute='path') | list }}"
+        dest: "{{ gdmmailrepo }}{{ idcrqincreq }}_totales.zip"
+        format: zip
+        mode: '0644'
+      with_items: "{{ archivos_filtrados.files }}"
+
+    - shell: ls {{ gdmmailrepo }}{{ idcrqincreq }}*totales.zip
+      register: listflzip
+
+    - name: Envio de evidencias por CRQ, INC o REQ
+      mail:
+        host: "{{ smtp }}"
+        port: "{{ smtpport }}"
+        from: "{{ mailfrom }}"
+        to: "{{ mailto }}"
+        subject: "Reportes GDM Linux Patching"
+        body: "Se adjuntan todas las evidencias del {{ idcrqincreq }} de previas y posteriores al IPL"
+        attach: "{{ listflzip.stdout_lines }}"
+      register: valmail
+      no_log: true
+  rescue:    
+    - name: Envio de evidencias por CRQ, INC o REQ
+      mail:
+        host: "{{ smtp }}"
+        port: "{{ smtpport }}"
+        from: "{{ mailfrom }}"
+        to: gabriela.aranda.perez.contractor@bbva.com
+        subject: "Reportes GDM Linux Patching"
+        body: "Se adjuntan todas las evidencias del {{ idcrqincreq }} de previas y posteriores al IPL"
+        attach: "{{ listflzip.stdout_lines }}"
+      register: valmail
+  always:
+    - name: Envio de evidencias por folio CRQ, INC o REQ
+      debug:
+        msg: "{{ 'Se envio el correo al buzon o buzones:' + mail_to if mail_to != '' else 'Se envia el corre al buzon funional gabriela.aranda.perez.contractor@bbva.com' }}"
+      when: valmail.rc == 0
+  delegate_to: lvpapansiblmx01.bvm.bluecare.kyndryl.net
+  run_once: true

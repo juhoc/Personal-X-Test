@@ -1,0 +1,234 @@
+---
+- name: Tareas por bloques - Validacion formato CRQ o ICR
+  block:
+    - name: Validando Formato de Cambio o Incidente
+      assert:
+        that:
+          - idcrqincreq | string | regex_search('(CRQ|INC|REQ)[0-9]{12}')
+        fail_msg: "El CRQ, INC o REQ no cumplen con la condiciones del formato"
+        success_msg: "El CRQ, INC o REQ cumplen con las condiciones del formato"
+      run_once: true
+      delegate_to: localhost
+
+- name: Archivos de evidencias servidores
+  block:
+    - file:
+        path: "{{ mountfsasb }}{{ item }}"
+        state: touch
+        owner: bvmuxat2
+        group: automate
+      loop:
+        - foto_salud_servidor_previa.txt
+        - foto_pp_previa.txt
+        - patrol.asb
+        - capacity.asb
+        - ctm.asb
+        - dim.asb
+        - cd.asb
+        - s1.asb
+      become: true
+
+    - shell: |
+        echo "-------------------------------------------" > /var/opt/ansible/foto_salud_servidor_previa.txt
+        echo "Informacion de salud del SSOO" >> /var/opt/ansible/foto_salud_servidor_previa.txt
+      become: true
+
+    - shell: |
+        echo "-------------------------------------------" >> /var/opt/ansible/foto_salud_servidor_previa.txt
+        echo "Fecha: $(date +'%a-%b-%e %H:%M')" >> /var/opt/ansible/foto_salud_servidor_previa.txt
+        echo "Hostname: $(hostname)" >> /var/opt/ansible/foto_salud_servidor_previa.txt
+        echo " " >> /var/opt/ansible/foto_salud_servidor_previa.txt
+      become: true
+
+    - shell: |
+        echo "-------------------------------------------" >> /var/opt/ansible/foto_salud_servidor_previa.txt
+        echo "Direcciones IPs:" >> /var/opt/ansible/foto_salud_servidor_previa.txt
+        echo "$(ip -o -4 addr | tr " " "," | sed 's/,,,,/,/g;s/inet,//g;s/:,/:/g' | cut -d: -f2 | cut -d'/' -f1)" >> /var/opt/ansible/foto_salud_servidor_previa.txt
+        echo " " >> /var/opt/ansible/foto_salud_servidor_previa.txt
+      become: true
+
+    - shell: |
+        echo "-------------------------------------------" >> /var/opt/ansible/foto_salud_servidor_previa.txt
+        if [ "echo $(cat /etc/*release | grep ^ID= | cut -d= -f2 | tr -d "\"")" = "rhel" ]
+        then
+          echo "Ultimo arranque de Sistema Operativo:" >> /var/opt/ansible/foto_salud_servidor_previa.txt
+          uptime -s >> /var/opt/ansible/foto_salud_servidor_previa.txt
+          uptime -p >> /var/opt/ansible/foto_salud_servidor_previa.txt
+          echo " " >> /var/opt/ansible/foto_salud_servidor_previa.txt
+        else
+          echo "Ultimo arranque de Sistema Operativo:" >> /var/opt/ansible/foto_salud_servidor_previa.txt
+          uptime >> /var/opt/ansible/foto_salud_servidor_previa.txt
+          echo " " >> /var/opt/ansible/foto_salud_servidor_previa.txt
+        fi
+      become: true
+
+    - shell: |
+        echo "-------------------------------------------" >> /var/opt/ansible/foto_salud_servidor_previa.txt
+        echo "Uso de CPU y Memoria:" >> /var/opt/ansible/foto_salud_servidor_previa.txt
+        echo "$(top | head -5)" >> /var/opt/ansible/foto_salud_servidor_previa.txt
+        echo " " >> /var/opt/ansible/foto_salud_servidor_previa.txt
+      become: true
+
+    - shell: |
+        echo "-------------------------------------------" >> /var/opt/ansible/foto_salud_servidor_previa.txt
+        echo "Estado del firewall:" >> /var/opt/ansible/foto_salud_servidor_previa.txt
+        echo "$(if [ "$(firewall-cmd 2>/dev/null --state)" = "running" ]; then echo "$(firewall-cmd 2>/dev/null --state)"; else echo "not running"; fi)" >> /var/opt/ansible/foto_salud_servidor_previa.txt
+        echo "$(iptables -n -L -v)" >> /var/opt/ansible/foto_salud_servidor_previa.txt
+        echo " " >> /var/opt/ansible/foto_salud_servidor_previa.txt
+      become: true
+
+    - shell: |
+        echo "-------------------------------------------" >> /var/opt/ansible/foto_salud_servidor_previa.txt
+        echo "Estado del FileSystems:" >> /var/opt/ansible/foto_salud_servidor_previa.txt
+        echo "VGS,LV,Tipo,Tamaño,T.Utilizado,T.Disponible,% de Uso,Montura" >> /var/opt/ansible/foto_salud_servidor_previa.txt
+        echo "$(df -hT | egrep -v "Filesystem|#|tmpfs|boot" | sed 's/ \+/,/g;s/\/dev\///g;s/mapper\///g;s/-/,/g' | tr -d "\t" | sort)" >> /var/opt/ansible/foto_salud_servidor_previa.txt
+      become: true
+
+    - shell: |
+        echo "-------------------------------------------" >> /var/opt/ansible/foto_salud_servidor_previa.txt
+        echo "Numero de Filesystems: $(df -hT | egrep -v "Filesystem|#|tmpfs|boot" | wc -l)" >> /var/opt/ansible/foto_salud_servidor_previa.txt
+        echo "-------------------------------------------" >> /var/opt/ansible/foto_salud_servidor_previa.txt
+        echo "Versión de sistema operativo:" >> /var/opt/ansible/foto_salud_servidor_previa.txt
+        echo "$(cat /etc/*release | egrep -w "^ID=|^VERSION_ID|^PRETTY_NAME" | sort)" >> /var/opt/ansible/foto_salud_servidor_previa.txt
+        echo " " >> /var/opt/ansible/foto_salud_servidor_previa.txt
+        echo "-------------------------------------------" >> /var/opt/ansible/foto_salud_servidor_previa.txt
+      become: true
+
+    - shell: |
+        echo "-------------------------------------------" > /var/opt/ansible/foto_pp_previa.txt
+        echo "Informacion Programas Producto" >> /var/opt/ansible/foto_pp_previa.txt
+        echo "-------------------------------------------" >> /var/opt/ansible/foto_pp_previa.txt
+      become: true
+
+    - shell: |
+        PAITL=/patrol/Patrol3/scripts.d/S50PatrolAgent.sh
+        PAAG=$(ps -eo comm | grep -wi patrolagent | grep -v grep | wc -l)
+        if [ -f "$PAITL" ] && [ $PAAG -eq 1 ]; then
+          echo "PatrolAgent ------ ACTIVO" >> /var/opt/ansible/foto_pp_previa.txt
+          echo "PatrolAgent ------ ACTIVO" > /var/opt/ansible/patrol.asb
+        elif [ -f "$PAITL" ] && [ $PAAG -eq 0 ]; then
+          echo "PatrolAgent ------ INACTIVO" >> /var/opt/ansible/foto_pp_previa.txt
+          echo "PatrolAgent ------ INACTIVO" > /var/opt/ansible/patrol.asb
+        else
+          echo "PatrolAgent ------ NO SE DETECTA INSTALACION" >> /var/opt/ansible/foto_pp_previa.txt
+          echo "PatrolAgent ------ NO SE DETECTA INSTALACION" > /var/opt/ansible/patrol.asb
+        fi
+      become: true
+
+    - shell: |
+        CAITL="$(ls 2>/dev/null -1R /performance | grep bgs/bin:$ | tr -d ':')/bgsagent"
+        CAAG=$(ps -eo comm | egrep -wi "bgssd|bgsagent|bgscollect" | grep -v grep | wc -l)
+        if [ -f "$CAITL" ] && [ $CAAG -eq 3 ]; then
+          echo "CapacityAgent ---- ACTIVO" >> /var/opt/ansible/foto_pp_previa.txt
+          echo "CapacityAgent ---- ACTIVO" > /var/opt/ansible/capacity.asb
+        elif [ -f "$CAITL" ] && [ $CAAG -eq 0 ]; then
+          echo "CapacityAgent ---- INACTIVO" >> /var/opt/ansible/foto_pp_previa.txt
+          echo "CapacityAgent ---- INACTIVO" > /var/opt/ansible/capacity.asb
+        else
+          echo "CapacityAgent ---- NO SE DETECTA INSTALACION" >> /var/opt/ansible/foto_pp_previa.txt
+          echo "CapacityAgent ---- NO SE DETECTA INSTALACION" > /var/opt/ansible/capacity.asb
+        fi
+      become: true
+
+    - shell: |
+        CTMITL="$(ls 2>/dev/null -1R /controlm | grep ctm/scripts:$ | tr ":" "/")start-ag"
+        CTMAG=$(sudo ps -eo args | grep -i ctm[a-z] | wc -l)
+        if [ $(echo $CTMITL | wc -l) -eq 1 ] && [ $CTMAG -eq 3 ]; then
+          echo "Control-MAgent --- ACTIVO" >> /var/opt/ansible/foto_pp_previa.txt
+          echo "Control-MAgent --- ACTIVO" > /var/opt/ansible/ctm.asb
+        elif [ $(echo $CTMITL | wc -l) -eq 1 ] && [ $CTMAG -eq 0 ]; then
+          echo "Control-MAgent --- INACTIVO" >> /var/opt/ansible/foto_pp_previa.txt
+          echo "Control-MAgent --- INACTIVO" > /var/opt/ansible/ctm.asb
+        else
+          echo "Control-MAgent --- NO SE DETECTA INSTALACION" >> /var/opt/ansible/foto_pp_previa.txt
+          echo "Control-MAgent --- NO SE DETECTA INSTALACION" > /var/opt/ansible/ctm.asb
+        fi
+      become: true
+
+    - shell: |
+        DMITL="$(ls 2>/dev/null -1R /opt/dimensions | grep cm/prog:$ | tr -d ':')/dmstartup"
+        DMAG=$(ps -eo args | grep -wi dimensions | grep -v grep | wc -l)
+        if [ -f "$DMITL" ] && [ $DMAG -eq 3 ]; then
+          echo "Dimensions ------- ACTIVO" >> /var/opt/ansible/foto_pp_previa.txt
+          echo "Dimensions ------- ACTIVO" > /var/opt/ansible/dim.asb
+        elif [ -f "$DMITL" ] && [ $DMAG -eq 0 ]; then
+          echo "Dimensions ------- INACTIVO" >> /var/opt/ansible/foto_pp_previa.txt
+          echo "Dimensions ------- INACTIVO" > /var/opt/ansible/dim.asb
+        else
+          echo "Dimensions ------- NO SE DETECTA INSTALACION" >> /var/opt/ansible/foto_pp_previa.txt
+          echo "Dimensions ------- NO SE DETECTA INSTALACION" > /var/opt/ansible/dim.asb
+        fi
+      become: true
+
+    - shell: |
+        CDITL="$(ls 2>/dev/null -1R /NDM36 2>/dev/null | grep depura:$ | tr -d ':')/startcd.sh"
+        CDAG=$(ps -eo comm | egrep -wi "cdpmgr|cdstatm" | grep -v grep | wc -l)    
+        if [ -f "$CDITL" ] && [ $CDAG -eq 2 ]; then
+          echo "ConnectDirect ---- ACTIVO" >> /var/opt/ansible/foto_pp_previa.txt
+          echo "ConnectDirect ---- ACTIVO" > /var/opt/ansible/cd.asb
+        elif [ -f "$CDITL" ] && [ $CDAG -eq 0 ]; then
+          echo "ConnectDirect ---- INACTIVO" >> /var/opt/ansible/foto_pp_previa.txt
+          echo "ConnectDirect ---- INACTIVO" > /var/opt/ansible/cd.asb
+        else
+          echo "ConnectDirect ---- NO SE DETECTA INSTALACION" >> /var/opt/ansible/foto_pp_previa.txt
+          echo "ConnectDirect ---- NO SE DETECTA INSTALACION" > /var/opt/ansible/cd.asb
+        fi
+      become: true
+
+    - shell: |
+        S1ITL="$(ls 2>/dev/null -1R /opt/sentinelone | grep bin:$ | tr -d ':')/sentinelctl"
+        S1AG=$(ps -eo comm | grep -wi s1-[a-z] | grep -v grep | wc -l)
+        if [ -f "$S1ITL" ] && [ $S1AG -eq 5 ]; then
+          echo "SentinelOneAgent - ACTIVO" >> /var/opt/ansible/foto_pp_previa.txt
+          echo "SentinelOneAgent - ACTIVO" > /var/opt/ansible/s1.asb
+        elif [ -f "$S1ITL" ] && [ $S1AG -eq 0 ]; then
+          echo "SentinelOneAgent - INACTIVO" >> /var/opt/ansible/foto_pp_previa.txt
+          echo "SentinelOneAgent - INACTIVO" > /var/opt/ansible/s1.asb
+        else
+          echo "SentinelOneAgent - NO SE DETECTA INSTALACION" >> /var/opt/ansible/foto_pp_previa.txt
+          echo "SentinelOneAgent - NO SE DETECTA INSTALACION" > /var/opt/ansible/s1.asb
+        fi
+      become: true
+
+    - file:
+        path: "{{ mountfsasb }}foto_ap_previa.txt"
+        state: touch
+        owner: bvmuxat2
+        group: automate
+      become: true
+
+    - shell: |
+        echo "-------------------------------------------" > /var/opt/ansible/foto_ap_previa.txt
+        echo "Informacion Aplicaciones" >> /var/opt/ansible/foto_ap_previa.txt
+        echo "-------------------------------------------" >> /var/opt/ansible/foto_ap_previa.txt
+      become: true
+
+    - shell: |
+        if [ "$(uname -s)" = "Linux" ]; then
+          df | awk '{print $6}' | grep WebSphere
+        
+
+
+        elif [ "$(uname -s)" = "AIX" ]; then
+          df | awk '{print $7}' | grep WebSphere
+        elif [ "$(uname -s)" = "SunOS" ]; then
+          df | awk '{print $7}' | grep WebSphere
+        fi
+      register: buscawas
+      become: true
+
+    - shell: "ls -lrt {{ item }}"
+      loop: "{{ buscawas.stdout_lines }}"
+      become: true
+#
+#    - shell: |
+#      become: true
+#
+#    - shell: |
+#      become: true
+#
+#    - shell: |
+#      become: true
+#
+#    - shell: |
+#      become: true

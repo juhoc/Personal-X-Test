@@ -1,0 +1,56 @@
+---
+- name: Check install SentinelOne
+  block:
+    - name: Check if SentineOne is installed
+      win_shell: wmic product get name
+      register: product_name
+
+    - assert:
+        that:
+          - "'Sentinel Agent' not in product_name.stdout"
+        fail_msg: "Existe SentinelOne instalado"
+        success_msg: "No Existe SentinelOne instalado"
+  when: "option1_s1 == 'Yes'"
+
+- name: Check after install SentinelOne
+  block:
+    - name: Check SentinelOne Agent state Running
+      win_shell: |
+         .\SentinelCtl.exe status
+      args:
+         chdir: C:\Program Files\SentinelOne\Sentinel Agent 23.4.4.223\
+      register: exe_status
+
+    - assert:
+        that:
+          - "'SentinelMonitor is loaded' in exe_status.stdout_lines"
+          - "'Self-Protection status: On' in exe_status.stdout_lines"
+          - "'SentinelAgent is loaded' in exe_status.stdout_lines"
+          - "'SentinelAgent is running as PPL' in exe_status.stdout_lines"
+        fail_msg: "SentinelOne is not fully operational"
+        success_msg: "SentinelOne is fully operational"
+  when: "option2_s1 == 'Yes'"
+
+#- name: Download file from remote hosts
+#  block:
+#   - name: Dowload media NetBackup
+#     win_get_url:
+#       url: http://150.100.43.207:8081/NetBackup_10.1.1_Windows.zip
+#       dest: "{{ unidadvasb }}"
+#
+#   - win_shell: ls v:\NetBackup_10.1.1_Windows.zip
+#
+#   - win_file:
+#      path: "{{ unidadvasb }}/NetBackup_10.1.1_Windows.zip"
+#      state: absent
+
+#- name: Procede o no la instalacion
+#  block:
+#    - assert:
+#        that:
+#          - "'Sentinel Agent' not in product_name.stdout"
+#          - "'SentinelAgent is running as PPL' not in exe_status.stdout"
+#        fail_msg: "Existe SentinelOne instalado"
+#        success_msg: "No Existe SentinelOne instalado"
+
+

@@ -1,0 +1,33 @@
+---
+- name: Envio de evidencias previas y posteriores al IPL de servicios, discos y salud del OS Windows
+  block:
+    - name: Envio de evidencias por folio CRQ, INC o REQ
+      win_shell: |
+        $sendMailMessageSplat = @{
+        From = 'IT-OPERATORATION <itoperationintegration.mx@bbva.com>'
+        To = {{ mail_to }}
+        Subject = "Reportes GDM Windows Patching"
+        Body = "Se adjuntan todas las evidencias por CRQ o INC o REQ previas y posteriores al IPL"
+        SmtpServer = '150.100.207.52'
+        }
+        Send-MailMessage @sendMailMessageSplat
+      register: valmail
+      no_log: true
+  rescue:
+    - name: Envio de evidencias por folio CRQ, INC o REQ
+      win_shell: |
+        $sendMailMessageSplat = @{
+        From = 'IT-OPERATORATION <itoperationintegration.mx@bbva.com>'
+        To = 'juliocesar.hoyos.contractor@bbva.com'
+        Subject = "Reportes GDM Windows Patching"
+        Body = "Se adjuntan todas las evidencias por CRQ o INC o REQ previas y posteriores al IPL"
+        SmtpServer = '150.100.207.52'
+        }
+        Send-MailMessage @sendMailMessageSplat
+      register: valmail
+  always:
+    - name: Envio de evidencias por folio CRQ, INC o REQ
+      debug:
+        msg: "{{ 'Se envio el correo al buzon o buzones:' + mail_to if mail_to != '' else 'Se envia el corre al buzon funional juliocesar.hoyos.contractor@bbva.com' }}"
+      when: valmail.rc == 0
+  delegate_to: wvmbao01.bvm.bluecare.kyndryl.net

@@ -1,0 +1,53 @@
+---
+- name: Cierre de vulneravilidades NetBackup
+  block:
+    - name: Valida si existe el directorio bin en C:\
+      win_stat:
+        path: C:\bin
+      register: valbin
+
+    - name: Crear directorio bin en C:\
+      win_file:
+        path: C:\bin
+        state: directory
+      when: not valbin.stat.exists
+
+    - name: Revalida si existe o se creo el directorio bin en C:\
+      win_stat:
+        path: C:\bin
+      register: valbin
+
+#    - set_fact:
+#       server_name: "{{ ansible_hostname }}"
+#       ip_address: "{{ hostvars[inventory_hostname]['ipaddress'] }}"
+#       resault: "{{ valbin.stat.path }}"
+
+#    - debug:
+#        msg: "el path existe {{ c_bin }}"
+
+#    - name: Show Report
+#      debug: 
+#        msg: "{{ ansible_play_hosts | map('extract', hostvars, 'resault') | map(attribute='stdout') | list }}"
+#      run_once: true
+
+
+- name: Colectar informacion Windows C:\bin
+  block:
+    - set_fact:
+        nombre_servidor: "{{ hostvars[inventory_hostname].ansible_hostname }}"
+        direccion_ip: "{{ hostvars[inventory_hostname].ipaddress }}"
+        dircbin: "{{ valbin.stat.path }}"
+
+    - win_shell: |
+        echo "{{ nombre_servidor }},{{ direccion_ip }},{{ dircbin | replace('\r', '') | replace('\n', '') | trim }}"
+      register: reporte_total
+
+- name: Reporte informacion Windows C:\bin
+  block:
+    - name: Reporte Windows C:\bin
+      debug:
+        msg:
+          - "hostname,ip,status_c:\bin"
+          - "{{ ansible_play_hosts | map('extract', hostvars, 'reporte_total') | map(attribute='stdout' | replace('\r', '') | replace('\n', '')) | list }}"
+      run_once: true
+  delegate_to: localhost

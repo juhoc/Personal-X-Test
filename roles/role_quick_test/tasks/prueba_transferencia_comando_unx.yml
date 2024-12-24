@@ -1,0 +1,39 @@
+---
+- name: Bloques Nun. 1
+  block:
+#    - name: Task Num 1 command.
+#      shell: echo "$(lscfg | grep -i fcs | awk '{print $2}' | sort -u)"
+#
+#    - name: Task Num 2 command.
+#      become: true
+#      shell: ls -l /dev/ | grep fscsi
+
+    - name: Task Num 3 command.
+      become: true
+      shell: |
+        for i in $(lscfg | grep -i fcs | awk '{print $2}' | sort -u)
+        do 
+        fcstat 2>/dev/null -e "$i"
+        done
+
+    - name: Task Num 4 command.
+      become: true
+      shell: |
+        for i in $(lscfg | grep -i fcs | awk '{print $2}' | sort -u)
+        do 
+        FcSpeed=$(fcstat 2>/dev/null -e "$i" | grep running | awk '{print $4}')
+        echo $FcSpeed
+        done
+
+    - name: Task Num 5 command.
+      become: true
+      shell: lsdev -Cc adapter | grep fcs
+
+    - name: Task Num 6 command.
+      become: true
+      shell: |
+        for i in $(lscfg | grep -i fcs | awk '{print $2}' | sort -u)
+        do
+        errpt 2>/dev/null -a | grep "$i"
+        done
+  ignore_errors: true

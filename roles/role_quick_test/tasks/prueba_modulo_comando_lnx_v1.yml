@@ -1,0 +1,37 @@
+---
+#------------------Formatear Logical Volume------------------
+- name: Informacion VolumeGroup
+  block:
+    - name: Assing permissions r+x to ansible directory
+      become: true
+      file:
+        path: "{{ fs_varoptasb }}"
+        state: directory
+        owner: bvmuxat2
+        group: automate
+        mode: "0755"
+      ignore_errors: true 
+    
+    - name: Copiar el shell calc_size_vg.sh
+      become: true
+      copy:
+        src: files/calc_size_vg.sh
+        dest: "{{ fs_varoptasb }}calc_size_vg.sh"
+        mode: 0755
+
+    - name: Ejecutar el shell script calc_size_vg.sh
+      become: true
+      shell: "export PATH=$PATH:/sbin:/usr/sbin && {{ fs_varoptasb }}calc_size_vg.sh {{ filesystem }} {{ size }} {{ vg }} {{ lv }}"
+      register: result_accion
+      environment:
+        PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:{{ ansible_env.PATH }}"
+
+    - name: Borrar shell script calc_size_vg.sh
+      become: true
+      file:
+        path: "{{ fs_varoptasb }}calc_size_vg.sh"
+        state: absent
+
+    - name: Obtener nombre de la VMGuest
+      set_fact:
+        vcvmgs: "{{ ansible_hostname | lower }}"
