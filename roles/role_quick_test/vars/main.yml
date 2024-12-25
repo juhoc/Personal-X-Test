@@ -41,21 +41,18 @@ dim_siop15: dmsys
 dim_siop16: 1
 dim_siop17: 1
 dim_siop18: 3
-#---variables correo
-smtp: 150.100.207.52
-smtpport: 25
-mailfrom: "IT OPERATION INTEGRATION <itoperationintegration.mx@bbva.com>"
-mailto: "juliocesar.hoyos.contractor@bbva.com"
-mailsub: "Reporte Equipos Ready"
 
 
 #---variables correo
 #bvmuxat2_home: /var/opt/ansible/
-fs_smtp: 150.100.207.52
-fs_smtpport: 25
-fs_mailfrom: "IT OPERATION INTEGRATION <itoperationintegration.mx@bbva.com>"
-fs_mailto: "ansintel.mx@bbva.com"
-fs_mailsub: "Reporte {{ task_accion }} {{ dmahmsr.stdout }} - ID Cambio {{ idcrqincreq }}"
+smtp: 192.168.0.60
+smtpport: 25
+mailfrom: "IT OPERATION INTEGRATION <itoperationintegration.mx@company-xz.net>"
+mailto: julio.cesar.hoyos.corredor@company-xz.net
+mailsub: "Correo de Pruebab"
+#mailusr: 
+#mailpwd:
+
 #---viejas variables
 #fs_reportes: /tmp/reportes/
 #fs_repovg: /tmp/reportes/vgrepo_
