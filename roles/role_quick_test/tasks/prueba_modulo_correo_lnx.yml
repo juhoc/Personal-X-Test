@@ -8,7 +8,7 @@
 #        password: "{{ mailpwd }}"
         from: "{{ mailfrom }}"
         to: "{{ mailto }}"
-        subject: "{{ fs_mailsub }}"
+        subject: "{{ mailsub }}"
         body: |
           Hola Mundo!
   delegate_to: lvmbaoep1.bvm.bluecare.kyndryl.net
