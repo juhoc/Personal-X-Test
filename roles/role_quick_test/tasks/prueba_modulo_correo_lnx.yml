@@ -4,8 +4,8 @@
       mail:
         host: "{{ smtp }}"
         port: "{{ smtpport }}"
-#        username: "{{ mailusr }}"
-#        password: "{{ mailpwd }}"
+        username: "{{ mailusr }}"
+        password: "{{ mailpwd }}"
         from: "{{ mailfrom }}"
         to: "{{ mailto }}"
         subject: "{{ mailsub }}"
