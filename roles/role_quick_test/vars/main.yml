@@ -47,7 +47,7 @@ dim_siop18: 3
 #bvmuxat2_home: /var/opt/ansible/
 smtp: 192.168.0.60
 smtpport: 25
-mailfrom: "IT OPERATION INTEGRATION <itoperationintegration.mx@company-xz.net>"
+mailfrom: itoperationintegration.mx@company-xz.net
 mailto: julio.cesar.hoyos.corredor@company-xz.net
 mailsub: "Correo de Pruebab"
 #mailusr: itoperationintegration.mx@company-xz.net
