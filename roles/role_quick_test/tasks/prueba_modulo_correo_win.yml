@@ -1,11 +1,15 @@
 ---
-- name: Tareas en bloques Validaciones Finales
+- name: Almacenar evidencias previas y posteriores al IPL de servicios, discos y salud del OS Windows
   block:
-#    - name: Valida Conexion con Helix
-#      win_shell: "tnc {{ item }} -port {{ puerto }}"
-#      register: valida_win
-#      with_items: "{{ servers }}"
-
-    - name: Transfering SentinelOne Agent msi to remote computers
-      win_shell: Copy-Item -Path "{{ recurso1 }}{{ software1 }}" -Destination "{{ destino1 }}"
-      ignore_errors: true
+    - name: Envio de evidencias por CRQ, INC o REQ
+      win_shell: |
+        $sendMailMessageSplat = @{
+        From = '{{ mailfrom }}'
+        To = '{{ mailto }}'
+        Subject = "{{ mailsub }}"
+        Body = "Hola Mundo!"
+        SmtpServer = '150.100.207.52'
+        Attachments = $archivos
+        }
+        Send-MailMessage @sendMailMessageSplat
+  delegate_to: wvmbao01.bvm.bluecare.kyndryl.net
