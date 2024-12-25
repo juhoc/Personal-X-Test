@@ -1,11 +1,14 @@
----
-- name: Tareas en bloques Validaciones Finales
+- name: Tareas por bloques - obtencion de evidencias
   block:
-#    - name: Valida Conexion con Helix
-#      win_shell: "tnc {{ item }} -port {{ puerto }}"
-#      register: valida_win
-#      with_items: "{{ servers }}"
-
-    - name: Transfering SentinelOne Agent msi to remote computers
-      win_shell: Copy-Item -Path "{{ recurso1 }}{{ software1 }}" -Destination "{{ destino1 }}"
-      ignore_errors: true
+    - name: Enviar correo electrónico
+      mail:
+        host: "{{ smtp }}"
+        port: "{{ smtpport }}"
+        username: "{{ mailusr }}"
+        password: "{{ mailpwd }}"
+        from: "{{ mailfrom }}"
+        to: "{{ mailto }}"
+        subject: "{{ fs_mailsub }}"
+        body: |
+          Hola Mundo!
+  delegate_to 
