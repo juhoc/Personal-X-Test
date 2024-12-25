@@ -50,8 +50,8 @@ smtpport: 25
 mailfrom: "IT OPERATION INTEGRATION <itoperationintegration.mx@company-xz.net>"
 mailto: julio.cesar.hoyos.corredor@company-xz.net
 mailsub: "Correo de Pruebab"
-mailusr: itoperationintegration.mx@company-xz.net
-mailpwd: "2E9}x4F68W"
+#mailusr: itoperationintegration.mx@company-xz.net
+#mailpwd: "2E9}x4F68W"
 
 #---viejas variables
 #fs_reportes: /tmp/reportes/
