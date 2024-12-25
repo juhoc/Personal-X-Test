@@ -11,4 +11,4 @@
         subject: "{{ fs_mailsub }}"
         body: |
           Hola Mundo!
-  delegate_to 
+  delegate_to: lvmbaoep1.bvm.bluecare.kyndryl.net
