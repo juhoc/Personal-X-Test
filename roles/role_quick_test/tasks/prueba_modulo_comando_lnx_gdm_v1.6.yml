@@ -10,11 +10,6 @@
       run_once: true
       delegate_to: localhost
 
-#- name: Ejecucion de IPL Total con evidencias previas, posteriores, reinicio y tiempo activo de OS Linux
-#  block:
-#    - name: Incluye la tarea de obtner fotos previa antes del IPL
-#      include_tasks: Foto_previa_IPL.yml
-
 - name: Bajas de Programas Producto antes de IPL de OS Linux
   block:
     - name: Baja de Programas Producto
