@@ -22,7 +22,7 @@
         msg: "{{ unudad_asb }}"
 
     - name: Listar contenido de la unidad
-      win_shell: dir "{{ unidad_asb }}"
+      win_shell: dir "{{ unidades }}"
 
 #    - name: Crear directorio
 #      win_file:
