@@ -3,13 +3,12 @@
   block:
     - name: Validar si las unidad D:\ y/o V:\ existen
       win_shell: Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Name
-      register: unidades
+      register: letradisco
 
     - name: Filtrar unidades
       set_fact:
-        unidads: "{{ unidades.stdout_lines | select('match', '^D|^V') | list }}"
-        unudad_d: "{{ unidad_asb | select('match', '^D') | list | replace('[', '' ) | replace(']', '' ) | trim | regex_replace(\"'\", '') }}"
-        unudad_v: "{{ unidad_asb | select('match', '^V') | list | replace('[', '' ) | replace(']', '' ) | trim | regex_replace(\"'\", '') }}"
+        unidads: "{{ letradisco.stdout_lines | select('match', '^D|^V') | list }}"
+        unudad_asd: "{{ unidades | replace('[', '' ) | replace(']', '' ) | trim | regex_replace(\"'\", '') }}"
 
     - name: Mostrar unidad seleccionada
       debug:
