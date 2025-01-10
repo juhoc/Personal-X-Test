@@ -7,11 +7,13 @@
 
     - name: Filtrar unidades
       set_fact:
-        unidad_asb: "{{ unidades.stdout_lines | select('match', '^D|^V') | list }}"
+        unidads: "{{ unidades.stdout_lines | select('match', '^D|^V') | list }}"
+        unudad_asd: "{{ unidad_asb | replace('[', '' ) | replace(']', '' ) | trim | regex_replace(\"'\", '') }}"
 
     - name: Mostrar unidad seleccionada
       debug:
-        msg: "La unidad seleccionada para almacenar logs es: {{ unidad_asb | replace('[', '' ) | replace(']', '' ) | trim | regex_replace(\"'\", '') }}"
+#        msg: "La unidad seleccionada para almacenar logs es: {{ unidad_asb | replace('[', '' ) | replace(']', '' ) | trim | regex_replace(\"'\", '') }}"
+        msg: "La unidad seleccionada para almacenar logs es: {{ unidad_asb }}"
 
 #    - name: Crear directorio
 #      win_file:
