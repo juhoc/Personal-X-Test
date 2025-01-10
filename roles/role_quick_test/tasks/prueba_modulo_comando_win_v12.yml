@@ -1,11 +1,11 @@
 ---
 - name: Cierre de vulneravilidades NetBackup
   block:
-    - name: Validar si la unidad V:\ existe
+    - name: Validar si las unidad D:\ y/o V:\ existen
       win_shell: Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Name
       register: unidades
 
-    - name: Filtrar IP de Robotica
+    - name: Filtrar unidades
       set_fact:
         unidad_asb: "{{ unidades.stdout_lines | select('match', '^D|^V') | list }}"
 
