@@ -24,9 +24,9 @@
       win_shell: |
        $driveRoot = Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Root -eq 'V:\' } | Select-Object -ExpandProperty Root -ErrorAction SilentlyContinue
        if ($driveRoot) {
-       Write-Host "$driveRoot"
+         Write-Host "$driveRoot"
        } else {
-       Write-Host "D:\"
+         Write-Host "D:\\"
        }
       register: unidad
 
