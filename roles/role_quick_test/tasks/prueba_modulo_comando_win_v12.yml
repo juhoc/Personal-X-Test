@@ -1,5 +1,5 @@
 ---
-- name: Cierre de vulneravilidades NetBackup
+- name: Pruebas de Unidades Windows
   block:
     - name: Validar si las unidad D:\ y/o V:\ existen
       win_shell: Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Root
