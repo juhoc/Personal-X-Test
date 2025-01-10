@@ -12,7 +12,7 @@
 
     - name: Mostrar unidad seleccionada
       debug:
-        msg: "La unidad seleccionada para almacenar logs es: {{ unidades | replace('[', '' ) | replace(']', '' ) | trim | regex_replace(\"'\", '') }}"
+        msg: "{{ unidades | replace('[', '' ) | replace(']', '' ) | trim | regex_replace(\"'\", '') }}"
 #        msg: "La unidad seleccionada para almacenar logs es: {{ unidad_asb }}"
 
 #    - name: Crear directorio
