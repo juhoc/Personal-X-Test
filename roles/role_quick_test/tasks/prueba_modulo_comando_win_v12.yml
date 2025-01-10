@@ -7,25 +7,16 @@
 
     - name: Filtrar unidades
       set_fact:
-        unidades: "{{ letradisco.stdout_lines | select('match', '^D|^V') | list | replace('[', '' ) | replace(']', '' ) | trim | regex_replace(\"'\", '') }}"
+        unidad_ansible: "{{ letradisco.stdout_lines | select('match', '^D|^V') | list | replace('[', '' ) | replace(']', '' ) | trim | regex_replace(\"'\", '') }}"
 
     - name: Mostrar unidades
       debug:
-        #msg: "{{ unidades | replace('[', '' ) | replace(']', '' ) | trim | regex_replace(\"'\", '') }}"
-        msg: "{{ unidades }}"
-
-    - name: Filtrar unidades1
-      set_fact:
-        unudad_asb: "{{ unidades | replace('[', '' ) | replace(']', '' ) | trim | regex_replace(\"'\", '') | select('match', '^D|^V') | list }}"
-
-    - name: Mostrar unidades2
-      debug:
-        msg: "{{ unudad_asb }}"
+        msg: "{{ unidad_ansible }}"
 
     - name: Listar contenido de la unidad
-      win_shell: dir "{{ unidades }}"
+      win_shell: dir "{{ unidad_ansible }}"
 
     - name: Crear directorio
       win_file:
-        path: "{{ unidades }}TEMP"
+        path: "{{ unidad_ansible }}TEMP"
         state: directory
