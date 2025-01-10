@@ -2,7 +2,7 @@
 - name: Cierre de vulneravilidades NetBackup
   block:
     - name: Validar si las unidad D:\ y/o V:\ existen
-      win_shell: Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Name
+      win_shell: Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Root
       register: letradisco
 
     - name: Filtrar unidades
