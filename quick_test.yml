@@ -22,7 +22,7 @@
   tasks:
     - name: Comm Win
       win_shell: |
-       Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Root -eq 'V:\' } | Select-Object -ExpandProperty Root
+       Get-PSDrive -PSProvider FileSystem #| Where-Object { $_.Root -eq 'V:\' } | Select-Object -ExpandProperty Root
       register: unidad
 
     - name: Salida
