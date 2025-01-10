@@ -9,12 +9,11 @@
       set_fact:
         unidad_asb: "{{ unidades.stdout_lines | select('match', '^D|^V') | list }}"
 
-
     - name: Mostrar unidad seleccionada
       debug:
         msg: "La unidad seleccionada para almacenar logs es: {{ unidad_asb }}"
 
-#    - name: Crear directorio {{ unidad_asb.stdout }}
-#      win_file:
-#        path: "{{ unidad_asb.stdout }}TEMP"
-#        state: directory
+    - name: Crear directorio {{ unidad_asb }}
+      win_file:
+        path: "{{ unidad_asb }}TEMP"
+        state: directory
