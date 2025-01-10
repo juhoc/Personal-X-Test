@@ -2,18 +2,17 @@
 - name: Cierre de vulneravilidades NetBackup
   block:
     - name: Validar si la unidad V:\ existe
-      win_shell: |
-        $driveRoot = Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Root -eq 'V:\\' } | Select-Object -ExpandProperty Root -ErrorAction SilentlyContinue
-        if ($driveRoot) {
-          Write-Host "V:\\"
-        } else {
-          Write-Host "D:\\"
-        }
-      register: unidad_asb
+      win_shell: Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Root
+      register: unidades
+
+    - name: Filtrar IP de Robotica
+      set_fact:
+        unidad_asb: "{{ unidades.stdout_lines | select('match', '^D:\|^V:\') | list }}"
+
 
     - name: Mostrar unidad seleccionada
       debug:
-        msg: "La unidad seleccionada para almacenar logs es: {{ unidad_asb.stdout }}"
+        msg: "La unidad seleccionada para almacenar logs es: {{ unidad_asb }}"
 
 #    - name: Crear directorio {{ unidad_asb.stdout }}
 #      win_file:
