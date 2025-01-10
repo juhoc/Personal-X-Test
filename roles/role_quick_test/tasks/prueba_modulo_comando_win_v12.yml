@@ -13,10 +13,10 @@
       debug:
         msg: "{{ unidad_ansible }}"
 
-    - name: Listar contenido de la unidad
-      win_shell: dir "{{ unidad_ansible }}"
-
     - name: Crear directorio
       win_file:
         path: "{{ unidad_ansible }}TEMP"
         state: directory
+
+    - name: Listar contenido de la unidad
+      win_shell: dir "{{ unidad_ansible }}"
