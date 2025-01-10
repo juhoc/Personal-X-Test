@@ -3,11 +3,11 @@
   block:
     - name: Validar si la unidad V:\ existe
       win_shell: |
-        $driveRoot = Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Root -eq 'V:\' } | Select-Object -ExpandProperty Root -ErrorAction SilentlyContinue
+        $driveRoot = Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Root -eq 'V:\\' } | Select-Object -ExpandProperty Root -ErrorAction SilentlyContinue
         if ($driveRoot) {
-          Write-Host "V:\"
+          Write-Host "V:\\"
         } else {
-          Write-Host "D:\"
+          Write-Host "D:\\"
         }
       register: unidad_asb
 
