@@ -15,5 +15,5 @@
 
     - name: Crear directorio {{ unidad_asb }}
       win_file:
-        path: "{{ unidad_asb }}TEMP"
+        path: "{{ unidad_asb }}:\TEMP"
         state: directory
