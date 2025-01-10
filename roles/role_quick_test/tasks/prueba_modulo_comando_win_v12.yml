@@ -1,12 +1,18 @@
 ---
 - name: Cierre de vulneravilidades NetBackup
   block:
-    - name: Validar unidad
-      win_shell: Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Name
-      register: unidades_logicas
+    - name: Validar si la unidad V:\ existe
+      win_shell: |
+        $driveRoot = Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Root -eq 'V:\' } | Select-Object -ExpandProperty Root -ErrorAction SilentlyContinue
+        if ($driveRoot) {
+          Write-Host "V:\"
+        } else {
+          Write-Host "D:\"
+        }
+      register: unidad_asb
 
 
-#    - name: Crear directorio {{ disco }}
-#      win_file:
-#        path: "{{ disco }}TEMP"
-#        state: directory
+    - name: Crear directorio {{ unidad_asb.stdout }}
+      win_file:
+        path: "{{ unidad_asb.stdout }}TEMP"
+        state: directory
