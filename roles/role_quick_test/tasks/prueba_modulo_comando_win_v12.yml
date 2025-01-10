@@ -1,0 +1,7 @@
+---
+- name: Cierre de vulneravilidades NetBackup
+  block:
+    - name: Crear directorio {{ disco }}
+      win_file:
+        path: "{{ disco }}TEMP"
+        state: directory
