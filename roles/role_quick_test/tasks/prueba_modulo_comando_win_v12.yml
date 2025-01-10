@@ -11,9 +11,9 @@
 
     - name: Mostrar unidad seleccionada
       debug:
-        msg: "La unidad seleccionada para almacenar logs es: {{ unidad_asb | replace('[', '' ) | replace(']', '' ) | trim | regex_replace(\"'\", '') }}"
+        msg: "La unidad seleccionada para almacenar logs es: {{ unidad_asb | replace('[', '' ) | replace(']', '' ) | trim | regex_replace(\"'\", '') }}:\"
 
-    - name: Crear directorio
-      win_file:
-        path: "{{ unidad_asb  | replace('[', '' ) | replace(']', '' ) | trim | regex_replace(\"'\", '') }}:\TEMP"
-        state: directory
+#    - name: Crear directorio
+#      win_file:
+#        path: {{ unidad_asb  | replace('[', '' ) | replace(']', '' ) | trim | regex_replace(\"'\", '') }}:\TEMP
+#        state: directory
