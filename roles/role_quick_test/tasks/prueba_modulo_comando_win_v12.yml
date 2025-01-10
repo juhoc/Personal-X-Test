@@ -15,8 +15,10 @@
 
     - name: Filtrar unidades1
       set_fact:
-        unudad_asd: "{{ unidades | replace('[', '' ) | replace(']', '' ) | trim | regex_replace(\"'\", '') }}"
+        unudad_asb: "{{ unidades | replace('[', '' ) | replace(']', '' ) | trim | regex_replace(\"'\", '') }}"
 
+    - name: Listar contenido de la unidad
+      win_shell: dir "{{ unidad_asb }}:"
 
 #    - name: Crear directorio
 #      win_file:
