@@ -23,8 +23,12 @@
     - win_shell: Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Root -eq 'V:\' } | Select-Object -ExpandProperty Root
       register: unidad
 
-  vars:
-    disco: "{{ 'D:\' if unidad_asb == '{{ unidad.stdout }}' else 'V:\' }}"
+    - debug:
+        msg: "{{ unidad.stdout }}"
+
+
+#  vars:
+#    disco: "{{ 'D:\' if unidad_asb == '{{ unidad.stdout }}' else 'V:\' }}"
 
   tasks:
     - include_role:
