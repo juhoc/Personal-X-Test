@@ -30,7 +30,7 @@
 #  vars:
 #    disco: "{{ 'D:\' if unidad_asb == '{{ unidad.stdout }}' else 'V:\' }}"
 
-  tasks:
-    - include_role:
-        name: role_quick_test
+#  tasks:
+#    - include_role:
+#        name: role_quick_test
 
