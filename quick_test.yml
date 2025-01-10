@@ -20,7 +20,7 @@
 #  strategy: linear
 
   tasks:
-    - name: Comm Win
+    - name: Comando Win
       win_shell: |
        $driveRoot = Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Root -eq 'V:\' } | Select-Object -ExpandProperty Root -ErrorAction SilentlyContinue
        if ($driveRoot) {
