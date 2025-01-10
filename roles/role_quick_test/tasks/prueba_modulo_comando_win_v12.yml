@@ -11,8 +11,11 @@
         }
       register: unidad_asb
 
+    - name: Mostrar unidad seleccionada
+      debug:
+        msg: "La unidad seleccionada para almacenar logs es: {{ unidad_asb.stdout }}"
 
-    - name: Crear directorio {{ unidad_asb.stdout }}
-      win_file:
-        path: "{{ unidad_asb.stdout }}TEMP"
-        state: directory
+#    - name: Crear directorio {{ unidad_asb.stdout }}
+#      win_file:
+#        path: "{{ unidad_asb.stdout }}TEMP"
+#        state: directory
