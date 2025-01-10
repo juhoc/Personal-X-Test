@@ -10,17 +10,10 @@
 #      acc_id: "{{ account_triname }}"
 #      transaction_id: "{{ tower_job_id }}"
 
-
-#- name: PlayBook HttpServer Start
-#  import_playbook: iniciar_python_simplehttpserver.yml
-
 - name: PlayBook Maestro de Programas Producto
   hosts: all
   gather_facts: false
 #  strategy: linear
-
-#  vars:
-#    disco: "{{ 'D:\' if unidad_asb == '{{ unidad.stdout }}' else 'V:\' }}"
 
   tasks:
     - include_role:
