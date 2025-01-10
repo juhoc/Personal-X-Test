@@ -7,7 +7,7 @@
 
     - name: Filtrar unidades
       set_fact:
-        unidades: "{{ letradisco.stdout_lines | select('match', '^D|^V') | list }}"
+        unidades: "{{ letradisco.stdout_lines | select('match', '^D|^V') | list | replace('[', '' ) | replace(']', '' ) | trim | regex_replace(\"'\", '') }}"
 
     - name: Mostrar unidades
       debug:
