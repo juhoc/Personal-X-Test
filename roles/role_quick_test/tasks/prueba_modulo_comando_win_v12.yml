@@ -24,7 +24,7 @@
     - name: Listar contenido de la unidad
       win_shell: dir "{{ unidades }}"
 
-#    - name: Crear directorio
-#      win_file:
-#        path: {{ unidad_asb  | replace('[', '' ) | replace(']', '' ) | trim | regex_replace(\"'\", '') }}:\TEMP
-#        state: directory
+    - name: Crear directorio
+      win_file:
+        path: "{{ unidades }}TEMP"
+        state: directory
