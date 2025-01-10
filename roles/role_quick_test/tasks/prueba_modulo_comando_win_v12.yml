@@ -1,7 +1,12 @@
 ---
 - name: Cierre de vulneravilidades NetBackup
   block:
-    - name: Crear directorio {{ disco }}
-      win_file:
-        path: "{{ disco }}TEMP"
-        state: directory
+    - name: Validar unidad
+      win_shell: Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Root
+      register: unidades_logicas
+
+
+#    - name: Crear directorio {{ disco }}
+#      win_file:
+#        path: "{{ disco }}TEMP"
+#        state: directory
