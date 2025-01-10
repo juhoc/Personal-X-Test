@@ -9,13 +9,17 @@
       set_fact:
         unidades: "{{ letradisco.stdout_lines | select('match', '^D|^V') | list }}"
 
-    - name: Mostrar unidad seleccionada
+    - name: Mostrar unidades
       debug:
         msg: "{{ unidades | replace('[', '' ) | replace(']', '' ) | trim | regex_replace(\"'\", '') }}"
 
     - name: Filtrar unidades1
       set_fact:
         unudad_asb: "{{ unidades | replace('[', '' ) | replace(']', '' ) | trim | regex_replace(\"'\", '') | select('match', '^D|^V') | list }}"
+
+    - name: Mostrar unidades2
+      debug:
+        msg: "{{ unudad_asb }}"
 
     - name: Listar contenido de la unidad
       win_shell: dir "{{ unidad_asb }}"
