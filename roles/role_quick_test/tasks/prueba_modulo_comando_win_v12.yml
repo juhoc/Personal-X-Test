@@ -15,7 +15,7 @@
 
     - name: Filtrar unidades1
       set_fact:
-        unudad_asb: "{{ unidades | replace('[', '' ) | replace(']', '' ) | trim | regex_replace(\"'\", '') }}"
+        unudad_asb: "{{ unidades | replace('[', '' ) | replace(']', '' ) | trim | regex_replace(\"'\", '') | select('match', '^D|^V') | list }}"
 
     - name: Listar contenido de la unidad
       win_shell: dir "{{ unidad_asb }}"
