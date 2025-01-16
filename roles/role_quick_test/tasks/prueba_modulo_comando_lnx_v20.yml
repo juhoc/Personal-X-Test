@@ -12,7 +12,7 @@
 
     - name: Copiar archivo con scp usando la credencial de AWX
       shell: |
-        scp -o StrictHostKeyChecking=no /tmp/prueba1.txt {{ ansible_user }}@172.18.0.6:/tmp
+        scp -o StrictHostKeyChecking=no /tmp/prueba1.txt {{ ansible_user }}@{{ hostvars[inventory_hostname].ipaddress }}:/tmp
       args:
         executable: /bin/bash
       delegate_to: asitsmaop2.bvm.bluecare.kyndryl.net
