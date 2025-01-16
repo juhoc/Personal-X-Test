@@ -1,21 +1,25 @@
 ---
-- name: Tareas por bloques - borrar evidencias zip
+- name: Tareas por bloques - Validacion formato CRQ o ICR
   block:
-    - name: Buscar archivos y borrar archivos zip
-      become: true
-      find:
-        paths: /patrol
-        patterns: "Base_AIX_Patrol_Without*.*"
-      register: filerm
+    - name: Validando Formato de Cambio o Incidente
+      assert:
+        that:
+          - idcrqincreq | string | regex_search('(CRQ|INC|REQ)[0-9]{12}')
+        fail_msg: "El CRQ, INC o REQ no cumplen con la condiciones del formato"
+        success_msg: "El CRQ, INC o REQ cumplen con las condiciones del formato"
+      run_once: true
+      delegate_to: localhost
 
-    - file:
-        path: "{{ item.path }}"
-        state: absent
-      loop: "{{ filerm.files }}"
-      when: filerm.matched > 0
-      become: true
+    - name: Validacion del Tiempo del OS Windows previo al IPL
+      shell: |
+        echo "Hola Mundo"
+        echo "Soy Ansible"
+        echo "Herramienta para automatizar"
+        echo "Tareas repetitivas"
+      register: out_echos
 
-    - file:
-        path: /patrol/bmc_products
-        state: absent
-      become: true      
+    - set_fact:
+        salida: "{{ out_echos.stdout_lines }}"
+
+    - debug:
+        msg: "{{ salida | replace('\"\', '') }}"
