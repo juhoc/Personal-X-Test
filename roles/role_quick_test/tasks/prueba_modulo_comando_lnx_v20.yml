@@ -15,4 +15,4 @@
         scp -o StrictHostKeyChecking=no /tmp/prueba1.txt {{ ansible_user }}@172.18.0.6:/tmp
       args:
         executable: /bin/bash
-      
+      delegate_to: asitsmaop2.bvm.bluecare.kyndryl.net
