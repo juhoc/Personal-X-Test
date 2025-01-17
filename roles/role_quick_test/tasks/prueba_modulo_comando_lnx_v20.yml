@@ -26,7 +26,7 @@
       become_exe: sudo su -
       shell: |
         eval $(ssh-agent -s)
-        echo "{{ mi_passphrase | b64decode() }}" | ssh-add /home/ccrbam/.ssh/id_rsa
+        echo "{{ mi_passphrase | b64decode() }}" | ssh-add /home/ccrbao/.ssh/id_rsa
         scp -o StrictHostKeyChecking=no pruebav4.txt ccrbao@172.18.0.6:/tmp
       args:
         executable: /bin/bash
