@@ -11,6 +11,7 @@
       delegate_to: localhost
 
     - name: Copiar archivo con scp usando la credencial de AWX
+      become_user: ccrbao
       shell: |
         scp -o StrictHostKeyChecking=no /tmp/prueba4.txt ccrbao@{{ hostvars[inventory_hostname].ipaddress }}:/tmp
       args:
