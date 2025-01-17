@@ -24,7 +24,10 @@
       become_user: ccrbao
       become_method: su
       become_exe: sudo su -
-      shell: scp -o StrictHostKeyChecking=no pruebav4.txt ccrbao@172.18.0.6:/tmp
+      shell: |
+        eval $(ssh-agent -s)
+        ssh-add /home/ccrbao/.ssh/id_rsa
+        scp -o StrictHostKeyChecking=no pruebav4.txt ccrbao@172.18.0.6:/tmp
       args:
         executable: /bin/bash
         chdir: /tmp
