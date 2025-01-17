@@ -13,7 +13,7 @@
     - name: Copiar archivo con scp usando la credencial de AWX
       become_user: ccrbao
       shell: |
-        scp -o StrictHostKeyChecking=no /tmp/prueba4.txt ccrbao@{{ hostvars[inventory_hostname].ipaddress }}:/tmp
+        scp -o StrictHostKeyChecking=no /tmp/pruebav4.txt ccrbao@{{ hostvars[inventory_hostname].ipaddress }}:/tmp
       args:
         executable: /bin/bash
       delegate_to: asitsmaop2.bvm.bluecare.kyndryl.net
