@@ -10,16 +10,22 @@
       run_once: true
       delegate_to: localhost
 
-    - name: Copiar archivo con scp usando la credencial de AWX
+    - name: Validar usuarios
+      become: true
       become_user: ccrbao
+      become_method: su
+      become_exe: sudo su -
       shell: id
       args:
         executable: /bin/bash
 
     - name: Copiar archivo con scp usando la credencial de AWX
+      become: true
       become_user: ccrbao
+      become_method: su
+      become_exe: sudo su -
       shell: |
-        scp -o StrictHostKeyChecking=no /tmp/pruebav4.txt ccrbao@{{ hostvars[inventory_hostname].ipaddress }}:/tmp
+        scp -o StrictHostKeyChecking=no /tmp/pruebav4.txt ccrbao@172.18.0.6:/tmp
       args:
         executable: /bin/bash
       delegate_to: asitsmaop2.bvm.bluecare.kyndryl.net
