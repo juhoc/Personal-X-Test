@@ -15,8 +15,7 @@
       become_user: ccrbao
       become_method: su
       become_exe: sudo su -
-      shell: |
-        echo "IP: {{ item }}"
+      shell: "echo IP: {{ item }}"
       args:
         executable: /bin/bash
       pool: "{{ ip_host.split(',') }}"
