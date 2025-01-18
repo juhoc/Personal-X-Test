@@ -17,7 +17,7 @@
       become_exe: sudo su -
       shell: |
         {% for item in ip_host.split(',') %}
-        echo "item"
+        echo {{ item }}
         {% endfor %}
       args:
         executable: /bin/bash
