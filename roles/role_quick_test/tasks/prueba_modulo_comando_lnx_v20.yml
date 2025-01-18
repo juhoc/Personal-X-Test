@@ -18,7 +18,7 @@
       shell: |
         id
         {%for item in ip_hostname%}
-        echo "servers"
+        echo "item"
         {%endfor%}
       args:
         executable: /bin/bash
