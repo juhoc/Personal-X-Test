@@ -18,7 +18,7 @@
       shell: |
         for servers in "$(echo {{ ip_host }} | tr " " "\n")"
         do
-        echo $servers
+        echo "IP: $servers"
         done
       args:
         executable: /bin/bash
