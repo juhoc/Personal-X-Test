@@ -10,29 +10,28 @@
       run_once: true
       delegate_to: localhost
 
-#    - name: Validar usuarios
-#      become: true
-#      become_user: ccrbao
-#      become_method: su
-#      become_exe: sudo su -
-#      shell: |
-#        {% for item in ip_host.split(',') %}
-#        echo "IP: {{ item }}"
-#        {% endfor %}
-#      args:
-#        executable: /bin/bash
-
-    - name: Copiar archivo con scp usando la credencial de AWX
+    - name: Validar usuarios
       become: true
       become_user: ccrbao
       become_method: su
       become_exe: sudo su -
       shell: |
-        eval $(ssh-agent -s)
-        echo "{{ mi_passphrase | b64decode() }}" | ssh-add /home/ccrbao/.ssh/id_rsa
-        scp -o StrictHostKeyChecking=no {{ software }} ccrbao@{{ item }}:/tmp
-      pool: "{{ ip_host.split(',') }}"
+        echo "IP: {{ item }}"
       args:
         executable: /bin/bash
-        chdir: /bmc/soft3ros/veritas/netbackup/agents
+      pool: "{{ ip_host.split(',') }}"
+
+#    - name: Copiar archivo con scp usando la credencial de AWX
+#      become: true
+#      become_user: ccrbao
+#      become_method: su
+#      become_exe: sudo su -
+#      shell: |
+#        eval $(ssh-agent -s)
+#        echo "{{ mi_passphrase | b64decode() }}" | ssh-add /home/ccrbao/.ssh/id_rsa
+#        scp -o StrictHostKeyChecking=no {{ software }} ccrbao@{{ item }}:/tmp
+#      pool: "{{ ip_host.split(',') }}"
+#      args:
+#        executable: /bin/bash
+#        chdir: /bmc/soft3ros/veritas/netbackup/agents
 #      delegate_to: asitsmaop2.bvm.bluecare.kyndryl.net
