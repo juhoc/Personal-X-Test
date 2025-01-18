@@ -10,7 +10,7 @@
       run_once: true
       delegate_to: localhost
 
-    - name: Copiar archivo con scp usando la credencial de AWX
+    - name: Copiar archivo con scp utilizando passphrase
       become: true
       become_user: ccrbao
       become_method: su
