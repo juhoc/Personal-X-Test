@@ -13,12 +13,12 @@
     - name: Copiar archivo con scp utilizando passphrase
       become: true
       become_user: ndm36
-#      become_method: su
-#      become_exe: sudo su -
+      become_method: su
+      become_exe: sudo su -
       shell: |
         grep -i cdai_localNodeName /NDM36/cdunix/work/cdaiLog.txt | head -1 | cut -f 2 -d =
         id
-        touch /tmp/prueba.txt
+        touch /tmp/prueba1.txt
       args:
         executable: /bin/bash
 #        chdir: /bmc/soft3ros/veritas/netbackup/agents
