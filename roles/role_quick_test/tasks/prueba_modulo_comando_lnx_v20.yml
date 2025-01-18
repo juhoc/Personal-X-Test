@@ -21,7 +21,7 @@
 #        echo {{ item }}
 #        {% endfor %}
 #        {% for item in ip_host.split(',') %}
-        for servers in {{ ip_host }} %}
+        for servers in {{ ip_host }}
         do
         echo $servers
         done
