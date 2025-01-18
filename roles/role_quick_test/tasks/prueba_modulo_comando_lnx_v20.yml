@@ -27,7 +27,7 @@
       shell: |
         eval $(ssh-agent -s)
         echo "{{ mi_passphrase | b64decode() }}" | ssh-add /home/ccrbao/.ssh/id_rsa
-        scp -o StrictHostKeyChecking=no NetBackup_10_1_1_Windows.zip ccrbao@192.168.0.107:/tmp
+        scp -o StrictHostKeyChecking=no NetBackup_10_1_1_Windows.zip ccrbao@192.168.0.100:/tmp
       args:
         executable: /bin/bash
         chdir: /bmc/soft3ros/veritas/netbackup/agents
