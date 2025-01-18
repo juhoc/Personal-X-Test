@@ -16,10 +16,10 @@
       become_method: su
       become_exe: sudo su -
       shell: |
-        for servers in "$(echo {{ ip_host }} | tr " " "\n")"
-        do
-        echo "IP: $servers"
-        done
+        {% for servers in ip_host.split(',') %}
+        echo {{ servers }}
+        {% endfor %}
+        {% for item in ip_host.split(',') %}
       args:
         executable: /bin/bash
 
