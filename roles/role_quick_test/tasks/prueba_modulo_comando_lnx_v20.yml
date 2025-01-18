@@ -16,7 +16,7 @@
       become_method: su
       become_exe: sudo su -
       shell: |
-        for servers in $( echo "{{ ip_host }} | tr " " "\n")
+        for servers in "$(echo {{ ip_host }} | tr " " "\n")"
         do
         echo $servers
         done
