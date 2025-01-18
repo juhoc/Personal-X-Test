@@ -16,10 +16,10 @@
       become_method: su
       become_exe: sudo su -
       shell: |
-        "for servers in {{ ip_host }}
+        for servers in "{{ ip_host }}"
         do
         echo $servers
-        done"
+        done
       args:
         executable: /bin/bash
 
