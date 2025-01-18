@@ -12,9 +12,9 @@
 
     - name: Copiar archivo con scp utilizando passphrase
       become: true
-      become_user: ndm36
-      become_method: su
-      become_exe: sudo su -
+#      become_user: ndm36
+#      become_method: su
+#      become_exe: sudo su -
       shell: |
         grep -i cdai_localNodeName /NDM36/cdunix/work/cdaiLog.txt | head -1 | cut -f 2 -d =
         id
