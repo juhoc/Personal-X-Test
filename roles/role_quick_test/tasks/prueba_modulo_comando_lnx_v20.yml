@@ -16,10 +16,9 @@
       become_method: su
       become_exe: sudo su -
       shell: |
-        {% for servers in ip_host.split(',') %}
-        echo {{ servers }}
-        {% endfor %}
         {% for item in ip_host.split(',') %}
+        echo {{ item }}
+        {% endfor %}
       args:
         executable: /bin/bash
 
