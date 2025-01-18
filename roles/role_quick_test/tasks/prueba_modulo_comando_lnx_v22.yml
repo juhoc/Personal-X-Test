@@ -18,9 +18,9 @@
       shell: |
         grep -i cdai_localNodeName /NDM36/cdunix/work/cdaiLog.txt | head -1 | cut -f 2 -d =
         id
-        touch /tmp/prueba2.txt
-      args:
-        executable: /bin/bash
+        touch /tmp/prueba3.txt
+#      args:
+#        executable: /bin/bash
 #        chdir: /bmc/soft3ros/veritas/netbackup/agents
 #      no_log: true        
 #      delegate_to: asitsmaop2.bvm.bluecare.kyndryl.net
