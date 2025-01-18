@@ -10,17 +10,17 @@
       run_once: true
       delegate_to: localhost
 
-    - name: Validar usuarios
-      become: true
-      become_user: ccrbao
-      become_method: su
-      become_exe: sudo su -
-      shell: |
-        {% for item in ip_host.split(',') %}
-        echo "IP: {{ item }}"
-        {% endfor %}
-      args:
-        executable: /bin/bash
+#    - name: Validar usuarios
+#      become: true
+#      become_user: ccrbao
+#      become_method: su
+#      become_exe: sudo su -
+#      shell: |
+#        {% for item in ip_host.split(',') %}
+#        echo "IP: {{ item }}"
+#        {% endfor %}
+#      args:
+#        executable: /bin/bash
 
     - name: Copiar archivo con scp usando la credencial de AWX
       become: true
