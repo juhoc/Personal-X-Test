@@ -17,9 +17,14 @@
       become_exe: sudo su -
       shell: |
 #        {% for item in ip_host.split(',') %}
-        {% for item in ip_host %}
-        echo {{ item }}
-        {% endfor %}
+#        {% for item in ip_host %}
+#        echo {{ item }}
+#        {% endfor %}
+#        {% for item in ip_host.split(',') %}
+        for servers in {{ ip_host }} %}
+        do
+        echo $servers
+        done
       args:
         executable: /bin/bash
 
