@@ -17,7 +17,7 @@
       become_exe: sudo su -
       shell: |
         id
-        {%for servers in ip_hostname%}
+        {%for item in ip_hostname%}
         echo "servers"
         {%endfor%}
       args:
