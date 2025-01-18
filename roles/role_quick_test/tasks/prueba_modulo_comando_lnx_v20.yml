@@ -16,7 +16,6 @@
       become_method: su
       become_exe: sudo su -
       shell: |
-        id
         {% for item in ip_host.split(',') %}
         echo "item"
         {% endfor %}
