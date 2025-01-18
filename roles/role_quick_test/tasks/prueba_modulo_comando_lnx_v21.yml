@@ -1,0 +1,26 @@
+---
+- name: Tareas por bloques - Validacion formato CRQ o ICR
+  block:
+    - name: Validando Formato de Cambio o Incidente
+      assert:
+        that:
+          - idcrqincreq | string | regex_search('(CRQ|INC|REQ)[0-9]{12}')
+        fail_msg: "El CRQ, INC o REQ no cumplen con la condiciones del formato"
+        success_msg: "El CRQ, INC o REQ cumplen con las condiciones del formato"
+      run_once: true
+      delegate_to: localhost
+
+    - name: Copiar archivo con scp usando la credencial de AWX
+      become: true
+      become_user: ccrbao
+      become_method: su
+      become_exe: sudo su -
+      shell: |
+        eval $(ssh-agent -s)
+        echo "{{ mi_passphrase | b64decode() }}" | ssh-add /home/ccrbao/.ssh/id_rsa
+        scp -o StrictHostKeyChecking=no {{ software }} ccrbao@{{ hostvars[inventory_hostname].ipaddress }}:/tmp
+      args:
+        executable: /bin/bash
+        chdir: /bmc/soft3ros/veritas/netbackup/agents
+      no_log: true        
+      delegate_to: asitsmaop2.bvm.bluecare.kyndryl.net
