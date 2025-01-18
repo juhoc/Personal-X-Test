@@ -31,8 +31,8 @@
         eval $(ssh-agent -s)
         echo "{{ mi_passphrase | b64decode() }}" | ssh-add /home/ccrbao/.ssh/id_rsa
         scp -o StrictHostKeyChecking=no {{ software }} ccrbao@{{ item }}:/tmp
+      pool: "{{ ip_host.split(',') }}"
       args:
         executable: /bin/bash
         chdir: /bmc/soft3ros/veritas/netbackup/agents
-      pool: "{{ ip_host.split(',') }}"
 #      delegate_to: asitsmaop2.bvm.bluecare.kyndryl.net
