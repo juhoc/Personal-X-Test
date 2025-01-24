@@ -185,12 +185,12 @@ fi
 # Verificar si la salida está vacía
 if [[ -z "$output" ]]; then
     # Si está vacía, imprimir un mensaje en verde parpadeante
-    echo -e "IZ.1.2.1.4.3,Logging,Ensure that by default, rsyslog will create files which do not have 'other read' enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    echo -e "IZ.1.2.1.4.3,Logging,Ensure that by default - rsyslog will create files which do not have 'other read' enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
     cumple=$((cumple+1))
 else
     # Si no está vacía, imprimir un mensaje en rojo parpadeante
         
-    echo -e "IZ.1.2.1.4.3,Logging,Ensure that by default, rsyslog will create files which do not have 'other read' enabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    echo -e "IZ.1.2.1.4.3,Logging,Ensure that by default - rsyslog will create files which do not have 'other read' enabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
     nocumple=$((nocumple+1))
     e=true;
 
@@ -336,11 +336,11 @@ done
 # Si se encontraron todos los servidores, imprimir mensaje de éxito
 if [ ${#found_servers[@]} -eq ${#servers[@]} ]; then
     
-    echo -e "IZ.1.2.7.2,Chrony Servers,If chronyd is active, ensure at least one server is configured for access.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    echo -e "IZ.1.2.7.2,Chrony Servers,If chronyd is active - ensure at least one server is configured for access.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
     cumple=$((cumple+1))
 else
 
-    echo -e "IZ.1.2.7.2,Chrony Servers,If chronyd is active, ensure at least one server is configured for access.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    echo -e "IZ.1.2.7.2,Chrony Servers,If chronyd is active - ensure at least one server is configured for access.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
     nocumple=$((nocumple+1))
     l=true;
 
@@ -353,12 +353,12 @@ fi
 # Verificar si el parámetro OPTIONS está vacío
 if grep -q "^OPTIONS=\"\"" /etc/sysconfig/chronyd; then
 
-    echo -e "IZ.1.2.7.3,Chrony,Ensure task is not running with excessive privilege, use the special id chrony.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    echo -e "IZ.1.2.7.3,Chrony,Ensure task is not running with excessive privilege - use the special id chrony.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
     nocumple=$((nocumple+1))
     m=true;
    
 else
-    echo -e "IZ.1.2.7.3,Chrony,Ensure task is not running with excessive privilege, use the special id chrony.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    echo -e "IZ.1.2.7.3,Chrony,Ensure task is not running with excessive privilege - use the special id chrony.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
     cumple=$((cumple+1))
 fi
 
@@ -405,7 +405,7 @@ fi
 if systemctl is-active --quiet chronyd.service; then
     # Verificar si el servicio de NTP no está activo
     if ! systemctl is-active --quiet ntp.service; then
-    echo -e "IZ.1.2.7.5,NTP,If ntpd is active, ensure at least one server is configured for access.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    echo -e "IZ.1.2.7.5,NTP,If ntpd is active - ensure at least one server is configured for access.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
     cumple=$((cumple+1))
     fi
 else
@@ -414,11 +414,11 @@ else
 if systemctl is-active ntp >/dev/null 2>&1; then
     # Verificar si los servidores están agregados en el archivo de configuración
     if grep -q "^server\s\+150\.50\.102\.157" /etc/ntp.conf && grep -q "^server\s\+150\.50\.102\.158" /etc/ntp.conf && grep -q "^server\s\+150\.100\.151\.66" /etc/ntp.conf && grep -q "^server\s\+150\.100\.151\.67" /etc/ntp.conf; then
-    echo -e "IZ.1.2.7.5,NTP,If ntpd is active, ensure at least one server is configured for access.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    echo -e "IZ.1.2.7.5,NTP,If ntpd is active - ensure at least one server is configured for access.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
     cumple=$((cumple+1))
     else
         echo "Los servidores no están agregados en /etc/ntp.conf"
-        echo -e "IZ.1.2.7.5,NTP,If ntpd is active, ensure at least one server is configured for access.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        echo -e "IZ.1.2.7.5,NTP,If ntpd is active - ensure at least one server is configured for access.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
         nocumple=$((nocumple+1))
         o=true;
 
@@ -485,10 +485,10 @@ output=$(rpm -q libselinux | awk -F'-' '{print $1}')
 # Verificar SELinux este instalado
 if [ "$output" == "libselinux" ]; then
 
-    echo -e "IZ.1.4.3.1.2,System Settings,Ensure SELinux state is enforcing or permissive, globally.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    echo -e "IZ.1.4.3.1.2,System Settings,Ensure SELinux state is enforcing or permissive - globally.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
     cumple=$((cumple+1))
 else
-    echo -e "IZ.1.4.3.1.2,System Settings,Ensure SELinux state is enforcing or permissive, globally.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    echo -e "IZ.1.4.3.1.2,System Settings,Ensure SELinux state is enforcing or permissive - globally.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
     nocumple=$((nocumple+1))
     r=true;
 fi
@@ -500,10 +500,10 @@ output=$(rpm -q libselinux | awk -F'-' '{print $1}')
 # Verificar SELinux este instalado
 if [ "$output" == "libselinux" ]; then
 
-    echo -e "IZ.1.4.3.1.3,System Settings,Ensure SELinux state is enforcing or permissive, per domain.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    echo -e "IZ.1.4.3.1.3,System Settings,Ensure SELinux state is enforcing or permissive - per domain.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
     cumple=$((cumple+1))
 else
-    echo -e "IZ.1.4.3.1.3,System Settings,Ensure SELinux state is enforcing or permissive, per domain.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    echo -e "IZ.1.4.3.1.3,System Settings,Ensure SELinux state is enforcing or permissive - per domain.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
     nocumple=$((nocumple+1))
     s=true;
 fi
@@ -716,10 +716,10 @@ default_accept_source_route=$(sysctl net.ipv4.conf.default.accept_source_route |
 
 # Verificamos si ambos valores son iguales a 0
 if [[ $all_accept_source_route -eq 0 && $default_accept_source_route -eq 0 ]]; then
-  echo -e "IZ.1.5.9.20.5,Network Settings,systems may not be routable or reachable from some locations (e.g. private addresses vs. Internet routable), and so source routed packets would need to be used.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  echo -e "IZ.1.5.9.20.5,Network Settings,systems may not be routable or reachable from some locations (e.g. private addresses vs. Internet routable) - and so source routed packets would need to be used.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
   cumple=$((cumple+1))
 else
-  echo -e "IZ.1.5.9.20.5,Network Settings,systems may not be routable or reachable from some locations (e.g. private addresses vs. Internet routable), and so source routed packets would need to be used.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  echo -e "IZ.1.5.9.20.5,Network Settings,systems may not be routable or reachable from some locations (e.g. private addresses vs. Internet routable) - and so source routed packets would need to be used.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
   nocumple=$((nocumple+1))
   ad=true;
   
@@ -736,11 +736,11 @@ default_secure_redirects=$(sysctl net.ipv4.conf.default.secure_redirects | awk '
 
 # Verificamos si ambos valores son iguales a 0
 if [[ $all_secure_redirects -eq 0 && $default_secure_redirects -eq 0 ]]; then
-  echo -e "IZ.1.5.9.20.6,Network Settings,Secure ICMP redirects are the same as ICMP redirects, except they come from gateways listed on the default gateway list.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  echo -e "IZ.1.5.9.20.6,Network Settings,Secure ICMP redirects are the same as ICMP redirects - except they come from gateways listed on the default gateway list.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
   cumple=$((cumple+1))
 
 else
-  echo -e "IZ.1.5.9.20.6,Network Settings,Secure ICMP redirects are the same as ICMP redirects, except they come from gateways listed on the default gateway list.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  echo -e "IZ.1.5.9.20.6,Network Settings,Secure ICMP redirects are the same as ICMP redirects - except they come from gateways listed on the default gateway list.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
   nocumple=$((nocumple+1))
   ae=true;
 fi
@@ -759,10 +759,10 @@ default_log_martians=$(sysctl net.ipv4.conf.default.log_martians | awk '{print $
 
 # Verificamos si ambos valores son iguales a 1
 if [[ $all_log_martians -eq 1 && $default_log_martians -eq 1 ]]; then
-  echo -e "IZ.1.5.9.20.7,Network Settings,When enabled, this feature logs packets with un-routable source addresses to the kernel log.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  echo -e "IZ.1.5.9.20.7,Network Settings,When enabled - this feature logs packets with un-routable source addresses to the kernel log.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
   cumple=$((cumple+1))
 else
-  echo -e "IZ.1.5.9.20.7,Network Settings,When enabled, this feature logs packets with un-routable source addresses to the kernel log.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  echo -e "IZ.1.5.9.20.7,Network Settings,When enabled - this feature logs packets with un-routable source addresses to the kernel log.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
   nocumple=$((nocumple+1))
   af=true;
 fi
@@ -869,10 +869,10 @@ fi
 
 # Verificar si Telnet está instalado
 if ! rpm -q telnet > /dev/null 2>&1; then
-    echo -e "IZ.1.5.9.23,Network Settings,Denial of Service Prevention System Settings, service must be disabled via systemctl.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    echo -e "IZ.1.5.9.23,Network Settings,Denial of Service Prevention System Settings - service must be disabled via systemctl.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
     cumple=$((cumple+1))
 else
-    echo -e "IZ.1.5.9.23,Network Settings,Denial of Service Prevention System Settings, service must be disabled via systemctl.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    echo -e "IZ.1.5.9.23,Network Settings,Denial of Service Prevention System Settings - service must be disabled via systemctl.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
     nocumple=$((nocumple+1))
     ai=true;
 fi
@@ -2071,7 +2071,7 @@ else
 fi
 
 
-        echo -e "IZ.PC022,Protection in communications,If wireless networks are not used, wireless devices should be disabled to reduce the potential attack surface.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        echo -e "IZ.PC022,Protection in communications,If wireless networks are not used wireless devices should be disabled to reduce the potential attack surface.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
         cumple=$((cumple+1))
 
 
@@ -2262,7 +2262,7 @@ if [[ $m == "true" ]];then
 
 sed -i '/OPTIONS=/ s/"$/ -u chrony"/' /etc/sysconfig/chronyd 2>&1
 
-    echo -e "IZ.1.2.7.3,Chrony,Ensure task is not running with excessive privilege, use the special id chrony.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    echo -e "IZ.1.2.7.3,Chrony,Ensure task is not running with excessive privilege - use the special id chrony.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
     
   
 fi
@@ -2315,7 +2315,7 @@ echo "# Politicas de CSD IZ.1.5.9.20.5" >> /etc/sysctl.conf 2>&1
  sysctl -w net.ipv4.route.flush=1 2>&1
 
 
-  echo -e "IZ.1.5.9.20.5,Network Settings,systems may not be routable or reachable from some locations (e.g. private addresses vs. Internet routable), and so source routed packets would need to be used.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  echo -e "IZ.1.5.9.20.5,Network Settings,systems may not be routable or reachable from some locations (e.g. private addresses vs. Internet routable) - and so source routed packets would need to be used.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
  
 fi
 
@@ -2346,7 +2346,7 @@ echo "net.ipv4.conf.default.log_martians = 1" >> /etc/sysctl.conf 2>&1
 
 sysctl -p
 
-  echo -e "IZ.1.5.9.20.7,Network Settings,When enabled, this feature logs packets with un-routable source addresses to the kernel log.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  echo -e "IZ.1.5.9.20.7,Network Settings,When enabled - this feature logs packets with un-routable source addresses to the kernel log.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
   
 
 fi
