@@ -35,7 +35,7 @@
         chdir: /var/opt/ansible/checklist
       register: ultimo_repo_csd_linux
 
-    - name: Obtener el ultomo reporte de csd_redhat_scan
+    - name: Obtener la salida del ultomo reporte de csd_redhat_scan
       become: true
       shell: "cat {{ ultimo_repo_csd.stdout }}"
       args:
