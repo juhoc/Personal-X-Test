@@ -28,16 +28,30 @@
       environment:
         PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:{{ ansible_env.PATH }}"
 
-    - name: Obtener el ultomo reporte de csd_redhat_scan
+    - name: Obtener el ultimo reporte de csd_redhat_scan
       become: true
       shell: ls -1rt | tail -1
       args:
         chdir: /var/opt/ansible/checklist
       register: ultimo_repo_csd_linux
 
-    - name: Obtener la salida del ultomo reporte de csd_redhat_scan
+    - name: Cambiar el ultimo reporte de csd_redhat_scan a executable csv
+      become: true
+      copy:
+        src: "{{ ultimo_repo_csd_linux }}"
+        dest: "{{ ultimo_repo_csd_linux }}.csv"
+        remote_src: true
+      args:
+        chdir: /var/opt/ansible/checklist
+      register: ultimo_repo_csd_linux
+
+    - name: Obtener la salida del ultimo reporte de csd_redhat_scan
       become: true
       shell: "cat {{ ultimo_repo_csd_linux.stdout }}"
       args:
         chdir: /var/opt/ansible/checklist
       register: echo_repo_csd_linux
+
+- name: Enviar correo de evidencias csd_redhat_scan
+  block:
+    - name: Enviar por correo archivo csd_redhat_scan formato csv
