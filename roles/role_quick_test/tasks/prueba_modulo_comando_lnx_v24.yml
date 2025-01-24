@@ -32,5 +32,5 @@
       become: true
       shell: ls -1rt | tail -1
       args:
-        chdir: /var/opt/ansible
+        chdir: /var/opt/ansible/checklist
       register: ultimo_repo_csd
