@@ -33,3 +33,4 @@
       shell: ls -1rt | tail -1
       args:
         chdir: /var/opt/ansible
+      register: ultimo_repo_csd
