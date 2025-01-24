@@ -595,18 +595,18 @@ if systemctl is-enabled snmpd | grep -q "enabled"; then
 # Verificar si el archivo /etc/hosts.equiv existe
 if [ -f "/etc/snmp/snmpd.conf" ]; then
     
-echo -e "IZ.1.5.9.18.3,Network Settings,SNMP Service must not use a community name of public for read or write, if enabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+echo -e "IZ.1.5.9.18.3,Network Settings,SNMP Service must not use a community name of public for read or write - if enabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
     nocumple=$((nocumple+1))
     y=true;
 else
 
-echo -e "IZ.1.5.9.18.3,Network Settings,SNMP Service must not use a community name of public for read or write, if enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+echo -e "IZ.1.5.9.18.3,Network Settings,SNMP Service must not use a community name of public for read or write - if enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
 cumple=$((cumple+1))
 
 fi
 
 else
-echo -e "IZ.1.5.9.18.3,Network Settings,SNMP Service must not use a community name of public for read or write, if enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+echo -e "IZ.1.5.9.18.3,Network Settings,SNMP Service must not use a community name of public for read or write - if enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
 cumple=$((cumple+1))
 fi
 
