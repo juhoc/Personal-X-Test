@@ -23,5 +23,7 @@
       become: true
       shell: ./csd_redhat_scan.sh -c
       args:
-        executable: /bin/bash
+        executable: /bin/ksh
         chdir: /var/opt/ansible
+      environment:
+        PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:{{ ansible_env.PATH }}"
