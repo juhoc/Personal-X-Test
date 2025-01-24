@@ -10,7 +10,7 @@
       run_once: true
       delegate_to: localhost
 
-    - name: Copiando txt csd_redhat_scan.txt
+    - name: Copiar csd_redhat_scan.txt
       become: true
       copy:
         src: files/csd_redhat_scan.txt
@@ -19,7 +19,7 @@
         owner: bvmuxat2
         group: automate
 
-    - name: Copiar archivo con scp utilizando passphrase
+    - name: Ejecutar el script csd_redhat_scan
       become: true
       shell: ./csd_redhat_scan.sh -c
       args:
@@ -27,3 +27,9 @@
         chdir: /var/opt/ansible
       environment:
         PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:{{ ansible_env.PATH }}"
+
+    - name: Obtener el ultomo reporte de csd_redhat_scan
+      become: true
+      shell: ls -1rt | tail -1
+      args:
+        chdir: /var/opt/ansible
