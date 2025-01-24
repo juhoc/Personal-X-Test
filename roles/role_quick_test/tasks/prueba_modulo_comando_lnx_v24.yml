@@ -52,6 +52,6 @@
         chdir: /var/opt/ansible/checklist
       register: echo_repo_csd_linux
 
-- name: Enviar correo de evidencias csd_redhat_scan
-  block:
-    - name: Enviar por correo archivo csd_redhat_scan formato csv
+#- name: Enviar correo de evidencias csd_redhat_scan
+#  block:
+#    - name: Enviar por correo archivo csd_redhat_scan formato csv
