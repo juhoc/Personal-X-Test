@@ -1,0 +1,2888 @@
+#!/bin/bash
+
+############################################
+#                                          #
+#  VALIDACIÓN DE MATRIZ CSD 3.0 REDHAT     #
+#                                          #
+# Gerente de proyecto:                     #
+#   Rodrigo Villordo Solis                 #
+#   E-mail: rodrigo.villordo.solis@ibm.com #
+#                                          #
+# Programadores:                           #
+#   Rodrigo Villordo Solis                 #
+#   E-mail: rodrigo.villordo.solis@ibm.com #
+#   Versio: 2.0                            #
+#                                          #
+############################################
+
+###################
+# Configuraciones #
+###################
+
+#Sistema de Colores
+GREEN=$''
+RED=$'\033[0;31m'
+YELLOW=$''
+BLUE=$'\033[0;36m' 
+WHITE=$'\033[0;37m' 
+RESET=$''
+Y="false";
+
+# Diretorio donde se almacena el checklist
+DIR_LOG="/var/opt/ansible/checklist"
+
+# Directorio donde estarán las listas de verificación comprimidas
+DIR_ZIP="/var/opt/ansible/checklist_old"
+
+# Directorio donde se conservará la información de soporte
+DIR_SUPT="/var/opt/ansible/suporte"
+
+# Archivo donde están las rutas de respaldo
+BCK_FILE="chkpath.bck"
+
+# Formato de archivo de salida
+FMT_FILE=$(date +"%d-%m-%Y-%H-%M").$(hostname).checklist
+
+# Variable PATH
+export PATH="/usr/kerberos/sbin:/usr/kerberos/bin:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/usr/X11R6/bin"
+
+# Variable ROTATE
+ROTATE="10"
+
+# Total de elementos controlados por la lista de verificación
+TOTAL="38"
+
+clear
+
+cumple=0
+nocumple=0
+
+#############
+# Funciones #
+#############
+
+
+#######################################################
+# Función para comprobar la ejecución por root (sudo) #
+#######################################################
+checkUID(){
+        # Si el UID de la persona que llama a este script es diferente de 0 (raíz)
+    if [ $UID -ne 0 ]
+    then
+        echo '¡Simplemente ejecute este script como root!'
+        echo "Vuelva a intentarlo de la siguiente manera:"
+        echo "sudo $0"
+        exit 1
+    fi
+}
+
+#########################################
+
+testDirs(){
+    #
+    # Prueba de directorio de registro #
+    #
+    if [ ! -d $DIR_LOG ]
+    then
+            echo "[INFO] El directorio de registro no existe o no se encuentra"
+            echo "[INFO] Creando directorio de registro"
+            mkdir -p $DIR_LOG
+            if [ $? != 0 ]
+            then
+                    echo "[ERRO] No se pudo crear el directorio"
+                    exit 1
+            fi
+    fi
+
+    #
+    # Prueba del directorio de registro comprimido #
+    #
+    if [ ! -d $DIR_ZIP ]
+    then
+            echo "[INFO] El directorio de registros comprimidos no existe o no se encuentra"
+            echo "[INFO] Creando directorio de registros comprimidos"
+            mkdir -p $DIR_ZIP
+            if [ $? != 0 ]
+            then
+                    echo "[ERRO] No se pudo crear el directorio"
+                    exit 1
+            fi
+    fi
+
+    #
+    # Prueba del directorio de soporte
+    #
+
+    if [ ! -d $DIR_SUPT ]
+    then
+            echo "[INFO] El directorio de soporte no existe o no se encuentra"
+            echo "[INFO] Creando directorio de soportee"
+            mkdir -p $DIR_SUPT
+            if [ $? != 0 ]
+            then
+                    echo "[ERRO] No se pudo crear el directorio"
+                    exit 1
+            else
+                    echo "[INFO] Directorio de soporte creado"
+                    echo "[INFO] Creando archivos informativos vacíos, complételos más tarde."
+                    touch $DIR_SUPT/preboot.txt $DIR_SUPT/posboot.txt $DIR_SUPT/suporte.txt
+                    [ $? != 0 ] && echo "[ERRO] Error al crear archivos" && exit 1
+            fi
+    fi
+}
+
+function matriz(){
+checkUID
+testDirs
+CMD=csd
+clear;
+
+echo -e "Matriz CSD 3.0 Red Hat 7 & 8" >> $DIR_LOG/$CMD.$FMT_FILE
+echo -e "Kyndryl México ANS,IT Open Systems" >> $DIR_LOG/$CMD.$FMT_FILE
+echo -e "Section ID,Categoria,Description,Status" >> $DIR_LOG/$CMD.$FMT_FILE
+
+# Asegúrese de que rsyslog esté habilitado para que se capturen los mensajes de éxito o falla de inicio de sesión necesarios.
+
+
+if grep -Eq "$ActionFileDefaultTemplate.*RSYSLOG_TraditionalFileFormat" /etc/rsyslog.conf &&
+   grep -Eq "\*.info;mail.none;authpriv.none;cron.none.*/var/log/messages" /etc/rsyslog.conf &&
+   grep -Eq 'authpriv.*/var/log/secure' /etc/rsyslog.conf
+then
+    echo -e "IZ.1.2.1.4.1,Logging,Ensure rsyslog is enabled so that needed login En compliance success or failure messages are captured.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+else
+    echo -e "IZ.1.2.1.4.1,Logging,Ensure rsyslog is enabled so that needed login No compliance success or failure messages are captured.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    nocumple=$((nocumple+1))
+    a=true;
+fi
+
+
+
+#Inicio de sesión exitoso o fallido, registra en archivos específicos.
+
+    echo -e "IZ.1.2.1.4.2,Logging,Login success or failure - logs to specified files.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+
+
+
+
+# Asegúrese de que, de manera predeterminada, rsyslog creará archivos que no tengan 'otra lectura' habilitada.
+
+
+dir="/etc/rsyslog.d/"
+num_files=$(ls -A "$dir" 2>/dev/null | wc -l)
+
+if [ "$num_files" -eq 0 ]; then
+
+output=$(grep '^[^#]*\$umask' /etc/rsyslog.conf | LC_ALL=C sort -V)
+
+else
+
+output=$(grep '^[^#]*\$umask' /etc/rsyslog.conf /etc/rsyslog.d/*.conf | LC_ALL=C sort -V)
+
+fi
+
+# Verificar si la salida está vacía
+if [[ -z "$output" ]]; then
+    # Si está vacía, imprimir un mensaje en verde parpadeante
+    echo -e "IZ.1.2.1.4.3,Logging,Ensure that by default, rsyslog will create files which do not have 'other read' enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+else
+    # Si no está vacía, imprimir un mensaje en rojo parpadeante
+        
+    echo -e "IZ.1.2.1.4.3,Logging,Ensure that by default, rsyslog will create files which do not have 'other read' enabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    nocumple=$((nocumple+1))
+    e=true;
+
+fi
+
+
+
+
+# Se deben conservar los registros de todas las conexiones mediante el uso de /var/log/wtmp
+
+
+
+# Verificar si el archivo /var/log/wtmp existe
+if [ -f "/var/log/wtmp" ]; then
+    
+    echo -e "IZ.1.2.2,Logging,Records for all connections must be retained - via use of /var/log/wtmp,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+   cumple=$((cumple+1))
+else
+
+    echo -e "IZ.1.2.2,Logging, Records for all connections must be retained - via use of /var/log/wtmp,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    nocumple=$((nocumple+1))
+    f=true;
+
+    
+fi
+
+
+
+# Se deben conservar los registros de todas las conexiones mediante el uso de /var/log/messages
+
+# Verificar si el archivo /var/log/messages existe
+if [ -f "/var/log/messages" ]; then
+
+    echo -e "IZ.1.2.3.1,Logging,Records for all connections must be retained - via use of /var/log/messages,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+else
+
+    echo -e "IZ.1.2.3.1,Logging,Records for all connections must be retained - via use of /var/log/messages,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    nocumple=$((nocumple+1))
+    g=true;
+    
+fi
+
+
+
+# Se deben conservar los registros de todos los intentos fallidos de inicio de sesión a través de este archivo.
+
+
+sleep 0.5;
+
+# Verificar si el archivo /var/log/tallylog existe
+if [ -f /var/log/tallylog ]; then
+
+    echo -e "IZ.1.2.4.2,Logging,Records for all connections must be retained - via use of /var/log/tallylog,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+    
+else
+    
+    echo -e "IZ.1.2.4.2,Logging,Records for all connections must be retained - via use of /var/log/tallylog,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    nocumple=$((nocumple+1))
+    h=true;
+
+fi
+
+
+
+# El directorio contiene archivos de intentos de inicio de sesión fallidos recientes. La herramienta no conserva registros antiguos.
+
+
+
+resultado=$(grep faillock /usr/lib/tmpfiles.d/pam.conf)
+
+# Verificar si se obtuvo algún resultado
+if [ -n "$resultado" ]; then
+
+    echo -e "IZ.1.2.4.3,Logging,Directory holds files for recent unsuccessful logon attempts.  Tool does not preserve old records.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+    
+else
+    echo -e "IZ.1.2.4.3,Logging,Directory holds files for recent unsuccessful logon attempts.  Tool does not preserve old records.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    nocumple=$((nocumple+1))
+    i=true;
+
+fi
+
+
+
+# Se deben conservar los registros de todas las conexiones mediante el uso de /var/log/secure
+
+
+sleep 0.5;
+
+# Comprobamos si el archivo /var/log/secure existe
+if [ -f "/var/log/secure" ]; then
+    
+    echo -e "IZ.1.2.5,Logging,Records for all connections must be retained - via use of /var/log/secure,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+    
+else
+  
+    echo -e "IZ.1.2.5,Logging,Records for all connections must be retained, logon attempts.  Tool does not preserve old records.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    nocumple=$((nocumple+1))
+  j=true;
+
+fi
+
+
+
+# Mantenga los relojes del sistema sincronizados con una fuente de tiempo de referencia común para mejorar la precisión del registro. Al menos uno de los servicios de tiempo debe estar activo.
+
+# Comprobar si el servicio chronyd o ntpd está activo
+if systemctl is-active chronyd > /dev/null 2>&1; then
+  echo -e "IZ.1.2.7.1,Chrony,Keep system clocks synchronized with a common reference time source to improve log accuracy.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  cumple=$((cumple+1))
+elif systemctl is-active ntpd > /dev/null 2>&1; then
+  echo -e "IZ.1.2.7.1,NTP,Keep system clocks synchronized with a common reference time source to improve log accuracy.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  cumple=$((cumple+1))
+else
+
+  echo -e "IZ.1.2.7.1,NTP,Keep system clocks synchronized with a common reference time source to improve log accuracy.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  nocumple=$((nocumple+1))
+  k=true;
+fi
+
+
+
+# Mantenga los relojes del sistema sincronizados con una fuente de tiempo de referencia común para mejorar la precisión del registro. Si chronyd está activo, asegúrese de que al menos un servidor esté configurado para acceder.
+
+
+sleep 0.5;
+
+# Definir los servidores que se deben buscar
+servers=("150.50.102.157" "150.50.102.158" "150.100.151.66" "150.100.151.67")
+
+# Verificar si los servidores existen en el archivo de configuración
+found_servers=()
+for s in "${servers[@]}"; do
+    if grep -q "^server $s\b" /etc/chrony.conf; then
+        found_servers+=("$s")
+    fi
+done
+
+# Si se encontraron todos los servidores, imprimir mensaje de éxito
+if [ ${#found_servers[@]} -eq ${#servers[@]} ]; then
+    
+    echo -e "IZ.1.2.7.2,Chrony Servers,If chronyd is active, ensure at least one server is configured for access.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+else
+
+    echo -e "IZ.1.2.7.2,Chrony Servers,If chronyd is active, ensure at least one server is configured for access.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    nocumple=$((nocumple+1))
+    l=true;
+
+fi
+
+
+
+# Mantenga los relojes del sistema sincronizados con una fuente de tiempo de referencia común para mejorar la precisión del registro. Asegúrese de que la tarea no se esté ejecutando con privilegios excesivos, use el id especial chrony.
+
+# Verificar si el parámetro OPTIONS está vacío
+if grep -q "^OPTIONS=\"\"" /etc/sysconfig/chronyd; then
+
+    echo -e "IZ.1.2.7.3,Chrony,Ensure task is not running with excessive privilege, use the special id chrony.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    nocumple=$((nocumple+1))
+    m=true;
+   
+else
+    echo -e "IZ.1.2.7.3,Chrony,Ensure task is not running with excessive privilege, use the special id chrony.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+fi
+
+
+
+# Mantenga los relojes del sistema sincronizados con una fuente de tiempo de referencia común para mejorar la precisión del registro. si ntpd está activo, asegúrese de que los valores predeterminados de restricción de tareas estén establecidos en valores seguros.
+
+
+
+sleep 0.5;
+
+if systemctl is-active --quiet chronyd.service; then
+    # Verificar si el servicio de NTP no está activo
+    if ! systemctl is-active --quiet ntp.service; then
+    echo -e "IZ.1.2.7.4,NTP,if ntpd is active, ensure task restrict defaults are set to secure values.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+    
+    fi
+else
+    # Verificar si el servicio de NTP está activo
+    if systemctl is-active --quiet ntp.service; then
+        
+        if grep -q "^restrict\s\+-4\s\+default\s\+kod\s\+nomodify\s\+notrap\s\+nopeer\s\+noquery" /etc/ntpd.conf && grep -q "^restrict\s\+-6\s\+default\s\+kod\s\+nomodify\s\+notrap\s\+nopeer\s\+noquery" /etc/ntpd.conf; then
+        echo -e "IZ.1.2.7.4,NTP,if ntpd is active, ensure task restrict defaults are set to secure values.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+    else
+        
+        echo -e "IZ.1.2.7.4,NTP,if ntpd is active, ensure task restrict defaults are set to secure values.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        n=true;
+        
+        
+    fi
+        
+    fi
+fi
+
+
+
+
+# Mantenga los relojes del sistema sincronizados con una fuente de tiempo de referencia común para mejorar la precisión del registro. Si ntpd está activo, asegúrese de que al menos un servidor esté configurado para acceder.
+
+
+if systemctl is-active --quiet chronyd.service; then
+    # Verificar si el servicio de NTP no está activo
+    if ! systemctl is-active --quiet ntp.service; then
+    echo -e "IZ.1.2.7.5,NTP,If ntpd is active, ensure at least one server is configured for access.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+    fi
+else
+
+# Verificar si el servicio ntpq está activo
+if systemctl is-active ntp >/dev/null 2>&1; then
+    # Verificar si los servidores están agregados en el archivo de configuración
+    if grep -q "^server\s\+150\.50\.102\.157" /etc/ntp.conf && grep -q "^server\s\+150\.50\.102\.158" /etc/ntp.conf && grep -q "^server\s\+150\.100\.151\.66" /etc/ntp.conf && grep -q "^server\s\+150\.100\.151\.67" /etc/ntp.conf; then
+    echo -e "IZ.1.2.7.5,NTP,If ntpd is active, ensure at least one server is configured for access.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+    else
+        echo "Los servidores no están agregados en /etc/ntp.conf"
+        echo -e "IZ.1.2.7.5,NTP,If ntpd is active, ensure at least one server is configured for access.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        o=true;
+
+    fi
+
+fi
+fi
+
+
+
+# Mantenga los relojes del sistema sincronizados con una fuente de tiempo de referencia común para mejorar la precisión del registro. Asegúrese de que la tarea no se esté ejecutando con privilegios excesivos, use el id/grupo especial ntp.
+
+if systemctl is-active --quiet chronyd.service; then
+    # Verificar si el servicio de NTP no está activo
+    if ! systemctl is-active --quiet ntp.service; then
+    echo -e "IZ.1.2.7.6,NTP,Ensure task is not running with excessive privilege, use the special id/group ntp.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+    fi
+else
+
+# Verificar si el servicio ntpq está activo
+if systemctl is-active ntp >/dev/null 2>&1; then
+    # Verificar si existe el archivo ntpd.service
+if [ -f /usr/lib/systemd/system/ntpd.service ]; then
+    # Verificar si la línea ExecStart está presente en el archivo de configuración
+    if grep -q "^ExecStart=/usr/sbin/ntpd -u ntp:ntp \$OPTIONS" /usr/lib/systemd/system/ntpd.service; then
+        
+    echo -e "IZ.1.2.7.6,NTP,Ensure task is not running with excessive privilege, use the special id/group ntp.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))    
+        
+    else
+    
+    echo -e "IZ.1.2.7.6,NTP,Ensure task is not running with excessive privilege, use the special id/group ntp.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    nocumple=$((nocumple+1))
+    p=true;
+    
+    fi
+    fi
+fi
+fi
+
+
+
+# Configuración del sistema de comando de acceso remoto de Berkeley, control de acceso a través de entradas de archivo /etc/hosts.equiv no permitidas
+
+# Validar la salida del comando rpm
+output=$(rpm -q libselinux | awk -F'-' '{print $1}')
+
+# Verificar SELinux este instalado
+if [ "$output" == "libselinux" ]; then
+
+    echo -e "IZ.1.4.3.1.1,System Settings,Ensure SELinux is installed,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+else
+    echo -e "IZ.1.4.3.1.1,System Settings,Ensure SELinux is installed,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    nocumple=$((nocumple+1))
+    q=true;
+fi
+
+
+# Validar la salida del comando rpm
+output=$(rpm -q libselinux | awk -F'-' '{print $1}')
+
+# Verificar SELinux este instalado
+if [ "$output" == "libselinux" ]; then
+
+    echo -e "IZ.1.4.3.1.2,System Settings,Ensure SELinux state is enforcing or permissive, globally.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+else
+    echo -e "IZ.1.4.3.1.2,System Settings,Ensure SELinux state is enforcing or permissive, globally.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    nocumple=$((nocumple+1))
+    r=true;
+fi
+
+
+# Validar la salida del comando rpm
+output=$(rpm -q libselinux | awk -F'-' '{print $1}')
+
+# Verificar SELinux este instalado
+if [ "$output" == "libselinux" ]; then
+
+    echo -e "IZ.1.4.3.1.3,System Settings,Ensure SELinux state is enforcing or permissive, per domain.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+else
+    echo -e "IZ.1.4.3.1.3,System Settings,Ensure SELinux state is enforcing or permissive, per domain.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    nocumple=$((nocumple+1))
+    s=true;
+fi
+
+
+output=$(rpm -q libselinux | awk -F'-' '{print $1}')
+
+# Verificar SELinux este instalado
+if [ "$output" == "libselinux" ]; then
+
+    echo -e "IZ.1.4.3.1.4,System Settings,Ensure SELinux of Minimum is not used.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+else
+    echo -e "IZ.1.4.3.1.4,System Settings,Ensure SELinux of Minimum is not used.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    nocumple=$((nocumple+1))
+    t=true;
+fi
+
+
+
+# Configuración del sistema de comando de acceso remoto de Berkeley, control de acceso a través de entradas de archivo /etc/hosts.equiv no permitidas
+
+# Verificar si el archivo /etc/hosts.equiv existe
+if [ -f "/etc/hosts.equiv" ]; then
+    echo -e "IZ.1.5.4.1,Network Settings,Access control via /etc/hosts.equiv file entries not allowed.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    nocumple=$((nocumple+1))
+    v=true;
+else
+
+    echo -e "IZ.1.5.4.1,Network Settings,Access control via /etc/hosts.equiv file entries not allowed.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+fi
+
+
+
+# Configuración del sistema X-Window
+
+
+sleep 0.5;
+
+# Verificar si se tienen las librerías xorg-x11* instaladas
+if rpm -q xorg-x11* > /dev/null ; then
+  echo -e "IZ.1.5.7,Network Settings,X-Window System Settings.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  nocumple=$((nocumple+1))
+  w=true;
+  
+else
+  echo -e "IZ.1.5.7,Network Settings,X-Window System Settings.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  cumple=$((cumple+1))
+  
+fi
+
+
+
+# El servicio SNMP no debe usar un nombre de comunidad público para lectura o escritura, si está habilitado.
+
+# Verificar si el archivo /etc/hosts.equiv existe
+if systemctl is-enabled snmpd | grep -q "enabled"; then
+
+
+
+if [ -f "/etc/snmp/snmpd.conf" ]; then
+    
+    echo -e "IZ.1.5.9.18.2,Network Settings,SNMP Service must not use a community name of public for read or write, if enabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    nocumple=$((nocumple+1))
+    x=true;
+else
+
+echo -e "IZ.1.5.9.18.2,Network Settings,SNMP Service must not use a community name of public for read or write, if enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+cumple=$((cumple+1))
+
+fi
+
+else
+echo -e "IZ.1.5.9.18.2,Network Settings,SNMP Service must not use a community name of public for read or write, if enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+cumple=$((cumple+1))
+fi
+
+
+
+
+
+# El servicio SNMP no debe usar un nombre de comunidad privado para lectura o escritura, si está habilitado.
+
+
+
+if systemctl is-enabled snmpd | grep -q "enabled"; then
+
+# Verificar si el archivo /etc/hosts.equiv existe
+if [ -f "/etc/snmp/snmpd.conf" ]; then
+    
+echo -e "IZ.1.5.9.18.3,Network Settings,SNMP Service must not use a community name of public for read or write, if enabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    nocumple=$((nocumple+1))
+    y=true;
+else
+
+echo -e "IZ.1.5.9.18.3,Network Settings,SNMP Service must not use a community name of public for read or write, if enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+cumple=$((cumple+1))
+
+fi
+
+else
+echo -e "IZ.1.5.9.18.3,Network Settings,SNMP Service must not use a community name of public for read or write, if enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+cumple=$((cumple+1))
+fi
+
+
+
+# Configuración de la pila TCP/IP a través de /etc/sysctl.conf, otro archivo de control en el directorio /etc/sysctl.d, o por defecto. Cookies de sincronización = 1
+
+# Ejecutar el comando "sysctl net.ipv4.tcp_syncookies" y obtener su salida
+SYNCOOKIES=$(sysctl net.ipv4.tcp_syncookies)
+
+# Verificar si la salida es igual a "net.ipv4.tcp_syncookies = 1"
+if [[ $SYNCOOKIES == "net.ipv4.tcp_syncookies = 1" ]]; then
+  # Si es así, mostrar un mensaje indicando que se cumple con la CSD 3.0
+  echo -e "IZ.1.5.9.20.1,Network Settings,Enable tcp syncookies to prevent syn flooding,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  cumple=$((cumple+1))
+  
+else
+  # Si no, mostrar un mensaje indicando que no se cumple con la CSD 3.0 y preguntar al usuario si desea corregir el parámetro
+  
+  echo -e "IZ.1.5.9.20.1,Network Settings,Enable tcp syncookies to prevent syn flooding,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  nocumple=$((nocumple+1))
+  z=true;
+  
+
+fi
+
+
+
+# Configuración de la pila TCP/IP a través de /etc/sysctl.conf, otro archivo de control en el directorio /etc/sysctl.d, o por defecto. ignorar_transmisiones = 1
+
+# Ejecutar el comando "sysctl net.ipv4.tcp_syncookies" y obtener su salida
+SYNCOOKIES=$(sysctl net.ipv4.icmp_echo_ignore_broadcasts)
+
+# Verificar si la salida es igual a "net.ipv4.icmp_echo_ignore_broadcasts = 1"
+if [[ $SYNCOOKIES == "net.ipv4.icmp_echo_ignore_broadcasts = 1" ]]; then
+  # Si es así, mostrar un mensaje indicando que se cumple con la CSD 3.0
+  
+  echo -e "IZ.1.5.9.20.2,Network Settings,sysctl net.ipv4.icmp_echo_ignore_broadcasts Turn off ICMP broadcasts.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  cumple=$((cumple+1))
+else
+  # Si no, mostrar un mensaje indicando que no se cumple con la CSD 3.0 y preguntar al usuario si desea corregir el parámetro
+  
+  echo -e "IZ.1.5.9.20.2,Network Settings,sysctl net.ipv4.icmp_echo_ignore_broadcasts Turn off ICMP broadcasts.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  nocumple=$((nocumple+1))
+  aa=true;
+
+fi
+
+
+
+
+# Ejecutar el comando "sysctl net.ipv4.conf.default.accept_redirects" y obtener su salida
+
+sleep 0.5;
+
+SYNCOOKIES=$(sysctl net.ipv4.conf.default.accept_redirects)
+
+# Verificar si la salida es igual a "net.ipv4.conf.all.accept_redirects = 0"
+if [[ $SYNCOOKIES == "net.ipv4.conf.default.accept_redirects = 0" ]]; then
+  # Si es así, mostrar un mensaje indicando que se cumple con la CSD 3.0
+  
+  echo -e "IZ.1.5.9.20.3,Network Settings,sysctl net.ipv4.conf.default.accept_redirects Disable ICMP Redirect Acceptance.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  cumple=$((cumple+1))
+else
+  # Si no, mostrar un mensaje indicando que no se cumple con la CSD 3.0 y preguntar al usuario si desea corregir el parámetro
+  
+  echo -e "IZ.1.5.9.20.3,Network Settings,sysctl net.ipv4.conf.default.accept_redirects Disable ICMP Redirect Acceptance.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  nocumple=$((nocumple+1))
+  ab=true;
+
+fi
+
+
+
+# Configuración de la pila TCP/IP a través de /etc/sysctl.conf, otro archivo de control en el directorio /etc/sysctl.d, o por defecto. ip_forward = 0 en sistemas que no sean enrutadores.
+
+# Ejecutar el comando "sysctl net.ipv4.ip_forward" y obtener su salida
+SYNCOOKIES=$(sysctl net.ipv4.ip_forward)
+
+# Verificar si la salida es igual a "net.ipv4.ip_forward = 1"
+if [[ $SYNCOOKIES == "net.ipv4.ip_forward = 0" ]]; then
+  # Si es así, mostrar un mensaje indicando que se cumple con la CSD 3.0
+  
+  echo -e "IZ.1.5.9.20.4,Network Settings,The net.ipv4.ip_forward flag is used to tell the system whether it can forward packets or not.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  cumple=$((cumple+1))
+else
+  # Si no, mostrar un mensaje indicando que no se cumple con la CSD 3.0 y preguntar al usuario si desea corregir el parámetro
+  
+  echo -e "IZ.1.5.9.20.4,Network Settings,The net.ipv4.ip_forward flag is used to tell the system whether it can forward packets or not.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  nocumple=$((nocumple+1))
+  ac="true";
+
+fi
+
+
+
+# Asegúrese de que los paquetes enrutados de origen no sean aceptados
+
+
+sleep 0.5;
+
+# Verificamos el valor de net.ipv4.conf.all.accept_source_route
+all_accept_source_route=$(sysctl net.ipv4.conf.all.accept_source_route | awk '{print $3}')
+
+# Verificamos el valor de net.ipv4.conf.default.accept_source_route
+default_accept_source_route=$(sysctl net.ipv4.conf.default.accept_source_route | awk '{print $3}')
+
+# Verificamos si ambos valores son iguales a 0
+if [[ $all_accept_source_route -eq 0 && $default_accept_source_route -eq 0 ]]; then
+  echo -e "IZ.1.5.9.20.5,Network Settings,systems may not be routable or reachable from some locations (e.g. private addresses vs. Internet routable), and so source routed packets would need to be used.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  cumple=$((cumple+1))
+else
+  echo -e "IZ.1.5.9.20.5,Network Settings,systems may not be routable or reachable from some locations (e.g. private addresses vs. Internet routable), and so source routed packets would need to be used.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  nocumple=$((nocumple+1))
+  ad=true;
+  
+fi
+
+
+#Los redireccionamientos ICMP seguros son iguales a los redireccionamientos ICMP, excepto que provienen de las puertas de enlace enumeradas en la lista de puertas de enlace predeterminadas. Se supone que su sistema conoce estas puertas de enlace y que es probable que sean seguras.
+
+# Verificamos el valor de net.ipv4.conf.all.secure_redirects
+all_secure_redirects=$(sysctl net.ipv4.conf.all.secure_redirects | awk '{print $3}')
+
+# Verificamos el valor de net.ipv4.conf.default.secure_redirects
+default_secure_redirects=$(sysctl net.ipv4.conf.default.secure_redirects | awk '{print $3}')
+
+# Verificamos si ambos valores son iguales a 0
+if [[ $all_secure_redirects -eq 0 && $default_secure_redirects -eq 0 ]]; then
+  echo -e "IZ.1.5.9.20.6,Network Settings,Secure ICMP redirects are the same as ICMP redirects, except they come from gateways listed on the default gateway list.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  cumple=$((cumple+1))
+
+else
+  echo -e "IZ.1.5.9.20.6,Network Settings,Secure ICMP redirects are the same as ICMP redirects, except they come from gateways listed on the default gateway list.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  nocumple=$((nocumple+1))
+  ae=true;
+fi
+
+
+
+#Cuando está habilitada, esta función registra los paquetes con direcciones de origen no enrutables en el registro del kernel.
+
+sleep 0.5;
+
+# Verificamos el valor de net.ipv4.conf.all.log_martians
+all_log_martians=$(sysctl net.ipv4.conf.all.log_martians | awk '{print $3}')
+
+# Verificamos el valor de net.ipv4.conf.default.log_martians
+default_log_martians=$(sysctl net.ipv4.conf.default.log_martians | awk '{print $3}')
+
+# Verificamos si ambos valores son iguales a 1
+if [[ $all_log_martians -eq 1 && $default_log_martians -eq 1 ]]; then
+  echo -e "IZ.1.5.9.20.7,Network Settings,When enabled, this feature logs packets with un-routable source addresses to the kernel log.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  cumple=$((cumple+1))
+else
+  echo -e "IZ.1.5.9.20.7,Network Settings,When enabled, this feature logs packets with un-routable source addresses to the kernel log.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  nocumple=$((nocumple+1))
+  af=true;
+fi
+
+
+
+# Establecer `icmp_ignore_bogus_error_responses` en 1 evita que el kernel registre respuestas falsas (no compatibles con RFC-1122) de reencuadres de transmisión, evitando que los sistemas de archivos se llenen con mensajes de registro inútiles.
+
+# Verificamos el valor de net.ipv4.icmp_ignore_bogus_error_responses
+icmp_ignore_bogus_error_responses=$(sysctl net.ipv4.icmp_ignore_bogus_error_responses  | awk '{print $3}')
+
+# Comprobar si el valor es igual a 1
+if [ $icmp_ignore_bogus_error_responses -eq 1 ]; then
+  echo -e "IZ.1.5.9.20.8,Network Settings,Ensure bogus ICMP responses are ignored.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  cumple=$((cumple+1))
+else
+  echo -e "IZ.1.5.9.20.8,Network Settings,Ensure bogus ICMP responses are ignored.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  nocumple=$((nocumple+1))
+  ag=true;
+fi
+
+
+
+#Establecer `net.ipv4.conf.all.rp_filter` y `net.ipv4.conf.default.rp_filter` en 1 obliga al kernel de Linux a utilizar el filtrado de ruta inversa en un paquete recibido para determinar si el paquete era válido. Esencialmente, con el filtrado de ruta inversa, si el paquete de retorno no sale por la misma interfaz de la que provino el paquete de origen correspondiente, el paquete se descarta (y se registra si se establece `log_martians`). Si el enrutamiento asimétrico puede estar en uso, asegúrese de que el "valor acordado" lo refleje.
+
+sleep 0.5;
+# Obtener el valor de net.ipv4.conf.all.rp_filter
+all_rp_filter=$(sysctl net.ipv4.conf.all.rp_filter | awk '{print $3}')
+
+# Obtener el valor de net.ipv4.conf.default.rp_filter
+default_rp_filter=$(sysctl net.ipv4.conf.default.rp_filter | awk '{print $3}')
+
+# Comprobar si ambos valores son iguales a 0
+if [ "$all_rp_filter" -eq 1 ] && [ "$default_rp_filter" -eq 1 ]; then
+  echo -e "IZ.1.5.9.20.9,Network Settings,Ensure Reverse Path Filtering is enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  cumple=$((cumple+1))
+else
+  echo -e "IZ.1.5.9.20.9,Network Settings,Ensure Reverse Path Filtering is enabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  nocumple=$((nocumple+1))
+  af=true;
+fi
+
+
+
+#Esta configuración desactiva la capacidad del sistema para aceptar anuncios de enrutadores IPv6
+
+if sysctl -a 2>/dev/null | grep -q "net.ipv6.conf.all.accept_ra"; then
+
+# Obtener el valor de net.ipv6.conf.all.accept_ra
+all_accept_ra=$(sysctl net.ipv6.conf.all.accept_ra | awk '{print $3}')
+
+# Obtener el valor de net.ipv6.conf.default.accept_ra
+default_accept_ra=$(sysctl net.ipv6.conf.default.accept_ra | awk '{print $3}')
+
+# Comprobar si ambos valores son iguales a 1
+if [ "$all_accept_ra" -eq 0 ] && [ "$default_accept_ra" -eq 0 ]; then
+    echo -e "IZ.1.5.9.21.1,Network Settings,This setting disables the system's ability to accept IPv6 router advertisements.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+else
+    echo -e "IZ.1.5.9.21.1,Network Settings,This setting disables the system's ability to accept IPv6 router advertisements.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    nocumple=$((nocumple+1))
+    ag=true;
+fi
+
+else
+    echo -e "IZ.1.5.9.21.1,Network Settings,This setting disables the system's ability to accept IPv6 router advertisements.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+fi
+
+
+
+#Esta configuración evita que el sistema acepte redireccionamientos ICMP. Los redireccionamientos ICMP informan al sistema sobre rutas alternativas para enviar tráfico.
+
+if sysctl -a 2>/dev/null | grep -q "net.ipv6.conf.all.accept_redirects"; then
+
+
+# Obtener el valor de net.ipv6.conf.all.accept_redirects
+all_accept_redirects=$(sysctl net.ipv6.conf.all.accept_redirects | awk '{print $3}')
+
+# Obtener el valor de net.ipv6.conf.default.accept_redirects
+default_accept_redirects=$(sysctl net.ipv6.conf.default.accept_redirects | awk '{print $3}')
+
+# Comprobar si ambos valores son iguales a 0
+if [ "$all_accept_redirects" -eq 0 ] && [ "$default_accept_redirects" -eq 0 ]; then
+    echo -e "IZ.1.5.9.21.2,Network Settings,This setting prevents the system from accepting ICMP redirects. ICMP redirects tell the system about alternate routes for sending traffic.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+else
+    echo -e "IZ.1.5.9.21.2,Network Settings,This setting prevents the system from accepting ICMP redirects. ICMP redirects tell the system about alternate routes for sending traffic.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    nocumple=$((nocumple+1))
+    ah=true;
+fi
+
+else
+    echo -e "IZ.1.5.9.21.2,Network Settings,This setting prevents the system from accepting ICMP redirects. ICMP redirects tell the system about alternate routes for sending traffic.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+
+
+fi
+
+
+
+
+# Configuración del sistema de prevención de denegación de servicio, el servicio debe deshabilitarse a través de systemctl
+
+# Verificar si Telnet está instalado
+if ! rpm -q telnet > /dev/null 2>&1; then
+    echo -e "IZ.1.5.9.23,Network Settings,Denial of Service Prevention System Settings, service must be disabled via systemctl.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+else
+    echo -e "IZ.1.5.9.23,Network Settings,Denial of Service Prevention System Settings, service must be disabled via systemctl.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    nocumple=$((nocumple+1))
+    ai=true;
+fi
+
+
+
+
+#`time `es un servicio de red que responde con la fecha y hora actuales del servidor como un número entero de 32 bits. Este servicio está destinado a fines de depuración y prueba. Se recomienda deshabilitar este servicio.
+
+salida=$(chkconfig --list 2>/dev/null | grep '^\s*time-')
+
+# Validamos si la variable "salida" está vacía
+if systemctl is-enabled time.service &> /dev/null; then
+
+    echo -e "IZ.1.5.9.26,Network Settings,Denial of Service Prevention System Settings, testing purposes. It is recommended that this service be disabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    nocumple=$((nocumple+1))
+    aj=true;
+
+else
+
+    echo -e "IZ.1.5.9.26,Network Settings,This service is intended for debugging and testing purposes. It is recommended that this service be disabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+fi
+
+
+
+#Avahi es una implementación gratuita de zeroconf, que incluye un sistema para el descubrimiento de servicios DNS/DNS-SD de multidifusión. Avahi permite que los programas publiquen y descubran servicios y hosts que se ejecutan en una red local sin una configuración específica. Por ejemplo, un usuario puede conectar una computadora a una red y Avahi encuentra automáticamente impresoras para imprimir, archivos para mirar y personas con quienes hablar, así como los servicios de red que se ejecutan en la máquina.
+
+sleep 0.5;
+
+# Validamos si el servicio avahi-daemon está instalado
+if systemctl list-units --full -all | grep -q "avahi-daemon.service"
+then
+
+        if systemctl is-enabled avahi-daemon.service
+            then
+            echo -e "IZ.1.5.9.29,Network Settings,Ensure Avahi Server is not enabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            nocumple=$((nocumple+1))
+            ak=true;
+        else
+    
+            echo -e "IZ.1.5.9.29,Network Settings,Ensure Avahi Server is not enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            cumple=$((cumple+1))
+
+        fi
+  
+else
+            echo -e "IZ.1.5.9.29,Network Settings,Ensure Avahi Server is not enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            cumple=$((cumple+1))
+fi
+
+
+
+
+
+
+
+#El Protocolo ligero de acceso a directorios (LDAP) se introdujo como reemplazo de NIS/YP. Es un servicio que proporciona un método para buscar información de una base de datos central.
+
+
+# Validamos si el servicio slapd está instalado
+if systemctl list-units --full -all | grep -q "slapd.service"
+then
+
+        if systemctl is-enabled slapd.service
+            then
+            echo -e "IZ.1.5.9.30,Network Settings,Ensure LDAP server is not enabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            nocumple=$((nocumple+1))
+            al=true;
+        else
+    
+            echo -e "IZ.1.5.9.30,Network Settings,Ensure LDAP server is not enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            cumple=$((cumple+1))
+
+        fi
+  
+else
+            echo -e "IZ.1.5.9.30,Network Settings,Ensure LDAP server is not enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            cumple=$((cumple+1))
+fi
+
+
+
+#`dovecot` es un servidor IMAP y POP3 de código abierto para sistemas basados en Linux.
+
+sleep 0.5;
+# Validamos si el servicio dovecot está instalado
+if systemctl list-units --full -all | grep -q "dovecot.service"
+then
+
+        if systemctl is-enabled dovecot.service
+            then
+            echo -e "IZ.1.5.9.31,Network Settings,Ensure IMAP and POP3 server is not enabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            nocumple=$((nocumple+1))
+            am=true;
+        else
+    
+            echo -e "IZ.1.5.9.31,Network Settings,Ensure IMAP and POP3 server is not enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            cumple=$((cumple+1))
+
+        fi
+  
+else
+            echo -e "IZ.1.5.9.31,Network Settings,Ensure IMAP and POP3 server is not enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            cumple=$((cumple+1))
+fi
+
+
+
+
+
+#Squid es un servidor proxy estándar utilizado en muchas distribuciones y entornos.
+
+# Validamos si el servicio squid está instalado
+if systemctl list-units --full -all | grep -q "squid.service"
+then
+
+        if systemctl is-enabled squid.service
+            then
+            echo -e "IZ.1.5.9.32,Network Settings,Ensure HTTP Proxy Server is not enabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            nocumple=$((nocumple+1))
+            an=true;
+        else
+    
+            echo -e "IZ.1.5.9.32,Network Settings,Ensure HTTP Proxy Server is not enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            cumple=$((cumple+1))
+
+        fi
+  
+else
+            echo -e "IZ.1.5.9.32,Network Settings,Ensure HTTP Proxy Server is not enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            cumple=$((cumple+1))
+fi
+
+
+
+
+
+#El software de conversación hace posible que los usuarios envíen y reciban mensajes entre sistemas a través de una sesión de terminal. El cliente de conversación (permite iniciar sesiones de conversación) está instalado de forma predeterminada.
+
+sleep 0.5;
+# Validamos si el servicio ntalk está instalado
+if systemctl list-units --full -all | grep -q "ntalk.service"
+then
+
+        if systemctl is-enabled ntalk.service
+            then
+            echo -e "IZ.1.5.9.33,Network Settings,Ensure talk server is not enabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            nocumple=$((nocumple+1))
+            ao=true;
+        else
+    
+            echo -e "IZ.1.5.9.33,Network Settings,Ensure talk server is not enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            cumple=$((cumple+1))
+
+        fi
+  
+else
+            echo -e "IZ.1.5.9.33,Network Settings,Ensure talk server is not enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            cumple=$((cumple+1))
+fi
+
+
+
+
+
+
+#El servicio `rsyncd` se puede utilizar para sincronizar archivos entre sistemas a través de enlaces de red.
+
+# Validamos si el servicio rsyncd está instalado
+if systemctl list-units --full -all | grep -q "rsyncd.service"
+then
+
+        if systemctl is-enabled rsyncd.service
+            then
+            echo -e "IZ.1.5.9.34,Network Settings,Ensure rsync service is not enabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            nocumple=$((nocumple+1))
+            ap=true;
+        else
+    
+            echo -e "IZ.1.5.9.34,Network Settings,Ensure rsync service is not enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            cumple=$((cumple+1))
+
+        fi
+  
+else
+            echo -e "IZ.1.5.9.34,Network Settings,Ensure rsync service is not enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            cumple=$((cumple+1))
+fi
+
+
+
+
+
+#El sistema de impresión Common Unix (CUPS) brinda la capacidad de imprimir en impresoras locales y de red. Un sistema que ejecuta CUPS también puede aceptar trabajos de impresión de sistemas remotos e imprimirlos en impresoras locales. También proporciona una capacidad de administración remota basada en web.
+
+sleep 0.5;
+
+# Validamos si el servicio cups está instalado
+if systemctl list-units --full -all | grep -q "cups.service"
+then
+
+        if systemctl is-enabled cups.service
+            then
+            echo -e "IZ.1.5.9.35,Network Settings,Ensure CUPS is not enabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            nocumple=$((nocumple+1))
+            aq=true;
+        else
+    
+            echo -e "IZ.1.5.9.35,Network Settings,Ensure CUPS is not enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            cumple=$((cumple+1))
+
+        fi
+  
+else
+            echo -e "IZ.1.5.9.35,Network Settings,Ensure CUPS is not enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            cumple=$((cumple+1))
+fi
+
+
+
+
+
+#(DHCP) A menos que un sistema esté configurado específicamente para actuar como un servidor DHCP, se recomienda desactivar este servicio para reducir la superficie de ataque potencial. Si se requiere este servicio en algunos sistemas, documente los detalles en el valor acordado.
+
+# Validamos si el servicio dhcpd está instalado
+if systemctl list-units --full -all | grep -q "dhcpd.service"
+then
+
+        if systemctl is-enabled dhcpd.service
+            then
+            echo -e "IZ.1.5.9.36,Network Settings,Ensure DHCP Server is not enabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            nocumple=$((nocumple+1))
+            ar=true;
+        else
+    
+            echo -e "IZ.1.5.9.36,Network Settings,Ensure DHCP Server is not enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            cumple=$((cumple+1))
+
+        fi
+  
+else
+            echo -e "IZ.1.5.9.36,Network Settings,Ensure DHCP Server is not enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            cumple=$((cumple+1))
+fi
+
+
+
+
+
+#A menos que un sistema esté designado específicamente para actuar como un servidor DNS, se recomienda que este servicio esté deshabilitado para reducir la superficie de ataque potencial. Si este servicio es requerido en algunos sistemas, documente los detalles en el valor acordado.
+
+sleep 0.5;
+# Validamos si el servicio named está instalado
+if systemctl list-units --full -all | grep -q "named.service"
+then
+
+        if systemctl is-enabled named.service
+            then
+            echo -e "IZ.1.5.9.37,Network Settings,Ensure DNS Server is not enabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            nocumple=$((nocumple+1))
+            as=true;
+        else
+    
+            echo -e "IZ.1.5.9.37,Network Settings,Ensure DNS Server is not enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            cumple=$((cumple+1))
+
+        fi
+  
+else
+            echo -e "IZ.1.5.9.37,Network Settings,Ensure DNS Server is not enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            cumple=$((cumple+1))
+fi
+
+
+
+
+# HTTP A menos que sea necesario ejecutar el sistema como un servidor web, se recomienda desactivar este servicio para reducir la superficie de ataque potencial. Si se requiere este servicio en algunos sistemas, documente los detalles en el valor acordado.
+
+# Validamos si el servicio httpd está instalado
+if systemctl list-units --full -all | grep -q "httpd.service"
+then
+
+        if systemctl is-enabled httpd.service
+            then
+            echo -e "IZ.1.5.9.38,Network Settings,Ensure HTTP Server is not enabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            nocumple=$((nocumple+1))
+            at=true;
+        else
+    
+            echo -e "IZ.1.5.9.38,Network Settings,Ensure HTTP Server is not enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            cumple=$((cumple+1))
+
+        fi
+  
+else
+            echo -e "IZ.1.5.9.38,Network Settings,Ensure HTTP Server is not enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            cumple=$((cumple+1))
+fi
+
+
+
+
+
+#SMB Si no es necesario montar directorios y sistemas de archivos en sistemas Windows, se recomienda desactivar este servicio para reducir la superficie de ataque potencial. Si se requiere este servicio en algunos sistemas, documente los detalles en el valor acordado.
+
+sleep 0.5;
+# Validamos si el servicio smb está instalado
+if systemctl list-units --full -all | grep -q "smb.service"
+then
+
+        if systemctl is-enabled smb.service
+            then
+            echo -e "IZ.1.5.9.39,Network Settings,Ensure Samba Server is not enabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            nocumple=$((nocumple+1))
+            au=true;
+        else
+    
+            echo -e "IZ.1.5.9.39,Network Settings,Ensure Samba Server is not enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            cumple=$((cumple+1))
+
+        fi
+  
+else
+            echo -e "IZ.1.5.9.39,Network Settings,Ensure Samba Server is not enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+            cumple=$((cumple+1))
+fi
+
+
+
+
+#El paquete `rsh` contiene los comandos de cliente para los servicios de rsh.
+
+
+# Validamos si el RPM rsh está instalado
+if rpm -qa | grep -qw rsh
+then
+    echo -e "IZ.1.5.9.40,Network Settings,Ensure rsh client is not installed.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    nocumple=$((nocumple+1))
+    av=true;
+else
+    echo -e "IZ.1.5.9.40,Network Settings,Ensure rsh client is not installed.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+fi
+
+
+
+
+#Configuración de servicios de información de red (nis), incluido nis+ en el modo de compatibilidad nis
+
+sleep 0.5;
+# Validamos si los RPM ypbind ypserv estan instalados
+if rpm -qa | grep -qw ypbind && rpm -qa | grep -qw ypserv
+then
+    echo -e "IZ.1.5.10.1,Network Settings,Ensure yppasswd daemon client is not installed.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    nocumple=$((nocumple+1))
+    aw=true;
+else
+    echo -e "IZ.1.5.10.1,Network Settings,Ensure yppasswd daemon client is not installed.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+fi
+
+
+
+#Configuración de servicios de información de red (nis), incluido nis+ en el modo de compatibilidad nis
+
+
+
+# Validamos si los RPM ypbind ypserv estan instalados
+if rpm -qa | grep -qw ypbind
+then
+    echo -e "IZ.1.5.10.2,Network Settings,Ensure NIS maps is not be used.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    nocumple=$((nocumple+1))
+    ax=true;
+else
+    echo -e "IZ.1.5.10.2,Network Settings,Ensure NIS maps is not be used.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+fi
+
+
+
+
+#Configuración de servicios de información de red (nis), incluido nis+ en el modo de compatibilidad nis
+
+if rpm -qa | grep -qw ypbind
+then
+    echo -e "IZ.1.5.10.3,Network Settings,Ensure NIS+ maps is not be used.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    nocumple=$((nocumple+1))
+    aw=true;
+else
+    echo -e "IZ.1.5.10.3,Network Settings,Ensure NIS+ maps is not be used.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+fi
+
+
+
+#El paquete Berkeley rsh-server ( rsh , rlogin , rexec ) contiene servicios heredados que intercambian credenciales en texto claro y deben deshabilitarse a través de systemctl
+
+
+if rpm -qa | grep -qw rsh-server
+then
+    echo -e "IZ.1.5.11.1,Network Settings,Ensure rlogin is not be used.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    nocumple=$((nocumple+1))
+    ax=true;
+else
+    echo -e "IZ.1.5.11.1,Network Settings,Ensure rlogin is not be used.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+fi
+
+
+
+#Asegúrese de que la aleatorización del diseño del espacio de direcciones (ASLR) esté habilitada
+
+sleep 0.5;
+# Obtener el valor actual del parámetro kernel.randomize_va_space
+valor=$(cat /proc/sys/kernel/randomize_va_space)
+
+# Verificar si el valor es igual a 2
+if [ "$valor" -eq 2 ]; then
+    echo -e "IZ.1.5.13.2,Network Settings,Ensure address space layout randomization (ASLR) is enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+
+else
+
+    echo -e "IZ.1.5.13.2,Network Settings,Ensure address space layout randomization (ASLR) is enabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    nocumple=$((nocumple+1))
+    ay=true;
+fi
+
+
+
+#La opción de montaje `nodev` especifica que el sistema de archivos no puede contener dispositivos especiales. Si la cuenta solo quiere aplicar esto a las nuevas compilaciones, tenga en cuenta "No resolver esto en los sistemas existentes". en valor pactado.
+
+# Comprobar si existe una partición /tmp
+if grep -q '/tmp' /proc/mounts; then
+
+        echo -e "IZ.C.1.1.2,Filesystem Configuration,Ensure separate partition exists for /tmp.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+
+else
+        echo -e "IZ.C.1.1.2,Filesystem Configuration,Ensure separate partition exists for /tmp.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        az=true;
+fi
+
+
+
+
+#La opción de montaje `nodev` especifica que el sistema de archivos no puede contener dispositivos especiales. Si la cuenta solo quiere aplicar esto a las nuevas compilaciones, tenga en cuenta "No resolver esto en los sistemas existentes". en valor pactado.
+
+# Comprobar si existe una partición /tmp
+if grep -q '/tmp' /proc/mounts; then
+    # Obtener el valor actual de las opciones de montaje de /tmp
+    options=$(grep "[[:space:]]/tmp[[:space:]]" /etc/fstab | awk '{print $4}')
+
+    # Comprobar si la opción nodev está habilitada
+    if [[ $options == *"nodev"* ]]; then
+    
+        echo -e "IZ.C.1.1.3,Filesystem Configuration,Ensure nodev option set on /tmp partition.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+    
+    else
+    
+        echo -e "IZ.C.1.1.3,Filesystem Configuration,Ensure nodev option set on /tmp partition.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        ba=true;
+
+    fi
+else
+    echo -e "IZ.C.1.1.3,Filesystem Configuration,Ensure nodev option set on /tmp partition.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    nocumple=$((nocumple+1))
+    ba=true;
+fi
+
+
+
+#La opción de montaje `nosuid` especifica que el sistema de archivos no puede contener archivos `setuid`. Si la cuenta solo quiere aplicar esto a las nuevas compilaciones, tenga en cuenta "No resolver esto en los sistemas existentes". en valor pactado.
+
+sleep 0.5;
+# Comprobar si existe una partición /tmp
+if grep -q '/tmp' /proc/mounts; then
+    # Obtener el valor actual de las opciones de montaje de /tmp
+    options=$(grep "[[:space:]]/tmp[[:space:]]" /etc/fstab | awk '{print $4}')
+
+    # Comprobar si la opción nosuid está habilitada
+    if [[ $options == *"nosuid"* ]]; then
+    
+        echo -e "IZ.C.1.1.4,Filesystem Configuration,Ensure nosuid option set on /tmp partition.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+        
+    else
+    
+        echo -e "IZ.C.1.1.4,Filesystem Configuration,Ensure nosuid option set on /tmp partition.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+       bb=true;
+
+    fi
+else
+        echo -e "IZ.C.1.1.4,Filesystem Configuration,Ensure nosuid option set on /tmp partition.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        bb=true;
+fi
+
+
+
+#La opción de montaje `noexec` especifica que el sistema de archivos no puede contener binarios ejecutables. Si la cuenta solo quiere aplicar esto a las nuevas compilaciones, tenga en cuenta "No resolver esto en los sistemas existentes". en valor pactado.
+
+
+# Comprobar si existe una partición /tmp
+if grep -q '/tmp' /proc/mounts; then
+    # Obtener el valor actual de las opciones de montaje de /tmp
+    options=$(grep "[[:space:]]/tmp[[:space:]]" /etc/fstab | awk '{print $4}')
+
+    # Comprobar si la opción noexec está habilitada
+    if [[ $options == *"noexec"* ]]; then
+    
+        echo -e "IZ.C.1.1.5,Filesystem Configuration,Ensure noexec option set on /tmp partition.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+        
+    else
+    
+    
+        echo -e "IZ.C.1.1.5,Filesystem Configuration,Ensure noexec option set on /tmp partition.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        bc=true;
+
+    fi
+else
+        echo -e "IZ.C.1.1.5,Filesystem Configuration,Ensure noexec option set on /tmp partition.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        bc=true;
+fi
+
+
+
+#El directorio `/var` es utilizado por demonios y otros servicios del sistema para almacenar temporalmente datos dinámicos. Algunos directorios creados por estos procesos pueden ser de escritura mundial.
+
+sleep 0.5
+# Comprobar si existe una partición /var
+if grep -q '/var' /proc/mounts; then
+    
+        echo -e "IZ.C.1.1.6,Filesystem Configuration,Ensure separate partition exists for /var.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+
+else
+        echo -e "IZ.C.1.1.6,Filesystem Configuration,Ensure separate partition exists for /var.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        bd=true;
+fi
+
+
+
+
+
+#El directorio `/home` se utiliza para satisfacer las necesidades de almacenamiento en disco de los usuarios locales.
+
+# Comprobar si existe una partición /home
+if grep -q '/home' /proc/mounts; then
+    
+        echo -e "IZ.C.1.1.13,Filesystem Configuration,Ensure separate partition exists for /home.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+
+else
+        echo -e "IZ.C.1.1.13,Filesystem Configuration,Ensure separate partition exists for /home.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        be=true;
+fi
+
+
+
+#La opción de montaje `nodev` especifica que el sistema de archivos no puede contener dispositivos especiales. Si la cuenta solo quiere aplicar esto a nuevas compilaciones, tenga en cuenta "No resolver esto en sistemas existentes". en valor pactado.
+
+sleep 0.5;
+# Comprobar si existe una partición /home
+if grep -q '/home' /proc/mounts; then
+    # /home partition exists, check if nodev option is set
+    options=$(grep "home" /etc/fstab | awk '{print $4}')
+
+    # Comprobar si la opción nodev está habilitada
+    if [[ $options == *"nodev"* ]]; then
+    
+        echo -e "IZ.C.1.1.14,Filesystem Configuration,Ensure nodev option set on /home partition.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+        
+    
+    else
+    
+        echo -e "IZ.C.1.1.14,Filesystem Configuration,Ensure nodev option set on /home partition.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        bf=true;
+
+    fi
+else
+        echo -e "IZ.C.1.1.14,Filesystem Configuration,Ensure nodev option set on /home partition.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        bf=true;
+fi
+
+
+
+#La opción de montaje `nodev` especifica que el sistema de archivos no puede contener dispositivos especiales. Si la cuenta solo quiere aplicar esto a las nuevas compilaciones, tenga en cuenta "No resolver esto en los sistemas existentes". en valor pactado.
+
+# Comprobar si existe una partición /var/tmp
+if grep -q '/var/tmp' /proc/mounts; then
+
+        echo -e "IZ.C.1.1.7,Filesystem Configuration,Ensure separate partition exists for /var/tmp.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+
+else
+        echo -e "IZ.C.1.1.7,Filesystem Configuration,Ensure separate partition exists for /var/tmp.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        bg=true;
+fi
+
+
+
+
+#La opción de montaje `nodev` especifica que el sistema de archivos no puede contener dispositivos especiales. Si la cuenta solo quiere aplicar esto a las nuevas compilaciones, tenga en cuenta "No resolver esto en los sistemas existentes". en valor pactado.
+
+# Comprobar si existe una partición /tmp
+if grep -q '/var/tmp' /proc/mounts; then
+    # Obtener el valor actual de las opciones de montaje de /tmp
+    options=$(grep "/var/tmp" /etc/fstab | awk '{print $4}')
+
+    # Comprobar si la opción nodev está habilitada
+    if [[ $options == *"nodev"* ]]; then
+    
+        echo -e "IZ.C.1.1.8,Filesystem Configuration,Ensure nodev option set on /var/tmp partition.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+    
+    else
+    
+        echo -e "IZ.C.1.1.8,Filesystem Configuration,Ensure nodev option set on /var/tmp partition.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        bh=true;
+
+    fi
+else
+    echo -e "IZ.C.1.1.8,Filesystem Configuration,Ensure nodev option set on /var/tmp partition.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    nocumple=$((nocumple+1))
+    bh=true;
+fi
+
+
+
+#La opción de montaje `nosuid` especifica que el sistema de archivos no puede contener archivos `setuid`. Si la cuenta solo quiere aplicar esto a las nuevas compilaciones, tenga en cuenta "No resolver esto en los sistemas existentes". en valor pactado.
+
+sleep 0.5;
+# Comprobar si existe una partición /tmp
+if grep -q '/var/tmp' /proc/mounts; then
+    # Obtener el valor actual de las opciones de montaje de /tmp
+    options=$(grep "/var/tmp" /etc/fstab | awk '{print $4}')
+
+    # Comprobar si la opción nosuid está habilitada
+    if [[ $options == *"nosuid"* ]]; then
+    
+        echo -e "IZ.C.1.1.9,Filesystem Configuration,Ensure nosuid option set on /var/tmp partition.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+        
+    else
+    
+        echo -e "IZ.C.1.1.9,Filesystem Configuration,Ensure nosuid option set on /var/tmp partition.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+       bi=true;
+
+    fi
+else
+        echo -e "IZ.C.1.1.9,Filesystem Configuration,Ensure nosuid option set on /var/tmp partition.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        bi=true;
+fi
+
+
+
+#La opción de montaje `noexec` especifica que el sistema de archivos no puede contener binarios ejecutables. Si la cuenta solo quiere aplicar esto a las nuevas compilaciones, tenga en cuenta "No resolver esto en los sistemas existentes". en valor pactado.
+
+
+# Comprobar si existe una partición /tmp
+if grep -q '/var/tmp' /proc/mounts; then
+    # Obtener el valor actual de las opciones de montaje de /tmp
+    options=$(grep "/var/tmp" /etc/fstab | awk '{print $4}')
+
+    # Comprobar si la opción noexec está habilitada
+    if [[ $options == *"noexec"* ]]; then
+    
+        echo -e "IZ.C.1.1.10,Filesystem Configuration,Ensure noexec option set on /var/tmp partition.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+        
+    else
+    
+    
+        echo -e "IZ.C.1.1.10,Filesystem Configuration,Ensure noexec option set on /var/tmp partition.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        bj=true;
+
+    fi
+else
+        echo -e "IZ.C.1.1.10,Filesystem Configuration,Ensure noexec option set on /var/tmp partition.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        bj=true;
+fi
+
+
+
+
+#La opción de montaje `nodev` especifica que el sistema de archivos no puede contener dispositivos especiales. Si la cuenta solo quiere aplicar esto a las nuevas compilaciones, tenga en cuenta "No resolver esto en los sistemas existentes". en valor pactado.
+
+# Comprobar si existe una partición /dev/shm
+if grep -q '/dev/shm' /proc/mounts; then
+    # Obtener el valor actual de las opciones de montaje de /tmp
+    options=$(grep "/dev/shm" /etc/fstab | awk '{print $4}')
+
+    # Comprobar si la opción nodev está habilitada
+    if [[ $options == *"nodev"* ]]; then
+    
+        echo -e "IZ.C.1.1.15,Filesystem Configuration,Ensure nodev option set on /var/shm partition.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+    
+    else
+    
+        echo -e "IZ.C.1.1.15,Filesystem Configuration,Ensure nodev option set on /var/shm partition.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        bk=true;
+
+    fi
+else
+    echo -e "IZ.C.1.1.15,Filesystem Configuration,Ensure nodev option set on /var/shm partition.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+fi
+
+
+
+#La opción de montaje `nosuid` especifica que el sistema de archivos no puede contener archivos `setuid`. Si la cuenta solo quiere aplicar esto a las nuevas compilaciones, tenga en cuenta "No resolver esto en los sistemas existentes". en valor pactado.
+
+sleep 0.5;
+# Comprobar si existe una partición /dev/shm
+if grep -q '/dev/shm' /proc/mounts; then
+    # Obtener el valor actual de las opciones de montaje de /dev/shm
+    options=$(grep "/dev/shm" /etc/fstab | awk '{print $4}')
+
+    # Comprobar si la opción nosuid está habilitada
+    if [[ $options == *"nosuid"* ]]; then
+    
+        echo -e "IZ.C.1.1.16,Filesystem Configuration,Ensure nosuid option set on /dev/shm partition.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+        
+    else
+    
+        echo -e "IZ.C.1.1.16,Filesystem Configuration,Ensure nosuid option set on /dev/shm partition.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+       bl=true;
+
+    fi
+else
+    echo -e "IZ.C.1.1.15,Filesystem Configuration,Ensure nodev option set on /var/shm partition.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+fi
+
+
+
+#La opción de montaje `noexec` especifica que el sistema de archivos no puede contener binarios ejecutables. Si la cuenta solo quiere aplicar esto a las nuevas compilaciones, tenga en cuenta "No resolver esto en los sistemas existentes". en valor pactado.
+
+
+# Comprobar si existe una partición /dev/shm
+if grep -q '/dev/shm' /proc/mounts; then
+    # Obtener el valor actual de las opciones de montaje de /dev/shm
+    options=$(grep "/dev/shm" /etc/fstab | awk '{print $4}')
+
+    # Comprobar si la opción noexec está habilitada
+    if [[ $options == *"noexec"* ]]; then
+    
+        echo -e "IZ.C.1.1.17,Filesystem Configuration,Ensure noexec option set on /dev/shm partition.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+        
+    else
+    
+    
+        echo -e "IZ.C.1.1.17,Filesystem Configuration,Ensure noexec option set on /dev/shm partition.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        bm=true;
+
+    fi
+else
+    echo -e "IZ.C.1.1.15,Filesystem Configuration,Ensure nodev option set on /var/shm partition.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    cumple=$((cumple+1))
+fi
+
+
+
+
+#Ensure mounting of cramfs filesystems is  disabled 
+# Ejecutar y capturar la salida del primer comando
+output1=$(modprobe -n -v cramfs | tr -d '[:space:]')
+output2=$(lsmod | grep cramfs)
+
+    # Comprobar si la opción noexec está habilitada
+    if [[ "$output1" == "install/bin/true" && -z "$output2" ]]; then
+    
+        echo -e "IZ.C.1.1.1.1,Filesystem Configuration,Ensure mounting of cramfs filesystems is disabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+        
+    else
+    
+    
+        echo -e "IZ.C.1.1.1.1,Filesystem Configuration,Ensure mounting of cramfs filesystems is disabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        bn=true;
+
+    fi
+    
+
+
+
+#Ensure mounting of freevxfs filesystems is  disabled 
+# Ejecutar y capturar la salida del primer comando
+output1=$(modprobe -n -v freevxfs | tr -d '[:space:]')
+
+# Ejecutar el segundo comando y capturar la salida
+output2=$(lsmod | grep freevxfs)
+
+    # Comprobar si la opción noexec está habilitada
+    if [[ "$output1" == "install/bin/true" && -z "$output2" ]]; then
+    
+        echo -e "IZ.C.1.1.1.2,Filesystem Configuration,Ensure mounting of freevxfs filesystems is disabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+        
+    else
+    
+    
+        echo -e "IZ.C.1.1.1.2,Filesystem Configuration,Ensure mounting of freevxfs filesystems is disabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        bo=true;
+
+    fi
+
+
+
+#Ensure mounting of jffs2 filesystems is  disabled 
+# Ejecutar y capturar la salida del primer comando
+output1=$(modprobe -n -v jffs2 | tr -d '[:space:]')
+
+# Ejecutar el segundo comando y capturar la salida
+output2=$(lsmod | grep jffs2)
+
+    # Comprobar si la opción noexec está habilitada
+    if [[ "$output1" == "install/bin/true" && -z "$output2" ]]; then
+    
+        echo -e "IZ.C.1.1.1.3,Filesystem Configuration,Ensure mounting of jffs2 filesystems is disabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+        
+    else
+    
+    
+        echo -e "IZ.C.1.1.1.3,Filesystem Configuration,Ensure mounting of jffs2 filesystems is disabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        bp=true;
+
+    fi
+
+
+
+#Ensure mounting of hfs filesystems is  disabled 
+# Ejecutar y capturar la salida del primer comando
+output1=$(modprobe -n -v hfs | tr -d '[:space:]')
+
+# Ejecutar el segundo comando y capturar la salida
+output2=$(lsmod | grep hfs)
+
+    # Comprobar si la opción noexec está habilitada
+    if [[ "$output1" == "install/bin/true" && -z "$output2" ]]; then
+    
+        echo -e "IZ.C.1.1.1.4,Filesystem Configuration,Ensure mounting of hfs filesystems is disabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+        
+    else
+    
+    
+        echo -e "IZ.C.1.1.1.4,Filesystem Configuration,Ensure mounting of hfs filesystems is disabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        bq=true;
+
+    fi
+
+
+
+#Ensure mounting of hfsplus filesystems is  disabled 
+# Ejecutar y capturar la salida del primer comando
+output1=$(modprobe -n -v hfsplus | tr -d '[:space:]')
+
+# Ejecutar el segundo comando y capturar la salida
+output2=$(lsmod | grep hfsplus)
+
+    # Comprobar si la opción noexec está habilitada
+    if [[ "$output1" == "install/bin/true" && -z "$output2" ]]; then
+    
+        echo -e "IZ.C.1.1.1.5,Filesystem Configuration,Ensure mounting of hfsplus filesystems is disabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+        
+    else
+    
+    
+        echo -e "IZ.C.1.1.1.5,Filesystem Configuration,Ensure mounting of hfsplus filesystems is disabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        br=true;
+
+    fi
+
+
+
+
+#Ensure mounting of squashfs filesystems is  disabled 
+# Ejecutar y capturar la salida del primer comando
+output1=$(modprobe -n -v squashfs | tr -d '[:space:]')
+
+# Ejecutar el segundo comando y capturar la salida
+output2=$(lsmod | grep squashfs)
+
+    # Comprobar si la opción noexec está habilitada
+    if [[ "$output1" == "install/bin/true" && -z "$output2" ]]; then
+    
+        echo -e "IZ.C.1.1.1.6,Filesystem Configuration,Ensure mounting of squashfs filesystems is disabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+        
+    else
+    
+    
+        echo -e "IZ.C.1.1.1.6,Filesystem Configuration,Ensure mounting of squashfs filesystems is disabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        bs=true;
+
+    fi
+
+
+
+# Ruta del archivo de configuración
+modprobe_conf="/etc/modprobe.d/CIS.conf"
+
+# Línea que debe verificarse
+line_to_check="install udf /bin/true"
+
+# Verificar si el archivo existe
+if [[ -f "$modprobe_conf" ]]; then
+    # Verificar si la línea existe en el archivo
+    if grep -q -E "^\s*$line_to_check\s*$" "$modprobe_conf"; then
+    
+        echo -e "IZ.C.1.1.1.7,Filesystem Configuration,Ensure mounting of udf filesystems is disabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+        
+    else
+    
+    
+        echo -e "IZ.C.1.1.1.7,Filesystem Configuration,Ensure mounting of udf filesystems is disabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        bt=true;
+
+    fi
+else
+        
+        echo -e "IZ.C.1.1.1.7,Filesystem Configuration,Ensure mounting of udf filesystems is disabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        bt=true;
+fi
+    
+
+
+
+#Ensure the MCS Translation Service (mcstrans) is not installed
+
+    if ! rpm -q mcstrans &> /dev/null; then
+    
+        echo -e "IZ.C.1.6.1.5,Mandatory Access Control,Ensure the MCS Translation Service (mcstrans) is not installed.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+        
+    else
+    
+    
+        echo -e "IZ.C.1.6.1.5,Mandatory Access Control,Ensure the MCS Translation Service (mcstrans) is not installed.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        bu=true;
+
+    fi
+
+
+
+
+#Ensure auditing for processes that start prior to auditd is enabled 
+
+# Ruta del archivo grub
+grub_file="/etc/default/grub"
+
+# Validar si el archivo existe
+if [[ -f "$grub_file" ]]; then
+    # Buscar la línea que comienza con GRUB_CMDLINE_LINUX=
+    grub_cmdline=$(grep "^GRUB_CMDLINE_LINUX=" "$grub_file")
+
+    # Verificar si la línea contiene audit=1
+    if echo "$grub_cmdline" | grep -q "audit=1"; then
+    
+        echo -e "IZ.C.4.1.3,Configure System Accountin,Ensure auditing for processes that start prior to auditd is enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+        
+    else
+    
+    
+        echo -e "IZ.C.4.1.3,Configure System Accountin,Ensure auditing for processes that start prior to auditd is enabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        bv=true;
+
+    fi
+else
+        echo -e "IZ.C.4.1.3,Configure System Accountin,Ensure auditing for processes that start prior to auditd is enabled.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        bv=true;
+fi
+
+
+
+
+#Ensure root PATH Integrity in the default root environment
+
+        echo -e "IZ.C.6.2.6,User and Group Settings,Ensure root PATH Integrity in the default root environment.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+
+
+
+#Set password to bootloader
+
+        echo -e "IZ.IAU002,Identification and authentic,Set password to bootloader Exception.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+
+
+
+#IZ.PC002,Protection in communications Disable packet redirection   
+
+# Ruta del archivo de configuración
+sysctl_conf="/etc/sysctl.conf"
+
+# Declarar las líneas esperadas
+expected_lines=(
+    "net.ipv4.conf.all.send_redirects = 0"
+    "net.ipv4.conf.default.send_redirects = 0"
+    "net.ipv4.route.flush = 1"
+)
+
+# Bandera para verificar cumplimiento
+compliance=true
+
+# Verificar si el archivo existe
+if [[ -f "$sysctl_conf" ]]; then
+    for line in "${expected_lines[@]}"; do
+        # Comprobar si la línea existe en el archivo
+        if ! grep -q "^$line$" "$sysctl_conf"; then
+            compliance=false
+            break
+        fi
+    done
+
+    # Mostrar el resultado según la bandera
+    if $compliance; then
+        echo -e "IZ.PC002,Protection in communications,Disable packet redirection.En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+    else
+        echo -e "IZ.PC002,Protection in communications,Disable packet redirection.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        bw=true;
+    fi
+else
+    echo "Archivo $sysctl_conf no encontrado."
+fi
+
+
+#IZ.PC008,Protection in communications Ignore fake ICMP responses   
+# Ruta del archivo de configuración
+sysctl_conf="/etc/sysctl.conf"
+
+# Línea esperada
+expected_line="net.ipv4.icmp_ignore_bogus_error_responses = 1"
+
+# Verificar si el archivo existe
+if [[ -f "$sysctl_conf" ]]; then
+    # Comprobar si la línea existe en el archivo
+    if grep -q "^$expected_line$" "$sysctl_conf"; then
+        echo -e "IZ.PC008,Protection in communications,Ignore fake ICMP responses.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+ 
+    else
+        echo -e "IZ.PC008,Protection in communications,Ignore fake ICMP responses.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        bx=true;
+    fi
+else
+    echo "Archivo $sysctl_conf no encontrado."
+fi
+
+
+
+#IZ.PC018,Protection in communications Disable DCCP (Datagram Congestion Control Protocol)
+# Ruta del archivo a verificar
+cis_conf="/etc/modprobe.d/CIS.conf"
+
+# Línea esperada
+expected_line="install dccp /bin/true"
+
+# Verificar si el archivo existe
+if [[ -f "$cis_conf" ]]; then
+    # Comprobar si la línea existe en el archivo
+    if grep -q "^$expected_line$" "$cis_conf"; then
+        echo -e "IZ.PC018,Protection in communications,Disable DCCP (Datagram Congestion Control Protocol),En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+    else
+        echo -e "IZ.PC018,Protection in communications,Disable DCCP (Datagram Congestion Control Protocol),No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        by=true;
+    fi
+else
+        echo -e "IZ.PC018,Protection in communications,Disable DCCP (Datagram Congestion Control Protocol),No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        by=true;
+fi
+
+
+#IZ.PC019,Protection in communications Disable sctp (Datagram Congestion Control Protocol)
+
+# Ruta del archivo a verificar
+cis_conf="/etc/modprobe.d/CIS.conf"
+
+# Línea esperada
+expected_line="install sctp /bin/true"
+
+# Verificar si el archivo existe
+if [[ -f "$cis_conf" ]]; then
+    # Comprobar si la línea existe en el archivo
+    if grep -q "^$expected_line$" "$cis_conf"; then
+        echo -e "IZ.PC019,Protection in communications,Disable SCTP (Stream Control Transmission Protocol),En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+    else
+        echo -e "IZ.PC019,Protection in communications,Disable SCTP (Stream Control Transmission Protocol),No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        bz=true;
+    fi
+else
+        echo -e "IZ.PC019,Protection in communications,Disable SCTP (Stream Control Transmission Protocol),No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        bz=true;
+fi
+
+
+#IZ.PC020,Protection in communications Disable rsd (Datagram Congestion Control Protocol)
+
+# Ruta del archivo a verificar
+cis_conf="/etc/modprobe.d/CIS.conf"
+
+# Línea esperada
+expected_line="install rds /bin/true"
+
+# Verificar si el archivo existe
+if [[ -f "$cis_conf" ]]; then
+    # Comprobar si la línea existe en el archivo
+    if grep -q "^$expected_line$" "$cis_conf"; then
+        echo -e "IZ.PC020,Protection in communications,Disable RDS (Reliable Datagram Sockets Protocol),En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+    else
+        echo -e "IZ.PC020,Protection in communications,Disable RDS (Reliable Datagram Sockets Protocol),No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        ca=true;
+    fi
+else
+        echo -e "IZ.PC020,Protection in communications,Disable RDS (Reliable Datagram Sockets Protocol),No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        ca=true;
+fi
+
+#IZ.PC021,Protection in communications Disable tipc (Datagram Congestion Control Protocol)
+
+# Ruta del archivo a verificar
+cis_conf="/etc/modprobe.d/CIS.conf"
+
+# Línea esperada
+expected_line="install tipc /bin/true"
+
+# Verificar si el archivo existe
+if [[ -f "$cis_conf" ]]; then
+    # Comprobar si la línea existe en el archivo
+    if grep -q "^$expected_line$" "$cis_conf"; then
+        echo -e "IZ.PC021,Protection in communications,Disable TIPC (Transparent Inter-Process Communication),En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+    else
+        echo -e "IZ.PC021,Protection in communications,Disable TIPC (Transparent Inter-Process Communication),No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        cb=true;
+    fi
+else
+        echo -e "IZ.PC021,Protection in communications,Disable TIPC (Transparent Inter-Process Communication),No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        cb=true;
+fi
+
+
+        echo -e "IZ.PC022,Protection in communications,If wireless networks are not used, wireless devices should be disabled to reduce the potential attack surface.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+
+
+        echo -e "IZ.CIS003,System integrity,Configure GPG keys Communication,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+
+
+# Verificar si el paquete ypbind está instalado
+if ! rpm -q ypbind &> /dev/null; then
+        echo -e "IZ.CIS005,System integrity,Ensure NIS Client is not installed.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+else
+        echo -e "IZ.CIS005,System integrity,Ensure NIS Client is not installed.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        cd=true;
+fi
+
+
+        echo -e "IZ.CIS032,System integrity,Enable XD/NX support.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+
+
+# Verificar si el paquete prelink está instalado
+if ! rpm -q prelink &> /dev/null; then
+        echo -e "IZ.CIS034,System integrity,Disable Prelink.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+else
+        echo -e "IZ.CIS034,System integrity,Disable Prelink.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        ce=true;
+fi
+
+
+#IZ.CPD008,Data protection Disable mounting of FAT file systems 
+
+# Ruta del archivo a verificar
+cis_conf="/etc/modprobe.d/CIS.conf"
+
+# Línea esperada
+expected_line="install vfat /bin/true"
+
+# Verificar si el archivo existe
+if [[ -f "$cis_conf" ]]; then
+    # Comprobar si la línea existe en el archivo
+    if grep -q "^$expected_line$" "$cis_conf"; then
+        echo -e "IZ.CPD008,Data protection,Disable mounting of FAT file systems.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+    else
+        echo -e "IZ.CPD008,Data protection,Disable mounting of FAT file systems.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        cf=true;
+    fi
+else
+        echo -e "IZ.CPD008,Data protection,Disable mounting of FAT file systems.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        nocumple=$((nocumple+1))
+        cf=true;
+fi
+#Enable nodev option on removable media
+
+
+        echo -e "IZ.CPD025,Data protection,Enable nodev option on removable media partitions.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+
+        echo -e "IZ.CPD026,Data protection,Enable nosuid option on removable media partitions.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+
+        echo -e "IZ.CPD027,Data protection,Enable noexec option on removable media partitions.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+
+        echo -e "IZ.CPD029,Data protection,Disable automount option.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+
+        echo -e "IZ.CLR005,Security monitoring,Configure logrotate.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+        cumple=$((cumple+1))
+
+total=$((cumple+nocumple))
+
+num_caracteres=$(expr length $nocumple)
+
+if [ $num_caracteres -eq 1 ]
+then
+  nocumple="0$nocumple"
+fi
+
+echo -e "Total de reglas Validadas,$total" >> $DIR_LOG/$CMD.$FMT_FILE
+
+echo -e "Total de reglas cumplidas,$cumple" >> $DIR_LOG/$CMD.$FMT_FILE
+
+echo -e "Total de reglas No cumplidas,$nocumple" >> $DIR_LOG/$CMD.$FMT_FILE
+
+#echo "" >> $DIR_LOG/$CMD.$FMT_FILE
+#echo "" >> $DIR_LOG/$CMD.$FMT_FILE
+
+
+
+
+if [ "$nocumple" -ge 1 ]; then
+    cat "$DIR_LOG/$CMD.$FMT_FILE"
+else
+    cat "$DIR_LOG/$CMD.$FMT_FILE"
+fi
+}
+
+
+######################################
+# Se corrigen las reglas no cumplidas#
+######################################
+compliance(){
+
+echo -e "PARAMETROS CORREGIDOS" >> $DIR_LOG/$CMD.$FMT_FILE
+#echo -e "" >> $DIR_LOG/$CMD.$FMT_FILE
+#echo -e "" >> $DIR_LOG/$CMD.$FMT_FILE
+
+
+echo -e "Matriz CSD 3.0 Red Hat 7 & 8" >> $DIR_LOG/$CMD.$FMT_FILE
+echo -e "Kyndryl México ANS,IT Open Systems" >> $DIR_LOG/$CMD.$FMT_FILE
+echo -e "Section ID,Categoria,Description,Remediate-Status" >> $DIR_LOG/$CMD.$FMT_FILE
+
+
+
+if [[ $a == "true" ]];then
+
+# Verificar si el paquete rsyslog ya está instalado
+if ! rpm -qa | grep -qw rsyslog; then
+    # Si no está instalado, instalarlo
+    yum --yes install rsyslog > /dev/null 2>&1
+fi
+
+# Habilitar el servicio
+systemctl enable rsyslog > /dev/null 2>&1
+
+# Agregar la plantilla y reglas en el archivo /etc/rsyslog.conf
+
+if ! grep -Eq "$ActionFileDefaultTemplate.*RSYSLOG_TraditionalFileFormat" /etc/rsyslog.conf
+then
+echo "\$ActionFileDefaultTemplate RSYSLOG_TraditionalFileFormat" >> /etc/rsyslog.conf
+fi
+
+if ! grep -Eq "\*.info;mail.none;authpriv.none;cron.none.*/var/log/messages" /etc/rsyslog.conf
+then
+sed -i '/#### RULES ####/a\### CSD 3.0 ###\n*.info;mail.none;authpriv.none;cron.none                /var/log/messages' /etc/rsyslog.conf
+fi
+
+if ! grep -Eq 'authpriv.*/var/log/secure' /etc/rsyslog.conf
+then
+echo "authpriv.*                                              /var/log/secure" >> /etc/rsyslog.conf
+fi
+
+# Reiniciar el servicio
+systemctl restart rsyslog > /dev/null 2>&1
+
+echo -e "IZ.1.2.1.4.1,Logging,Ensure rsyslog is enabled so that needed login success or failure messages are captured.,Se corrigio la regla IZ.1.2.1.4.1,Logging" >> $DIR_LOG/$CMD.$FMT_FILE
+
+fi
+
+if [[ $h == "true" ]];then
+
+touch /var/log/tallylog
+
+    echo "Section IZ.1.2.4.2,Logging,Records for all connections must be retained - via use of /var/log/tallylog,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+      
+fi
+
+
+if [[ $i == "true" ]];then
+
+
+
+    echo "Section IZ.1.2.4.3,Logging,Directory holds files for recent unsuccessful logon attempts. Tool does not preserve old records.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+
+
+fi
+
+
+if [[ $l == "true" ]];then
+
+echo "server 150.50.102.157" | tee -a /etc/chrony.conf > /dev/null
+echo "server 150.50.102.158" | tee -a /etc/chrony.conf > /dev/null
+echo "server 150.100.151.66" | tee -a /etc/chrony.conf > /dev/null
+echo "server 150.100.151.67" | tee -a /etc/chrony.conf > /dev/null
+
+
+echo -e "IZ.1.2.7.2,Chrony Servers,If chronyd is active, ensure at least one.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  
+fi
+
+if [[ $m == "true" ]];then
+
+sed -i '/OPTIONS=/ s/"$/ -u chrony"/' /etc/sysconfig/chronyd 2>&1
+
+    echo -e "IZ.1.2.7.3,Chrony,Ensure task is not running with excessive privilege, use the special id chrony.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    
+  
+fi
+
+if [[ $aa == "true" ]];then
+
+echo "# Politicas de CSD IZ.1.5.9.20.2" >> /etc/sysctl.conf 2>&1
+          echo "net.ipv4.icmp_echo_ignore_broadcasts = 1" >> /etc/sysctl.conf 2>&1
+          echo "net.ipv4.route.flush = 1" >> /etc/sysctl.conf 2>&1
+
+ sysctl -w net.ipv4.icmp_echo_ignore_broadcasts=1 2>&1
+ sysctl -w net.ipv4.route.flush=1 2>&1
+
+  echo  "Section IZ.1.5.9.20.2,Network Settings,sysctl net.ipv4.icmp_echo_ignore_broadcasts Turn off ICMP broadcasts.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+ 
+    
+  
+fi
+
+
+if [[ $ab == "true" ]];then
+
+    SYNCOOKIES=$(sysctl net.ipv4.conf.default.accept_redirects)
+
+    # Verificar si la salida es igual a "net.ipv4.ip_forward = 1"
+    if [[ $SYNCOOKIES == "net.ipv4.conf.default.accept_redirects = 1" ]]; then
+
+          echo "# Politicas de CSD IZ.1.5.9.20.3" >> /etc/sysctl.conf 2>&1
+          echo "net.ipv4.conf.all.accept_redirects = 0" >> /etc/sysctl.conf 2>&1
+          echo "net.ipv4.conf.default.accept_redirects = 0" >> /etc/sysctl.conf 2>&1
+          echo "net.ipv4.route.flush = 1" >> /etc/sysctl.conf 2>&1
+          sysctl -w net.ipv4.conf.all.accept_redirects=0 2>&1
+          sysctl -w net.ipv4.conf.default.accept_redirects=0 2>&1
+          sysctl -w net.ipv4.route.flush=1 2>&1
+
+        echo -e "IZ.1.5.9.20.3,Network Settings,sysctl net.ipv4.conf.default.accept_redirects Disable ICMP Redirect Acceptance.,En compliance,Se corrigio la regla IZ.1.5.9.20.3,Network Settings" >> $DIR_LOG/$CMD.$FMT_FILE
+    fi
+
+fi
+
+if [[ $ad == "true" ]];then
+
+echo "# Politicas de CSD IZ.1.5.9.20.5" >> /etc/sysctl.conf 2>&1
+          echo "net.ipv4.conf.all.accept_source_route = 0" >> /etc/sysctl.conf 2>&1
+          echo "net.ipv4.conf.default.accept_source_route = 0" >> /etc/sysctl.conf 2>&1
+          echo "net.ipv4.route.flush = 1" >> /etc/sysctl.conf 2>&1
+
+ sysctl -w net.ipv4.conf.all.accept_source_route=0 2>&1
+ sysctl -w net.ipv4.conf.default.accept_source_route=0 2>&1
+ sysctl -w net.ipv4.route.flush=1 2>&1
+
+
+  echo -e "IZ.1.5.9.20.5,Network Settings,systems may not be routable or reachable from some locations (e.g. private addresses vs. Internet routable), and so source routed packets would need to be used.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+ 
+fi
+
+if [[ $ae == "true" ]];then
+
+echo "# Politicas de CSD IZ.1.5.9.20.6" >> /etc/sysctl.conf 2>&1
+          echo "net.ipv4.conf.all.secure_redirects = 0" >> /etc/sysctl.conf 2>&1
+          echo "net.ipv4.conf.default.secure_redirects = 0" >> /etc/sysctl.conf 2>&1
+          echo "net.ipv4.route.flush = 1" >> /etc/sysctl.conf 2>&1
+
+ sysctl -w net.ipv4.conf.all.secure_redirects=0 2>&1
+ sysctl -w net.ipv4.conf.default.secure_redirects=0 2>&1
+ sysctl -w net.ipv4.route.flush=1 2>&1
+
+
+  echo -e "IZ.1.5.9.20.6,Network Settings,Secure ICMP redirects are the same as ICMP redirects, except they come from gateways.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+
+fi
+
+if [[ $af == "true" ]];then
+
+echo "# Politicas de CSD IZ.1.5.9.20.7" >> /etc/sysctl.conf 2>&1
+echo "net.ipv4.conf.all.log_martians = 1" >> /etc/sysctl.conf 2>&1
+echo "net.ipv4.conf.default.log_martians = 1" >> /etc/sysctl.conf 2>&1
+
+ sysctl -w net.ipv4.conf.all.log_martians=1 2>&1
+ sysctl -w net.ipv4.conf.default.log_martians=1 2>&1
+
+sysctl -p
+
+  echo -e "IZ.1.5.9.20.7,Network Settings,When enabled, this feature logs packets with un-routable source addresses to the kernel log.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  
+
+fi
+
+if [[ $af == "true" ]];then
+# Obtener el valor de net.ipv4.conf.all.rp_filter
+all_rp_filter=$(sysctl net.ipv4.conf.all.rp_filter | awk '{print $3}')
+
+# Obtener el valor de net.ipv4.conf.default.rp_filter
+default_rp_filter=$(sysctl net.ipv4.conf.default.rp_filter | awk '{print $3}')
+
+
+echo "# Politicas de CSD IZ.1.5.9.20.9" >> /etc/sysctl.conf 2>&1
+echo "net.ipv4.conf.all.rp_filter = 1" >> /etc/sysctl.conf 2>&1
+echo "net.ipv4.conf.default.rp_filter = 1" >> /etc/sysctl.conf 2>&1
+
+sysctl -q -w net.ipv4.conf.all.rp_filter=1 > /dev/null 2>&1
+sysctl -q -w net.ipv4.conf.default.rp_filter=1 > /dev/null 2>&1
+
+# Comprobar si ambos valores son iguales a 0
+  if [ "$all_rp_filter" = 1 ] && [ "$default_rp_filter" = 1 ]; then
+      echo -e "IZ.1.5.9.20.9,Network Settings,Ensure Reverse Path Filtering is enabled.,En compliance,Se corrigio la regla IZ.1.5.9.20.9,Network Settings" >> $DIR_LOG/$CMD.$FMT_FILE
+  fi
+
+fi
+
+if [[ $ag == "true" ]];then
+
+echo "# Politicas de CSD IZ.1.5.9.21.1" >> /etc/sysctl.conf 2>&1
+echo "net.ipv6.conf.all.accept_ra = 0" >> /etc/sysctl.conf 2>&1
+echo "net.ipv6.conf.default.accept_ra = 0" >> /etc/sysctl.conf 2>&1
+
+      sysctl -q -w net.ipv6.conf.all.accept_ra=0 > /dev/null 2>&1
+      sysctl -q -w net.ipv6.conf.default.accept_ra=0 > /dev/null 2>&1
+
+
+    echo -e "IZ.1.5.9.21.1,Network Settings,This setting disables the system's ability to accept IPv6 router advertisements. the kernel log.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+  
+
+fi
+
+if [[ $ah == "true" ]];then
+
+echo "# Politicas de CSD IZ.1.5.9.21.2" >> /etc/sysctl.conf 2>&1
+echo "net.ipv6.conf.all.accept_redirects = 0" >> /etc/sysctl.conf 2>&1
+echo "net.ipv6.conf.default.accept_redirects = 0" >> /etc/sysctl.conf 2>&1
+echo "net.ipv6.route.flush = 1" >> /etc/sysctl.conf 2>&1
+
+      sysctl -w net.ipv6.conf.all.accept_redirects=0 2>&1
+      sysctl -w net.ipv6.conf.default.accept_redirects=0 2>&1
+      sysctl -w net.ipv6.route.flush=1 2>&1
+
+    echo "Section IZ.1.5.9.21.2,Network Settings,This setting prevents the system from accepting ICMP redirects. ICMP redirects tell the system about alternate routes for sending traffic.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+      
+
+fi
+
+if [[ $ai == "true" ]];then
+
+TEL=$(rpm -q telnet)
+
+rpm -e $TEL
+
+
+    echo -e "IZ.1.5.9.23,Network Settings,Denial of Service Prevention System Settings,,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+
+
+fi
+
+if [[ $ak == "true" ]];then
+
+systemctl disable avahi-daemon  2>&1
+
+
+            echo  "Section IZ.1.5.9.29,Network Settings,Ensure Avahi Server is not enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+fi
+
+if [[ $ay == "true" ]];then
+
+# Corregir el valor del parámetro kernel.randomize_va_space a 2
+    echo 2 > /proc/sys/kernel/randomize_va_space
+
+# Obtener el valor actual del parámetro kernel.randomize_va_space
+valor=$(cat /proc/sys/kernel/randomize_va_space)
+
+# Verificar si el valor es igual a 2
+if [ "$valor" -eq 2 ]; then
+
+
+    echo -e "IZ.1.5.13.2,Network Settings,Ensure address space layout randomization (ASLR) is enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+
+fi
+
+fi
+
+if [[ $ba == "true" ]];then
+
+    # Agregamos la opción noexec a la línea correspondiente en el archivo fstab
+    sed -i "${linea}s|\(^.*[[:space:]]/tmp[[:space:]].*defaults\)|\1,nodev|" /etc/fstab
+    sed -i "${linea}s|\(^.*[[:space:]]/tmp[[:space:]].*rw\)|\1,nodev|" /etc/fstab
+    
+        echo -e "IZ.C.1.1.3,Filesystem Configuration,Ensure nodev option set on /tmp partition.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+
+fi
+
+if [[ $bb == "true" ]];then
+    
+        # Agregamos la opción nosuid a la línea correspondiente en el archivo fstab
+        sed -i "${linea}s|\(^.*[[:space:]]/tmp[[:space:]].*defaults\)|\1,nosuid|" /etc/fstab
+        sed -i "${linea}s|\(^.*[[:space:]]/tmp[[:space:]].*rw\)|\1,nosuid|" /etc/fstab
+    
+        echo -e "IZ.C.1.1.4,Filesystem Configuration,Ensure nosuid option set on /tmp partition.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+
+fi
+
+if [[ $bc == "true" ]];then
+
+    # Agregamos la opción noexec a la línea correspondiente en el archivo fstab
+    sed -i "${linea}s|\(^.*[[:space:]]/tmp[[:space:]].*defaults\)|\1,noexec|" /etc/fstab
+    sed -i "${linea}s|\(^.*[[:space:]]/tmp[[:space:]].*rw\)|\1,noexec|" /etc/fstab
+
+
+
+    echo -e "IZ.C.1.1.5,Filesystem Configuration,Ensure noexec option set on /tmp partition.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+
+fi
+
+if [[ $bf == "true" ]];then
+
+        sed -i "${linea}s/\(^.*\/home.*defaults\)/\1,nodev" /etc/fstab
+        sed -i "${linea}s/\(^.*\/home.*rw\)/\1,nodev" /etc/fstab
+    
+        echo -e "IZ.C.1.1.14,Filesystem Configuration,Ensure nodev option set on /home partition.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+
+fi
+
+if [[ $bh == "true" ]];then
+
+    # Agregamos la opción noexec a la línea correspondiente en el archivo fstab
+    
+    sed -i "${linea}s|\(^.*\/var/tmp.*defaults\)|\1,nodev|" /etc/fstab
+    sed -i "${linea}s|\(^.*\/var/tmp.*rw\)|\1,nodev|" /etc/fstab
+    
+        echo -e "IZ.C.1.1.8,Filesystem Configuration,Ensure nodev option set on /var/tmp partition.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+
+fi
+
+if [[ $bi == "true" ]];then
+    
+        # Agregamos la opción nosuid a la línea correspondiente en el archivo fstab
+    sed -i "${linea}s|\(^.*\/var/tmp.*defaults\)|\1,nosuid|" /etc/fstab
+    sed -i "${linea}s|\(^.*\/var/tmp.*rw\)|\1,nosuid|" /etc/fstab
+    
+        echo -e "IZ.C.1.1.9,Filesystem Configuration,Ensure nosuid option set on /var/tmp partition.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+
+fi
+
+if [[ $bj == "true" ]];then
+
+    # Agregamos la opción noexec a la línea correspondiente en el archivo fstab
+    sed -i "${linea}s|\(^.*\/var/tmp.*defaults\)|\1,noexec|" /etc/fstab
+    sed -i "${linea}s|\(^.*\/var/tmp.*rw\)|\1,noexec|" /etc/fstab
+
+    echo -e "IZ.C.1.1.10,Filesystem Configuration,Ensure noexec option set on /var/tmp partition.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+
+fi
+
+if [[ $bk == "true" ]];then
+
+echo "tmpfs                                           /dev/shm                tmpfs   rw,nodev,nosuid,noexec  0 0" >> /etc/fstab
+
+    # Agregamos la opción noexec a la línea correspondiente en el archivo fstab
+
+    sed -i "${linea}s|\(^.*\/dev/shm.*defaults\)|\1,nodev|" /etc/fstab
+    sed -i "${linea}s|\(^.*\/dev/shm.*rw\)|\1,nodev|" /etc/fstab
+    
+        echo -e "IZ.C.1.1.15,Filesystem Configuration,Ensure nodev option set on /dev/shm partition.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+
+fi
+
+if [[ $bl == "true" ]];then
+
+    # Agregamos la opción noexec a la línea correspondiente en el archivo fstab
+    sed -i "${linea}s|\(^.*\/dev/shm.*defaults\)|\1,nosuid|" /etc/fstab
+    sed -i "${linea}s|\(^.*\/dev/shm.*rw\)|\1,nosuid|" /etc/fstab
+    
+        echo -e "IZ.C.1.1.16,Filesystem Configuration,Ensure nosuid option set on /dev/shm partition.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+
+fi
+
+if [[ $bl == "true" ]];then
+
+    # Agregamos la opción noexec a la línea correspondiente en el archivo fstab
+    sed -i "${linea}s|\(^.*\/dev/shm.*defaults\)|\1,noexec|" /etc/fstab
+    sed -i "${linea}s|\(^.*\/dev/shm.*rw\)|\1,noexec|" /etc/fstab
+    
+        echo -e "IZ.C.1.1.17,Filesystem Configuration,Ensure noexec option set on /dev/shm partition.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+
+fi
+
+
+#IZ.C.1.1.1.1
+
+if [[ $bn == "true" ]];then
+
+echo "install cramfs /bin/true" >> /etc/modprobe.d/CIS.conf
+
+echo -e "IZ.C.1.1.1.1,Filesystem Configuration,Ensure mounting of cramfs filesystems is disabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+
+
+
+fi
+
+#IZ.C.1.1.1.2
+
+if [[ $bo == "true" ]];then
+
+echo "install freevxfs /bin/true" >> /etc/modprobe.d/CIS.conf
+
+ echo -e "IZ.C.1.1.1.2,Filesystem Configuration,Ensure mounting of freevxfs filesystems is disabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+
+fi
+
+#IZ.C.1.1.1.3
+
+if [[ $bp == "true" ]];then
+
+echo "install jffs2 /bin/true" >> /etc/modprobe.d/CIS.conf
+
+ echo -e "IZ.C.1.1.1.3,Filesystem Configuration,Ensure mounting of jffs2 filesystems is disabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+                
+fi
+
+#IZ.C.1.1.1.4
+
+if [[ $bq == "true" ]];then
+
+echo "install hfs /bin/true" >> /etc/modprobe.d/CIS.conf
+
+echo -e "IZ.C.1.1.1.4,Filesystem Configuration,Ensure mounting of hfs filesystems is disabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+                              
+fi
+
+#IZ.C.1.1.1.5
+
+if [[ $br == "true" ]];then
+
+echo "install hfsplus /bin/true" >> /etc/modprobe.d/CIS.conf
+
+ echo -e "IZ.C.1.1.1.5,Filesystem Configuration,Ensure mounting of hfsplus filesystems is disabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+                                           
+fi
+
+#IZ.C.1.1.1.6
+
+if [[ $bs == "true" ]];then
+
+echo "install squashfs /bin/true" >> /etc/modprobe.d/CIS.conf
+
+ echo -e "IZ.C.1.1.1.6,Filesystem Configuration,Ensure mounting of squashfs filesystems is disabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+                                                          
+fi
+
+#IZ.C.4.1.3
+
+if [[ $bv == "true" ]];then
+
+sed -i 's/\(GRUB_CMDLINE_LINUX=".*\)"/\1 audit=1"/' /etc/default/grub
+
+ echo -e "IZ.C.4.1.3,Configure System Accountin,Ensure auditing for processes that start prior to auditd is enabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+                                                                         
+fi
+
+
+#IZ.PC002
+
+if [[ $bw == "true" ]];then
+
+# Ruta del archivo de configuración
+sysctl_conf="/etc/sysctl.conf"
+
+# Declarar las líneas que deben agregarse
+lines_to_add=(
+    "### CSD IZ.PC002"
+    "net.ipv4.conf.all.send_redirects = 0"
+    "net.ipv4.conf.default.send_redirects = 0"
+    "net.ipv4.route.flush = 1"
+)
+
+# Bandera para verificar si alguna línea necesita ser agregada
+lines_missing=false
+
+# Verificar si el archivo existe
+if [[ -f "$sysctl_conf" ]]; then
+    for line in "${lines_to_add[@]}"; do
+        # Comprobar si la línea ya existe en el archivo
+        if ! grep -q -E "^\s*$line\s*$" "$sysctl_conf"; then
+            lines_missing=true
+            break
+        fi
+    done
+
+    # Si falta alguna línea, agregar el encabezado y las líneas faltantes
+    if $lines_missing; then
+        echo "### CSD IZ.PC002" >> "$sysctl_conf"
+        for line in "${lines_to_add[@]:1}"; do
+            # Comprobar nuevamente antes de agregar la línea
+            if ! grep -q -E "^\s*$line\s*$" "$sysctl_conf"; then
+                echo "$line" >> "$sysctl_conf"
+            fi
+        done
+        echo -e "IZ.PC002,Protection in communications,Disable packet redirection.,En Compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    else
+        echo -e "IZ.PC002,Protection in communications,Disable packet redirection.,En Compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    fi
+else
+    echo "Archivo $sysctl_conf no encontrado."
+fi
+
+
+fi
+
+
+if [[ $bt == "true" ]];then
+
+#IZ.C.1.1.1.7
+
+
+# Ruta del archivo de configuración
+modprobe_conf="/etc/modprobe.d/CIS.conf"
+
+# Línea que debe agregarse
+line_to_add="install udf /bin/true"
+
+if ! grep -q -E "^\s*$line_to_add\s*$" "$modprobe_conf"; then
+    # Agregar la línea al final del archivo
+    echo "$line_to_add" >> "$modprobe_conf"
+        echo -e "IZ.C.1.1.1.7,Filesystem Configuration,Ensure mounting of udf filesystems is disabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+else
+        echo -e "IZ.C.1.1.1.7,Filesystem Configuration,Ensure mounting of udf filesystems is disabled.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+fi
+
+fi
+
+#IZ.PC008 
+if [[ $bx == "true" ]];then
+
+echo "net.ipv4.icmp_ignore_bogus_error_responses = 1" >> /etc/sysctl.conf
+
+        echo -e "IZ.PC008,Protection in communications,Ignore fake ICMP responses.,En Compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+
+fi
+
+if [[ $by == "true" ]];then
+#IZ.PC018
+
+
+# Ruta del archivo de configuración
+modprobe_conf="/etc/modprobe.d/CIS.conf"
+
+# Línea que debe agregarse
+line_to_add="install dccp /bin/true"
+
+if ! grep -q -E "^\s*$line_to_add\s*$" "$modprobe_conf"; then
+    # Agregar la línea al final del archivo
+    echo "$line_to_add" >> "$modprobe_conf"
+        echo -e "IZ.PC018,Protection in communications,Disable DCCP (Datagram Congestion Control Protocol),En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+else
+        echo -e "IZ.PC018,Protection in communications,Disable DCCP (Datagram Congestion Control Protocol),En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+fi
+
+fi
+
+if [[ $bz == "true" ]];then
+#IZ.PC019
+
+
+# Ruta del archivo de configuración
+modprobe_conf="/etc/modprobe.d/CIS.conf"
+
+# Línea que debe agregarse
+line_to_add="install sctp /bin/true"
+
+if ! grep -q -E "^\s*$line_to_add\s*$" "$modprobe_conf"; then
+    # Agregar la línea al final del archivo
+    echo "$line_to_add" >> "$modprobe_conf"
+        echo -e "IZ.PC019,Protection in communications,Disable SCTP (Stream Control Transmission Protocol),En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+else
+        echo -e "IZ.PC019,Protection in communications,Disable SCTP (Stream Control Transmission Protocol).,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+fi
+
+fi
+
+
+if [[ $ca == "true" ]];then
+#IZ.PC020
+
+
+# Ruta del archivo de configuración
+modprobe_conf="/etc/modprobe.d/CIS.conf"
+
+# Línea que debe agregarse
+line_to_add="install rds /bin/true"
+
+if ! grep -q -E "^\s*$line_to_add\s*$" "$modprobe_conf"; then
+    # Agregar la línea al final del archivo
+    echo "$line_to_add" >> "$modprobe_conf"
+        echo -e "IZ.PC020,Protection in communications,Disable RDS (Reliable Datagram Sockets Protocol),En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+else
+        echo -e "IZ.PC020,Protection in communications,Disable RDS (Reliable Datagram Sockets Protocol),En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+fi
+
+fi
+
+if [[ $cb == "true" ]];then
+#IZ.PC021
+
+
+# Ruta del archivo de configuración
+modprobe_conf="/etc/modprobe.d/CIS.conf"
+
+# Línea que debe agregarse
+line_to_add="install tipc /bin/true"
+
+if ! grep -q -E "^\s*$line_to_add\s*$" "$modprobe_conf"; then
+    # Agregar la línea al final del archivo
+    echo "$line_to_add" >> "$modprobe_conf"
+        echo -e "IZ.PC021,Protection in communications,Disable TIPC (Transparent Inter-Process Protocol),En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+else
+        echo -e "IZ.PC021,Protection in communications,Disable TIPC (Transparent Inter-Process Protocol).,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+fi
+
+fi
+
+
+if [[ $cf == "true" ]];then
+#IZ.CPD008
+
+
+# Ruta del archivo de configuración
+modprobe_conf="/etc/modprobe.d/CIS.conf"
+
+# Línea que debe agregarse
+line_to_add="install vfat /bin/true"
+
+if ! grep -q -E "^\s*$line_to_add\s*$" "$modprobe_conf"; then
+    # Agregar la línea al final del archivo
+    echo "$line_to_add" >> "$modprobe_conf"
+        echo -e "IZ.CPD008,Data protection,Disable mounting of FAT file systems.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+else
+        echo -e "IZ.CPD008,Data protection,Disable mounting of FAT file systems.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+fi
+
+fi
+
+
+
+cat $DIR_LOG/$CMD.$FMT_FILE
+
+}
+
+########################
+# Eliminar checklists  #
+########################
+
+delete(){
+    checkUID
+    testDirs
+    echo "Eliminar checklists:"
+    echo "======================"
+    echo ""
+    select i in `ls -t $DIR_LOG | cut -d"." -f 2 | uniq `
+    do
+            if [ -z $i ]
+            then
+                    echo "[ERRO] Opción no válida o checklist no encontrado seleccione una opción válida"
+                    exit 1
+            else
+                    echo "Checklist seleccionado: $i"
+                    rm -rf $DIR_LOG/*$i*.checklist
+                    exit 0
+            fi
+    done
+}
+
+####################################
+# Muestra la lista de verificación #
+####################################
+
+viewChecklist(){
+    checkUID
+    testDirs
+    echo "Visualización de checklists:"
+    echo "==========================="
+    echo ""
+    echo "Elija la fecha de la lista de verificación para ser vista"
+    select i in `ls -t $DIR_LOG | cut -d"." -f 2 | uniq `
+    do
+            if [ -z '$i' ]
+            then
+                    echo "Opción no válida seleccione una opción válida"
+                    exit 1
+            else
+                    echo "Checklist elejido: $i"
+                    cat  $DIR_LOG/*$i* | less -r
+                    exit 0
+            fi
+    done
+}
+
+########
+# Help #
+########
+helpme(){
+    echo -e "\e[32;2;1m"
+    echo "################################"
+    echo "# Seleccione una o más opciones #"
+    echo "################################"
+    echo -e "\e[m"
+    echo "-------------------------------------------------------------------------------------"
+    echo "-c = Genera una vista previa de la Matriz CSD3"
+    echo "-v = Visualizar un checklist especifico"
+    echo "-d = Elimina una lista de verificación para una fecha elegida"
+    echo "-------------------------------------------------------------------------------------"
+    echo -e "\n"
+}
+
+# Ha llegado el momento de tratar las banderas de la manera correcta!!
+[ -z "$1" ] && helpme && exit 1
+while getopts ":CVbcdhmqrvz" OPT; do
+    case "$OPT" in
+    
+    "c") matriz ;;
+    "v") viewChecklist ;;
+    "d") delete ;;
+   
+    \?) echo "Opción inválida: -$OPTARG" >&2 && helpme >&2 && exit 1 ;;
+    esac
+done
