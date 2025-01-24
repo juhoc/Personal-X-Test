@@ -10,6 +10,15 @@
       run_once: true
       delegate_to: localhost
 
+    - name: Copiando txt csd_redhat_scan.txt
+      become: true
+      copy:
+        src: files/csd_redhat_scan.txt
+        dest: "{{ mountfsasb }}/csd_redhat_scan.sh"
+        mode: 0750
+        owner: bvmuxat2
+        group: automate
+
     - name: Copiar archivo con scp utilizando passphrase
       become: true
       shell: ./csd_redhat_scan.sh -c
