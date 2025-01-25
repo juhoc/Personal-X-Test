@@ -38,8 +38,8 @@
     - name: Cambiar el ultimo reporte de csd_redhat_scan a executable csv
       become: true
       copy:
-        src: "{{ mountfsasb }}/checklist/{{ ultimo_repo_csd_linux }}"
-        dest: "{{ mountfsasb }}/checklist/{{ ultimo_repo_csd_linux }}.csv"
+        src: "{{ mountfsasb }}/checklist/{{ ultimo_repo_csd_linux.stdout }}"
+        dest: "{{ mountfsasb }}/checklist/{{ ultimo_repo_csd_linux.stdout }}.csv"
         remote_src: true
 
     - name: Obtener la salida del ultimo reporte de csd_redhat_scan
