@@ -35,12 +35,12 @@
         chdir: "{{ mountfsasb }}/checklist"
       register: ultimo_repo_csd_linux
 
-    - name: Cambiar el ultimo reporte de csd_redhat_scan a executable csv
-      become: true
-      copy:
-        src: "{{ mountfsasb }}/checklist/{{ ultimo_repo_csd_linux.stdout }}"
-        dest: "{{ mountfsasb }}/checklist/{{ ultimo_repo_csd_linux.stdout }}.csv"
-        remote_src: true
+#    - name: Cambiar el ultimo reporte de csd_redhat_scan a executable csv
+#      become: true
+#      copy:
+#        src: "{{ mountfsasb }}/checklist/{{ ultimo_repo_csd_linux.stdout }}"
+#        dest: "{{ mountfsasb }}/checklist/{{ ultimo_repo_csd_linux.stdout }}.csv"
+#        remote_src: true
 
     - name: Obtener la salida del ultimo reporte de csd_redhat_scan
       become: true
@@ -49,6 +49,70 @@
         chdir: /var/opt/ansible/checklist
       register: echo_repo_csd_linux
 
-#- name: Enviar correo de evidencias csd_redhat_scan
-#  block:
-#    - name: Enviar por correo archivo csd_redhat_scan formato csv
+    - set_fact:
+        set_csd_linux: "{{ echo_repo_csd_linux.stdout_lines }}"
+
+- name: Tareas por bloques - Envio de evidencias
+  block:
+    - name: Obtener fecha
+      become: true
+      shell: echo $(date +%d-%m-%Y-%H-%M)
+      register: salida_tiempo
+
+    - set_fact:
+        tiempo: "{{ salida_tiempo.stdout }}"
+
+    - name: Validar archivos esperados previas IPL del OS Linux
+      stat:
+        path: "{{ fsasb }}/csd.{{ tiempo }}.{{ inventory_hostname.split('.')[0] }}.checklist.csv"
+      register: archivo_verificado
+
+    - name: Crear archivos si no existen
+      file:
+        path: "{{ fsasb }}/csd.{{ tiempo }}.{{ inventory_hostname.split('.')[0] }}.checklist.csv"
+        state: touch
+      when: not archivo_verificado.stat.exists
+        
+    - name: Obtener la salida del ultimo reporte de csd_redhat_scan
+      become: true
+      copy:
+        content: "{{ set_csd_linux | | join('\n') }}"
+        dest: "{{ fsasb }}/csd.{{ tiempo }}.{{ inventory_hostname.split('.')[0] }}.checklist.csv"
+  delegate_to: asitsmaop2.bvm.bluecare.kyndryl.net
+
+- name: Tareas por bloques - Envio de evidencias
+  block:
+    - shell: ls {{ fsasb }}/{{ idcrqincreq }}_previas.csv
+      register: listflcsv
+
+    - name: Envio de evidencias CSV
+      mail:
+        host: "{{ smtp }}"
+        port: "{{ smtpport }}"
+        from: "{{ mailfrom }}"
+        to: "{{ mailto }}"
+        subject: "Reportes evidencias previas GDM Linux Patching"
+        body: "Se adjuntan las evidencias previas al IPL"
+        attach: "{{ listflcsv.stdout_lines }}"
+
+    - name: Envio de evidencias por folio CRQ, INC o REQ
+      debug:
+        msg: "{{ 'Se envio el correo al buzon o buzones:' + mailto }}"
+      ignore_errors: true
+  delegate_to: asitsmaop2.bvm.bluecare.kyndryl.net
+  run_once: true
+
+- name: Borrar envio CSV
+  block:
+    - find:
+        paths: "{{ fsasb }}"
+        file_type: file
+      register: archivos_csv
+
+    - file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ archivos_csv.files }}"
+  no_log: true
+  delegate_to: asitsmaop2.bvm.bluecare.kyndryl.net
+  run_once: true
