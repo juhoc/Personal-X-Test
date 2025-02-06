@@ -18,8 +18,8 @@
       register: val_fs
 
 
--name: Test Transferir - check fs
- debug:
-   msg: >
-      "{{ val_fs.stat.owner }}"
-      "{{ val_fs.stat.group }}"
+    -name: Test Transferir - check fs
+     debug:
+       msg: >
+          "{{ val_fs.stat.owner }}"
+          "{{ val_fs.stat.group }}"
