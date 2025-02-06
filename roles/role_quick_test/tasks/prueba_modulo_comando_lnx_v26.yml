@@ -20,5 +20,5 @@
     - name: Test Transferir - check fs
       debug:
         msg: >
-          "{{ val_fs.stat.owner }}"
-          "{{ val_fs.stat.group }}"
+          owner: {{ val_fs.stat.owner }}
+          group: {{ val_fs.stat.group }}
