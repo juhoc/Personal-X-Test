@@ -20,6 +20,6 @@
 
 -name: Test Transferir - check fs
  debug:
-    msg: >
+   msg: >
       "{{ val_fs.stat.owner }}"
       "{{ val_fs.stat.group }}"
