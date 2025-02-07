@@ -14,6 +14,3 @@
       debug:
         msg:
           - "Usuario SSH: {{ ansible_user }}"
-          - "Privilege Escalation Method: {{ ansible_become_method }}"
-          - "Privilege Escalation Username: {{ ansible_become_user }}"
-          - "Privilege Escalation Password: {{ ansible_become_password }}"
