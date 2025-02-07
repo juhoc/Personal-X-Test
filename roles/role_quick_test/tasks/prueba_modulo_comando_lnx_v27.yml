@@ -1,0 +1,19 @@
+---
+- name: Tareas por bloques - Validacion formato CRQ o ICR
+  block:
+    - name: Validando Formato de Cambio o Incidente
+      assert:
+        that:
+          - idcrqincreq | string | regex_search('(CRQ|INC|REQ)[0-9]{12}')
+        fail_msg: "El CRQ, INC o REQ no cumplen con la condiciones del formato"
+        success_msg: "El CRQ, INC o REQ cumplen con las condiciones del formato"
+      run_once: true
+      delegate_to: localhost
+
+    - name: Mostrar variables de credencial
+      debug:
+        msg:
+          - "Usuario SSH: {{ ansible_user }}"
+          - "Ruta de clave privada: {{ ansible_ssh_private_key_file }}"
+          - "Método de escalamiento de privilegios: {{ ansible_become_method }}"
+          - "Usuario para sudo: {{ ansible_become_user }}"
