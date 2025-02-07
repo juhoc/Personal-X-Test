@@ -266,11 +266,11 @@ resultado=$(grep faillock /usr/lib/tmpfiles.d/pam.conf)
 # Verificar si se obtuvo algún resultado
 if [ -n "$resultado" ]; then
 
-    echo -e "IZ.1.2.4.3,Logging,Directory holds files for recent unsuccessful logon attempts.  Tool does not preserve old records.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    echo -e "IZ.1.2.4.3,Logging,Directory holds files for recent unsuccessful logon attempts - Tool does not preserve old records.,En compliance" >> $DIR_LOG/$CMD.$FMT_FILE
     cumple=$((cumple+1))
     
 else
-    echo -e "IZ.1.2.4.3,Logging,Directory holds files for recent unsuccessful logon attempts.  Tool does not preserve old records.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    echo -e "IZ.1.2.4.3,Logging,Directory holds files for recent unsuccessful logon attempts - Tool does not preserve old records.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
     nocumple=$((nocumple+1))
     i=true;
 
