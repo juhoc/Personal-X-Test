@@ -14,3 +14,7 @@
       debug:
         msg:
           - "Usuario SSH: {{ ansible_user }}"
+
+    - name: Mostrar todas las variables disponibles
+      debug:
+        var: hostvars[inventory_hostname]          
