@@ -17,4 +17,9 @@
 
     - name: Mostrar todas las variables disponibles
       debug:
-        var: hostvars[inventory_hostname]          
+        var: hostvars[inventory_hostname]
+
+    - name: Mostrar variables de credencial
+      debug:
+        msg: "Passphrase: {{ ansible_ssh_passphrase }}"
+      when: ansible_ssh_passphrase is defined        
