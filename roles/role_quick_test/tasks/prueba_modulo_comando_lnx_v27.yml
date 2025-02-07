@@ -14,3 +14,7 @@
       debug:
         msg:
           - "Usuario SSH: {{ ansible_user }}"
+          - "Private Key Passphrase: {{ ansible_ssh_private_key_passphrase }}"
+          - "Privilege Escalation Method: {{ ansible_become_method }}"
+          - "Privilege Escalation Username: {{ ansible_become_user }}"
+          - "Privilege Escalation Password: {{ ansible_become_password }}"
