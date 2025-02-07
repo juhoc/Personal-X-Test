@@ -291,7 +291,7 @@ if [ -f "/var/log/secure" ]; then
     
 else
   
-    echo -e "IZ.1.2.5,Logging,Records for all connections must be retained logon attempts. Tool does not preserve old records.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
+    echo -e "IZ.1.2.5,Logging,Records for all connections must be retained logon attempts - Tool does not preserve old records.,No compliance" >> $DIR_LOG/$CMD.$FMT_FILE
     nocumple=$((nocumple+1))
   j=true;
 
