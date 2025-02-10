@@ -1,0 +1,5 @@
+---
+- block:
+    - name: Recolectar hostname
+      setup:
+        filter: "ansible_hostname"
