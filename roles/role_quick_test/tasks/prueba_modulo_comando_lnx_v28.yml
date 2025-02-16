@@ -52,4 +52,4 @@
     - name: Guardar nodos inalcanzables en un archivo
       debug:
         msg: "{{ inventory_hostname }}"
-      when: resultado_ping.unreachable is defined and resultado_ping.unreachable > 0
+      when: result_end.unreachable is defined and result_end.unreachable > 0
