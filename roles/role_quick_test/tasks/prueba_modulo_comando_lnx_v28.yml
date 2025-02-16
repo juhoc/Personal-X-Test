@@ -29,7 +29,7 @@
         {% if binario == "dmstartup" %}
         echo "{{ inventory_hostname.split('.')[0] }},{{ hostvars[inventory_hostname].ipaddress }},Dimension {{ version }}"
         {% else %}
-        echo "{{ inventory_hostname.split('.')[0] }},{{ hostvars[inventory_hostname].ipaddress }},Dimension no instalado }}"
+        echo "{{ inventory_hostname.split('.')[0] }},{{ hostvars[inventory_hostname].ipaddress }},Dimension no instalado"
         {% endif %}
       register: result_end
   ignore_unreachable: true
