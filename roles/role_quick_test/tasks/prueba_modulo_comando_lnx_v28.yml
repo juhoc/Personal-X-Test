@@ -34,7 +34,7 @@
   block:
     - name: Show Report unreachable
       debug: 
-        msg: "{{ result_end }}"
+        msg: "{{ result_end.stdout }}"
   ignore_unreachable: true
 
 - name: Tareas por bloques - Resultado y despliegue de repote Dimensions
