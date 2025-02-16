@@ -21,6 +21,14 @@
       run_once: true
       delegate_to: localhost
 
+    - name: Mostrar resultados finales
+      debug:
+        msg:
+          - "hostname,ip,{{ puerto }}"
+          - "{{ results }}"
+          - "{{ unrecheable }}"
+      run_once: true
+      delegate_to: localhost
 #    - name: Validar version Dimensions
 #      become: true
 #      shell: df -h | awk '{print $6}' | grep \w*dimensions
