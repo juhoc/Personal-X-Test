@@ -24,8 +24,7 @@
     - name: Mostrar resultados finales
       debug:
         msg:
-          - "hostname,ip,{{ puerto }}"
-          - "{{ results }}"
+          - "hostname,ip"
           - "{{ unrecheable }}"
       run_once: true
       delegate_to: localhost
