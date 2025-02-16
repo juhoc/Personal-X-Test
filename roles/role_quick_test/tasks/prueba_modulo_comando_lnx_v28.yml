@@ -23,7 +23,6 @@
     - set_fact:
         binario: "{{ result_binver.stdout.split(',')[0] | default('')  }}"
         version: "{{ result_binver.stdout.split(',')[1] | default('')  }}"
-#      when: result_binver.stdout | length > 0
 
     - shell: |
         {% if binario == "dmstartup" %}
