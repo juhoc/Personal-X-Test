@@ -56,4 +56,4 @@
     - name: Guardar nodos inalcanzables en un archivo
       debug:
         msg: "{{ inventory_hostname }}"
-      when: result_end.unreachable is defined and result_end.unreachable > 0
+      when: result_binver.unreachable is defined and result_binver.unreachable > 0
