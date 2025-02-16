@@ -11,9 +11,10 @@
 
     - shell: |
         {% if "fsname in result_fsct.stdout" %}
-        DMITLN="$(ls 2>/dev/null -1R /opt/dimensions | grep cm/prog:$ | tr ":" "/")dmstartup"
+        DMITLN="$(ls 2>/dev/null -1R /opt/dimensions | grep cm/prog:$ | tr ":" "/")"
+        DMBIN="$(ls -1 $DMITLN | grep dmstartup)"
         DMVER=$(ls 2>/dev/null -1R /opt/dimensions | grep cm/prog:$ | tr ":" "/" | cut -d'/' -f4)
-        echo "$DMITLN,$DMVER"
+        echo "$DMBIN,$DMVER"
         {% endif %}
       become: true
       register: result_binver
