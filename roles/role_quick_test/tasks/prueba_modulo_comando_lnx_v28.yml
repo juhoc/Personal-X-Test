@@ -25,7 +25,11 @@
       when: result_binver.stdout | length > 0
 
     - shell: |
-        echo "{{ inventory_hostname.split('.')[0] }},{{ hostvars[inventory_hostname].ipaddress }},Dimension {{ version if version else 'no instalado' }}"
+        {% if "binario in result_binver.stdout" %}
+        echo "{{ inventory_hostname.split('.')[0] }},{{ hostvars[inventory_hostname].ipaddress }},Dimension {{ version }}"
+        {% else %}
+        echo "{{ inventory_hostname.split('.')[0] }},{{ hostvars[inventory_hostname].ipaddress }},Dimension no instalado }}"
+        {% endif %}
       register: result_end
   ignore_unreachable: true
 #  failed_when: false
