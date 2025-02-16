@@ -14,6 +14,12 @@
       when: result_ping.unreachable is defined and result_ping.unreachable > 0
       delegate_to: localhost
 
+    - name: Mostrar nodos inalcanzables en un archivo
+      debug:
+        dms: "{{ inventory_hostname }}"
+      when: result_ping.unreachable is defined and result_ping.unreachable > 0
+      delegate_to: localhost
+
 #    - name: Validar version Dimensions
 #      become: true
 #      shell: df -h | awk '{print $6}' | grep \w*dimensions
