@@ -28,7 +28,7 @@
         echo "{{ inventory_hostname.split('.')[0] }},{{ hostvars[inventory_hostname].ipaddress }},Dimension {{ version if version else 'no instalado' }}"
       register: result_end
   ignore_unreachable: true
-#  failed_when: false
+  failed_when: false
 
 - name: Tareas por bloques - Resultado y despliegue de repote Dimensions
   block:
