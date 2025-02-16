@@ -16,7 +16,7 @@
 
     - name: Mostrar nodos inalcanzables en un archivo
       debug:
-        dms: "{{ inventory_hostname }}"
+        dmg: "{{ inventory_hostname }}"
       when: result_ping.unreachable is defined and result_ping.unreachable > 0
       delegate_to: localhost
 
