@@ -48,3 +48,8 @@
 #      debug: 
 #        msg: "{{ ansible_play_hosts | map('extract', hostvars, 'result_end') | map(attribute='stdout') | list }}"
 #      run_once: true
+
+    - name: Guardar nodos inalcanzables en un archivo
+      debug:
+        msg: "{{ inventory_hostname }}"
+      when: resultado_ping.unreachable is defined and resultado_ping.unreachable > 0
