@@ -43,8 +43,7 @@
         msg: "{{ ansible_play_hosts | map('extract', hostvars, 'result_end') | map(attribute='stdout') | list }}"
       run_once: true
 
-
-    - name: Show Report
-      debug: 
-        msg: "{{ ansible_play_hosts | map('extract', hostvars, 'result_end') | map(attribute='stdout') | list }}"
-      run_once: true
+#    - name: Show Report
+#      debug: 
+#        msg: "{{ ansible_play_hosts | map('extract', hostvars, 'result_end') | map(attribute='stdout') | list }}"
+#      run_once: true
