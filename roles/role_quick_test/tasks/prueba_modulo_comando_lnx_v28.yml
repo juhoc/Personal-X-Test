@@ -14,10 +14,11 @@
       when: result_ping.unreachable is defined and result_ping.unreachable > 0
       delegate_to: localhost
 
-    - name: Mostrar nodos inalcanzables en un archivo
-      debug:
-        msg: "{{ inventory_hostname }}"
-      when: result_ping.unreachable is defined and result_ping.unreachable > 0
+    - name: Registrar hosts inalcanzables
+      set_fact:
+        unrecheable: "{{ unrecheable + [(item | replace('.bvm.bluecare.kyndryl.net',''))+',,Unreachable playbook'] }}"
+      loop: "{{ ansible_play_hosts_all | difference(ansible_play_hosts) }}"
+      run_once: true
       delegate_to: localhost
 
 #    - name: Validar version Dimensions
