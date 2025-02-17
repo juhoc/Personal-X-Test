@@ -44,7 +44,7 @@
  ignore_unreachable: true
 
 - name: Tareas por bloques - Resultado y despliegue de repote Dimensions
- block:
+  block:
    - name: Show Report
      debug: 
        msg: "{{ ansible_play_hosts | map('extract', hostvars, 'result_end') | map(attribute='stdout') | list }}"
