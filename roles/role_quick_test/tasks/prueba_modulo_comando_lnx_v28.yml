@@ -1,52 +1,42 @@
 ---
 - name: Tareas por bloques - Validacion Instalacion Dimensions
   block:
-   - name: Validar version Dimensions
-     become: true
-     shell: df -h | awk '{print $6}' | grep \w*dimensions
-     register: result_fsct
+    - name: Validar version Dimensions
+      become: true
+      shell: df -h | awk '{print $6}' | grep \w*dimensions
+      register: result_fsct
 
-   - set_fact:
-       fsname: "{{ result_fsct.stdout | default('')  }}"
+    - set_fact:
+        fsname: "{{ result_fsct.stdout | default('')  }}"
 
-   - shell: |
-       {% if "fsname in result_fsct.stdout" %}
-       DMI#    - name: Validar version Dimensions
-     become: true
-     shell: df -h | awk '{print $6}' | grep \w*dimensions
-     register: result_fsct
+    - shell: |
+        {% if "fsname in result_fsct.stdout" %}
+        DMITLN="$(ls 2>/dev/null -1R /opt/dimensions | grep cm/prog:$ | tr ":" "/")"
+        DMBIN="$(ls -1 $DMITLN | grep dmstartup)"
+        DMVER=$(ls 2>/dev/null -1R /opt/dimensions | grep cm/prog:$ | tr ":" "/" | cut -d'/' -f4)
+        echo "$DMBIN,$DMVER"
+        {% endif %}
+      become: true
+      register: result_binver
+      when: fsname | length > 0
 
-   - set_fact:
-       fsname: "{{ result_fsct.stdout | default('')  }}"
+    - set_fact:
+        binario: "{{ result_binver.stdout.split(',')[0] | default('')  }}"
+        version: "{{ result_binver.stdout.split(',')[1] | default('')  }}"
 
-   - shell: |
-       {% if "fsname in result_fsct.stdout" %}
-       DMITLN="$(ls 2>/dev/null -1R /opt/dimensions | grep cm/prog:$ | tr ":" "/")"
-       DMBIN="$(ls -1 $DMITLN | grep dmstartup)"
-       DMVER=$(ls 2>/dev/null -1R /opt/dimensions | grep cm/prog:$ | tr ":" "/" | cut -d'/' -f4)
-       echo "$DMBIN,$DMVER"
-       {% endif %}
-     become: true
-     register: result_binver
-     when: fsname | length > 0
-
-   - set_fact:
-       binario: "{{ result_binver.stdout.split(',')[0] | default('')  }}"
-       version: "{{ result_binver.stdout.split(',')[1] | default('')  }}"
-
-   - shell: |
-       {% if binario == "dmstartup" %}
-       echo "{{ inventory_hostname.split('.')[0] }},{{ hostvars[inventory_hostname].ipaddress }},Dimension {{ version }}"
-       {% else %}
-       echo "{{ inventory_hostname.split('.')[0] }},{{ hostvars[inventory_hostname].ipaddress }},Dimension no instalado"
-       {% endif %}
-     register: result_end
- ignore_unreachable: true
+    - shell: |
+        {% if binario == "dmstartup" %}
+        echo "{{ inventory_hostname.split('.')[0] }},{{ hostvars[inventory_hostname].ipaddress }},Dimension {{ version }}"
+        {% else %}
+        echo "{{ inventory_hostname.split('.')[0] }},{{ hostvars[inventory_hostname].ipaddress }},Dimension no instalado"
+        {% endif %}
+      register: result_end
+  ignore_unreachable: true
 
 - name: Tareas por bloques - Resultado y despliegue de repote Dimensions
   block:
-   - name: Show Report
-     debug: 
-       msg: "{{ ansible_play_hosts | map('extract', hostvars, 'result_end') | map(attribute='stdout') | list }}"
-     run_once: true
+    - name: Show Report
+      debug: 
+        msg: "{{ ansible_play_hosts | map('extract', hostvars, 'result_end') | map(attribute='stdout') | list }}"
+      run_once: true
 
