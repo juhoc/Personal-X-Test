@@ -37,8 +37,6 @@
   block:
     - name: Show Report
       debug: 
-        msg: >-
-          Hostname,Direccion IP,Software
-          "{{ ansible_play_hosts | map('extract', hostvars, 'result_end') | map(attribute='stdout') | list }}"
+        msg: "{{ ansible_play_hosts | map('extract', hostvars, 'result_end') | map(attribute='stdout') | list }}"
       run_once: true
 
