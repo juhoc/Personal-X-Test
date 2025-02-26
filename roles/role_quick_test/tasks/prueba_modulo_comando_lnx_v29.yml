@@ -1,0 +1,26 @@
+---
+- name: Validar que media NetBackup de trasferira al equipo remoto Linux
+  block:
+    - name: Validar distribucion Linux para instalar NetBackup en equipos remotos
+      shell: |
+        if [ "{{ ansible_facts['distribution_file_variety'] }}{{ ansible_facts['distribution_major_version'] }}" = "SUSE12" ] || [ "{{ ansible_facts['distribution_file_variety'] }}{{ ansible_facts['distribution_major_version'] }}" = "SUSE15" ]; then
+          echo "Netbackup_10_1_1_SuSE.zip"
+        elif [ "{{ ansible_facts['distribution_file_variety'] }}{{ ansible_facts['distribution_major_version'] }}" = "RedHat7" ] || [ "{{ ansible_facts['distribution_file_variety'] }}{{ ansible_facts['distribution_major_version'] }}" = "RedHat8" ]; then
+          echo "Netbackup_10_1_1_RedHat.zip"
+        fi
+      register: existmvnb
+
+    - name: Resultado de la validacion de la disttribucion Linux para instalar NetBackup en equipos remotos
+      set_fact:
+        software: "{{ existmvnb.stdout | string }}"
+
+    - name: Borra media NetBackup
+      become: true
+      file:
+        path: "/tmp/{{ software }}"
+        state: absent
+
+    - name: Borrar directorio NetBackup en equipos remotos
+      file:
+        path: "{{ destino }}{{ instala }}"
+        state: absent
