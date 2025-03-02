@@ -69,7 +69,7 @@
     - name: Copiar la salida del ultimo reporte de csd_redhat_scan al servidor remoto
       become: true
       copy:
-        content: "{{ set_csd_linux | | join('\n') }}"
+        content: "{{ set_csd_linux | join('\n') }}"
         dest: "{{ fsasb }}/csd.{{ tiempo }}.{{ inventory_hostname.split('.')[0] }}.checklist.csv"
   delegate_to: asitsmaop2.bvm.bluecare.kyndryl.net
 
