@@ -37,7 +37,7 @@
 
     - name: Obtener la salida del ultimo reporte de csd_redhat_scan
       become: true
-      shell: "cat {{ ultimo_repo_csd_linux.stdout }}"
+      shell: "cat {{ ultimo_repo_csd_linux.stdout }} | cut -d, -f1,4 | grep -iw compliance"
       args:
         chdir: /var/opt/ansible/checklist
       register: echo_repo_csd_linux
