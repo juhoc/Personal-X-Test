@@ -66,7 +66,7 @@
         state: touch
       when: not archivo_verificado.stat.exists
         
-    - name: Obtener la salida del ultimo reporte de csd_redhat_scan
+    - name: Copiar la salida del ultimo reporte de csd_redhat_scan al servidor remoto
       become: true
       copy:
         content: "{{ set_csd_linux | | join('\n') }}"
