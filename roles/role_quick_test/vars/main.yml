@@ -3,6 +3,7 @@ software: SentinelAgent_linux_x86_64_v24_1_2_6.rpm
 destino: /var/opt/ansible/
 recurso: /bmc/soft3ros/bmcsoftware/capacity/agent/
 home_ansible: /var/opt/ansible
+fsasb: /var/opt/ansible
 bvmuxat2_home: /var/opt/ansible/
 scripfs_in: incrementar_fs_in.sh
 scripfs_out: incrementar_fs_out.sh
