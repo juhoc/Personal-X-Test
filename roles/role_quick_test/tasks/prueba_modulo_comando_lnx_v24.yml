@@ -57,12 +57,12 @@
 
     - name: Validar archivos esperados previas IPL del OS Linux
       stat:
-        path: "{{ fsasb }}/csd.{{ tiempo }}.{{ inventory_hostname.split('.')[0] }}.checklist.csv"
+        path: "{{ fsasb }}/csd.{{ tiempo }}.{{ inventory_hostname.split('.')[0] }}.checklist.txt"
       register: archivo_verificado
 
     - name: Crear archivos si no existen
       file:
-        path: "{{ fsasb }}/csd.{{ tiempo }}.{{ inventory_hostname.split('.')[0] }}.checklist.csv"
+        path: "{{ fsasb }}/csd.{{ tiempo }}.{{ inventory_hostname.split('.')[0] }}.checklist.txt"
         state: touch
       when: not archivo_verificado.stat.exists
         
@@ -70,7 +70,7 @@
       become: true
       copy:
         content: "{{ set_csd_linux | join('\n') }}"
-        dest: "{{ fsasb }}/csd.{{ tiempo }}.{{ inventory_hostname.split('.')[0] }}.checklist.csv"
+        dest: "{{ fsasb }}/csd.{{ tiempo }}.{{ inventory_hostname.split('.')[0] }}.checklist.txt"
   delegate_to: asitsmaop2.bvm.bluecare.kyndryl.net
 
 - name: Tareas por bloques - Envio de evidencias
