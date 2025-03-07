@@ -1,22 +1,16 @@
 ---
-- name: Pruebas de Unidades Windows
-  block:
-    - name: Validar si las unidad D:\ y/o V:\ existen
-      win_shell: Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Root
-      register: letradisco
+- name: Buscar y eliminar archivo en C:/Temp
+  tasks:
+    - name: Validar si existe el archivo UCDAgent.ps1
+      win_shell: |
+        $FicheroUDC = "C:\Temp\UCDAgent.ps1"
+        $ValidPath = Test-Path $FicheroUDC
+        $ServerName = hostname
+        If ($ValidPath -eq $True) {Write-Host "El fichero UDC Existe en el equipo $ServerName"} Else {Write-Host "El fichero UDC No Existe en el equipo $ServerName"}
+      register: fichero
 
-    - name: Filtrar unidades
-      set_fact:
-        unidad_ansible: "{{ letradisco.stdout_lines | select('match', '^D|^V') | list | replace('[', '' ) | replace(']', '' ) | trim | regex_replace(\"'\", '') }}"
-
-    - name: Mostrar unidades
-      debug:
-        msg: "{{ unidad_ansible }}"
-
-    - name: Crear directorio
+    - name: Eliminar archivo si existe
       win_file:
-        path: "{{ unidad_ansible }}TEMP"
-        state: directory
-
-    - name: Listar contenido de la unidad
-      win_shell: dir "{{ unidad_ansible }}"
+        path: C:\\Temp\\UCDAgent.ps1
+        state: absent
+      when: "'UDC Existe' in fichero.stdout"
