@@ -5,7 +5,6 @@
       win_shell: |
         $FicheroUDC = "C:\Temp\UDCAgent.ps1"
         $ValidPath = Test-Path $FicheroUDC
-        $ServerName = hostname
         If ($ValidPath -eq $True) {Write-Host "C:\Temp\UDCAgent.ps1.Borrado"} Else {Write-Host "C:\Temp\UDCAgent.ps1,No Existe"}
       register: fichero
 
