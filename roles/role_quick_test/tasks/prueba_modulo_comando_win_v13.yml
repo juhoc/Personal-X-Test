@@ -6,7 +6,7 @@
         $FicheroUDC = "C:\Temp\UCDAgent.ps1"
         $ValidPath = Test-Path $FicheroUDC
         $ServerName = hostname
-        If ($ValidPath -eq $True) {Write-Host "El fichero UDC Existe en el equipo $ServerName"} Else {Write-Host "El fichero UDC No Existe en el equipo $ServerName"}
+        If ($ValidPath -eq $True) {Write-Host "El fichero UDC Existe en el equipo $ServerName es borrado"} Else {Write-Host "El fichero UDC No Existe en el equipo $ServerName "}
       register: fichero
 
     - name: Eliminar archivo si existe
@@ -14,3 +14,7 @@
         path: C:\\Temp\\UCDAgent.ps1
         state: absent
       when: "'UDC Existe' in fichero.stdout"
+
+    - name: Eliminar archivo si existe
+      debug:
+        msg: 
