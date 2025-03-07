@@ -29,7 +29,7 @@
       register: resultado
       run_once: true
 
-    - name: Print Results
+    - name: Imprime rasultado
       set_stats: 
         data: 
           resultado: "{{ resultado.msg }}"
