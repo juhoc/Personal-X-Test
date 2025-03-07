@@ -11,7 +11,7 @@
 
     - name: Eliminar archivo si existe
       win_file:
-        path: C:\Temp\UCDAgent.ps1
+        path: C:\Temp\UDCAgent.ps1
         state: absent
       when: "'Borrado' in fichero.stdout"
 
