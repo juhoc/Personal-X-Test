@@ -3,10 +3,10 @@
   block:
     - name: Validar si existe el archivo UCDAgent.ps1
       win_shell: |
-        $FicheroUDC = "C:\TEMP\UCDAgent.ps1"
+        $FicheroUDC = "C:\\TEMP\\UCDAgent.ps1"
         $ValidPath = Test-Path $FicheroUDC
         $ServerName = hostname
-        If ($ValidPath -eq $True) {Write-Host "C:\Temp\UCDAgent.ps1.Borrado"} Else {Write-Host "C:\Temp\UCDAgent.ps1,No Existe"}
+        If ($ValidPath -eq $True) {Write-Host "C:\\Temp\\UCDAgent.ps1.Borrado"} Else {Write-Host "C:\\Temp\\UCDAgent.ps1,No Existe"}
       register: fichero
 
     - name: Eliminar archivo si existe
