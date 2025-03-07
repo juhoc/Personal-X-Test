@@ -27,11 +27,11 @@
     - name: Reporte archivo Eliminados
       debug: 
         msg: "{{ ansible_play_hosts | map('extract', hostvars, 'reporte_fichero') | map(attribute='stdout' | replace('\r', '') | replace('\n', '')) | list }}"
-      register: salida
+      register: resultaso
       run_once: true
 
     - name: Print Results
       set_stats: 
         data: 
-          salida: "{{ salida.msg }}"
+          resultaso: "{{ resultaso.msg }}"
       run_once: true
