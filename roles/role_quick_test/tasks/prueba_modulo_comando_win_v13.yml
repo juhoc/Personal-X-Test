@@ -6,15 +6,25 @@
         $FicheroUDC = "C:\Temp\UCDAgent.ps1"
         $ValidPath = Test-Path $FicheroUDC
         $ServerName = hostname
-        If ($ValidPath -eq $True) {Write-Host "El fichero UDC Existe en el equipo $ServerName es borrado"} Else {Write-Host "El fichero UDC No Existe en el equipo $ServerName "}
+        If ($ValidPath -eq $True) {Write-Host "C:\Temp\UCDAgent.ps1.Borrado"} Else {Write-Host "C:\Temp\UCDAgent.ps1,No Existe"}
       register: fichero
 
     - name: Eliminar archivo si existe
       win_file:
         path: C:\\Temp\\UCDAgent.ps1
         state: absent
-      when: "'UDC Existe' in fichero.stdout"
+      when: "'Borrado' in fichero.stdout"
 
-    - name: Eliminar archivo si existe
-      debug:
-        msg: 
+    - set_fact:
+        nombre_servidor: "{{ hostvars[inventory_hostname].ansible_hostname }}"
+        direccion_ip: "{{ hostvars[inventory_hostname].ipaddress }}"        
+        fichero_repo: "{{ fichero.stdout }}"
+
+    - win_shell: |
+        echo "{{ nombre_servidor }},{{ direccion_ip }},{{ fichero_repo | replace('\r', '') | replace('\n', '') | trim }}"
+      register: reporte_fichero        
+
+    - name: Reporte archivo Eliminados
+      debug: 
+        msg: "{{ ansible_play_hosts | map('extract', hostvars, 'reporte_fichero') | map(attribute='stdout' | replace('\r', '') | replace('\n', '')) | list }}"
+      run_once: true
