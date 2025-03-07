@@ -1,6 +1,6 @@
 ---
-- name: Buscar y eliminar archivo en C:/Temp
-  tasks:
+- name: Tareas por bloques - Validacion y Borrar
+  block:
     - name: Validar si existe el archivo UCDAgent.ps1
       win_shell: |
         $FicheroUDC = "C:\Temp\UCDAgent.ps1"
