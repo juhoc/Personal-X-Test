@@ -2,22 +2,30 @@
 - name: Validar usuario Qualys env. produccion
   become: true
   shell: id 2>/dev/null zmqalysp && echo zmqalysp || echo "Sin Usuario Productivo Qualys"
-  register: checkuid
+  register: checkuidp
   when: hostvars[inventory_hostname].entorno == "PR"
 
 - name: Validar usuario Qualys env. desarrollo
   become: true
   shell: id 2>/dev/null zmqalysd && echo zmqalysd || echo "Sin Usuario Desarrollo Qualys"
-  register: checkuid
+  register: checkuidd
   when: hostvars[inventory_hostname].entorno == "EP"
 
 - name: Resultado de la validacion de usuario Qualys
   assert:
     that:
-      - "'zmqalysp' in checkuid.stdout or 'zmqalysd' in checkuid.stdout"
+      - "'zmqalysp' in checkuidp.stdout"
     fail_msg: "{{ checkuid.stdout }}"
     success_msg: "El Usuario {{ checkuid.stdout }} de Qualys"
-  when: hostvars[inventory_hostname].entorno == "PR" or hostvars[inventory_hostname].entorno == "EP"
+  when: hostvars[inventory_hostname].entorno == "PR"
+
+- name: Resultado de la validacion de usuario Qualys
+  assert:
+    that:
+      - "'zmqalysd' in checkuidd.stdout"
+    fail_msg: "{{ checkuid.stdout }}"
+    success_msg: "El Usuario {{ checkuid.stdout }} de Qualys"
+  when: hostvars[inventory_hostname].entorno == "EP"
 
 - name: Validar espacio en el VGPROGPROD
   become: true
