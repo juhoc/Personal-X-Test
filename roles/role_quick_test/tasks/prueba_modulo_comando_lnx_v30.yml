@@ -37,7 +37,7 @@
     if (( $(echo "$vfree_GB < $vgsize" | bc -l) )); then
         echo KO
     else
-        echo "OK,$vgname,$vfree"
+        echo "$vgname,$vfree,OK"
     fi
   register: checkvg
 
@@ -45,5 +45,8 @@
   assert:
     that:
       - "'OK' in checkvg.stdout"
-    fail_msg: "Sin espacio VG"
-    success_msg: "Con espacio VG"
+    fail_msg: |
+      "El {{ checkvg.stdout.split(',')[0] }} no solo tiene espacio {{ checkvg.stdout.split(',')[1] }}, no se puede crear el FS Qualys"
+      "Se recomienda utilizar el Jobtempate bvm_jobtemplate_admin_logical_volume_manager_v2"
+      "Para agregar disco, expandir {{ checkvg.stdout.split(',')[1] }}"
+    success_msg: "El {{ checkvg.stdout.split(',')[0] }} tiene espacio de {{ checkvg.stdout.split(',')[1] }}, para crear el FS Qualys"
