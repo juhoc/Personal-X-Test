@@ -1,0 +1,33 @@
+---
+- name: Validar usuario Qualys env. produccion
+  become: true
+  shell: id 2>/dev/null zmqalysp && echo zmqalysp || echo "Sin Usuario Productivo Qualys"
+  register: checkuid
+  when: hostvars[inventory_hostname].entorno == "PR"
+
+- name: Validar usuario Qualys env. desarrollo
+  become: true
+  shell: id 2>/dev/null zmqalysd && echo zmqalysd || echo "Sin Usuario Desarrollo Qualys"
+  register: checkuid
+  when: hostvars[inventory_hostname].entorno == "EP"
+
+- name: Resultado de la validacion de usuario Qualys
+  assert:
+    that:
+      - "'zmqalysp' in checkuid.stdout or 'zmqalysd' in checkuid.stdout"
+    fail_msg: "{{ checkuid.stdout }}"
+    success_msg: "El Usuario {{ checkuid.stdout }} de Qualys"
+  when: hostvars[inventory_hostname].entorno == "PR" or hostvars[inventory_hostname].entorno == "EP"
+
+- name: Validar espacio en el VGPROGPROD
+  become: true
+  shell: |
+    VG_NAME=VGPROGPROD
+    VFree=$(vgs --units g --noheadings -o vg_free $VG_NAME | tr -d ' ')
+    VFree_GB=$(echo $VFree | tr -d 'gG')
+    REQUIRED_SPACE=1.00
+    if (( $(echo "$VFree_GB < $REQUIRED_SPACE" | bc -l) )); then
+        echo KO
+    else
+        echo OK
+    fi
