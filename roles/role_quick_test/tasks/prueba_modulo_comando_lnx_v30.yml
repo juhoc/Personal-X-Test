@@ -10,7 +10,7 @@
     that:
       - "'zmqalysp' in checkuidp.stdout"
     fail_msg: "{{ checkuidp.stdout }}"
-    success_msg: "El Usuario {{ checkuid.stdout }} de Qualys"
+    success_msg: "El Usuario {{ checkuidp.stdout }} de Qualys"
   when: hostvars[inventory_hostname].entorno == "PR"
 
 - name: Validar usuario Qualys env. desarrollo
@@ -24,7 +24,7 @@
     that:
       - "'zmqalysd' in checkuidd.stdout"
     fail_msg: "{{ checkuidd.stdout }}"
-    success_msg: "El Usuario {{ checkuid.stdout }} de Qualys"
+    success_msg: "El Usuario {{ checkuidd.stdout }} de Qualys"
   when: hostvars[inventory_hostname].entorno == "EP"
 
 - name: Validar espacio en el VGPROGPROD
