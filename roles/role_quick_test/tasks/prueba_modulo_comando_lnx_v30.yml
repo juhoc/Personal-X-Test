@@ -5,6 +5,14 @@
   register: checkuidp
   when: hostvars[inventory_hostname].entorno == "PR"
 
+- name: Resultado de la validacion de usuario Qualys
+  assert:
+    that:
+      - "'zmqalysp' in checkuidp.stdout"
+    fail_msg: "{{ checkuidp.stdout }}"
+    success_msg: "El Usuario {{ checkuid.stdout }} de Qualys"
+  when: hostvars[inventory_hostname].entorno == "PR"
+
 - name: Validar usuario Qualys env. desarrollo
   become: true
   shell: id 2>/dev/null zmqalysd && echo zmqalysd || echo "Sin Usuario Desarrollo Qualys"
@@ -14,16 +22,8 @@
 - name: Resultado de la validacion de usuario Qualys
   assert:
     that:
-      - "'zmqalysp' in checkuidp.stdout"
-    fail_msg: "{{ checkuid.stdout }}"
-    success_msg: "El Usuario {{ checkuid.stdout }} de Qualys"
-  when: hostvars[inventory_hostname].entorno == "PR"
-
-- name: Resultado de la validacion de usuario Qualys
-  assert:
-    that:
       - "'zmqalysd' in checkuidd.stdout"
-    fail_msg: "{{ checkuid.stdout }}"
+    fail_msg: "{{ checkuidd.stdout }}"
     success_msg: "El Usuario {{ checkuid.stdout }} de Qualys"
   when: hostvars[inventory_hostname].entorno == "EP"
 
