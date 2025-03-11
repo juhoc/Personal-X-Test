@@ -30,12 +30,17 @@
 - name: Validar espacio en el VGPROGPROD
   become: true
   shell: |
-    VG_NAME=VGPROGPROD
-    VFree=$(vgs --units g --noheadings -o vg_free $VG_NAME | tr -d ' ')
+#    VG_NAME=VGPROGPROD
+#    VFree=$(vgs --units g --noheadings -o vg_free $VG_NAME | tr -d ' ')
+    VFree=$(vgs --units g --noheadings -o vg_free {{ vgname }} | tr -d ' ')
     VFree_GB=$(echo $VFree | tr -d 'gG')
-    REQUIRED_SPACE=1.00
-    if (( $(echo "$VFree_GB < $REQUIRED_SPACE" | bc -l) )); then
+#    REQUIRED_SPACE=1.01
+    if (( $(echo "$VFree_GB < {{ vgsize }}" | bc -l) )); then
         echo KO
     else
-        echo OK
+        echo 
     fi
+
+- name: Validar espacio en el VGPROGPROD
+  become: true
+  shell: 
