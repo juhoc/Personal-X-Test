@@ -31,15 +31,19 @@
   become: true
   shell: |
     vgname=VGPROGPROD
-    VFree=$(vgs --units g --noheadings -o vg_free $vgname | tr -d ' ')
-    VFree_GB=$(echo $VFree | tr -d 'gG')
+    vfree=$(vgs --units g --noheadings -o vg_free $vgname | tr -d ' ')
+    vfree_GB=$(echo $vfree | tr -d 'gG')
     vgsize=1.01
-    if (( $(echo "$VFree_GB < $vgsize" | bc -l) )); then
+    if (( $(echo "$vfree_GB < $vgsize" | bc -l) )); then
         echo KO
     else
-        echo OK
+        echo "OK,$vgname,$vfree"
     fi
+  register: checkvg
 
-- name: Validar espacio en el VGPROGPROD
-  become: true
-  shell: 
+- name: Resultado de la validacion de usuario Qualys
+  assert:
+    that:
+      - "'OK' in checkvg.stdout"
+    fail_msg: "Sin espacio VG"
+    success_msg: "Con espacio VG"
