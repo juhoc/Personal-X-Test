@@ -37,7 +37,7 @@
     if (( $(echo "$VFree_GB < $vgsize" | bc -l) )); then
         echo KO
     else
-        echo 
+        echo OK
     fi
 
 - name: Validar espacio en el VGPROGPROD
