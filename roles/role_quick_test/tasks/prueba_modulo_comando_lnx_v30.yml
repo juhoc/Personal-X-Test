@@ -1,30 +1,40 @@
 ---
-- name: Validar usuario Qualys env. produccion
-  become: true
-  shell: getent passwd | grep -qw zmqalysp >/dev/null && echo "Usuario zmqalysp existe en el servidor" || echo "Sin Usuario Desarrollo Qualys"
-  register: checkuidp
+- name: Validacion de usuario Qualys PR
+  block:
+    - name: Validar usuario Qualys env. produccion
+      become: true
+      shell:  getent passwd | grep -qw zmqalysp >/dev/null && echo "Usuario zmqalysp existe en el servidor" || echo "Sin Usuario Desarrollo Qualys"
+      register: checkuidp
+    
+    - name: Resultado de la validacion de usuario Qualys
+      assert:
+        that:
+          - "'zmqalysp' in checkuidp.stdout"
+        fail_msg: "{{ checkuidp.stdout }}"
+        success_msg: "{{ checkuidp.stdout }}"
   when: hostvars[inventory_hostname].entorno == "PR"
 
-- name: Resultado de la validacion de usuario Qualys
-  assert:
-    that:
-      - "'zmqalysp' in checkuidp.stdout"
-    fail_msg: "{{ checkuidp.stdout }}"
-    success_msg: "{{ checkuidp.stdout }}"
-  when: hostvars[inventory_hostname].entorno == "PR"
-
-- name: Validar usuario Qualys env. desarrollo
-  become: true
-  shell: getent passwd | grep -qw zmqalysd >/dev/null && echo "Usuario zmqalysd existe en el servidor" || echo "Sin Usuario Desarrollo Qualys"
-  register: checkuidd
-  when: hostvars[inventory_hostname].entorno == "EP"
-
-- name: Resultado de la validacion de usuario Qualys
-  assert:
-    that:
-      - "'zmqalysd' in checkuidd.stdout"
-    fail_msg: "{{ checkuidd.stdout }}"
-    success_msg: "{{ checkuidd.stdout }}"
+- name: Validacion de usuario Qualys EP
+  block:
+    - name: Validar usuario Qualys env. desarrollo
+      become: true
+#      shell: getent passwd | grep -qw zmqalysd >/dev/null && echo "Usuario zmqalysd existe en el servidor" || echo "Sin Usuario Desarrollo Qualys"
+      shell:
+        ugidqlys=$(id 2>/dev/null zmqalysd | tr -s '= ()' ',' | cut -d, -f3,6)
+        if [ "$ugidqlys" = "zmqalysd,grpalysd" ]; then
+          echo "zmqalysd,grpalysd,OK"
+        else
+          echo "zmqalysd,grpalysd,KO"
+        fi
+      register: checkuidd
+      when: hostvars[inventory_hostname].entorno == "EP"
+    
+    - name: Resultado de la validacion de usuario Qualys
+      assert:
+        that:
+          - "'OK' in checkuidd.stdout"
+        fail_msg: "Resultado: {{ checkuidd.stdout }}"
+        success_msg: "Resultado: {{ checkuidd.stdout }}"
   when: hostvars[inventory_hostname].entorno == "EP"
 
 - name: Validar espacio en el VGPROGPROD
