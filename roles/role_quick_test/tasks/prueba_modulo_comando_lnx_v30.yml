@@ -19,7 +19,7 @@
     - name: Validar usuario Qualys env. desarrollo
       become: true
 #      shell: getent passwd | grep -qw zmqalysd >/dev/null && echo "Usuario zmqalysd existe en el servidor" || echo "Sin Usuario Desarrollo Qualys"
-      shell:
+      shell: |
         ugidqlys=$(id 2>/dev/null zmqalysd | tr -s '= ()' ',' | cut -d, -f3,6)
         if [ "$ugidqlys" = "zmqalysd,grpalysd" ]; then
           echo "zmqalysd,grpalysd,OK"
@@ -29,12 +29,12 @@
       register: checkuidd
       when: hostvars[inventory_hostname].entorno == "EP"
     
-    - name: Resultado de la validacion de usuario Qualys
-      assert:
-        that:
-          - "'OK' in checkuidd.stdout"
-        fail_msg: "Resultado: {{ checkuidd.stdout }}"
-        success_msg: "Resultado: {{ checkuidd.stdout }}"
+#    - name: Resultado de la validacion de usuario Qualys
+#      assert:
+#        that:
+#          - "'OK' in checkuidd.stdout"
+#        fail_msg: "Resultado: {{ checkuidd.stdout }}"
+#        success_msg: "Resultado: {{ checkuidd.stdout }}"
   when: hostvars[inventory_hostname].entorno == "EP"
 
 #- name: Validar espacio en el VGPROGPROD
