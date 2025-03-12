@@ -29,12 +29,12 @@
       register: checkuidd
       when: hostvars[inventory_hostname].entorno == "EP"
     
-#    - name: Resultado de la validacion de usuario Qualys
-#      assert:
-#        that:
-#          - "'OK' in checkuidd.stdout"
-#        fail_msg: "Resultado: {{ checkuidd.stdout }}"
-#        success_msg: "Resultado: {{ checkuidd.stdout }}"
+    - name: Resultado de la validacion de usuario Qualys
+      assert:
+        that:
+          - "'OK' in checkuidd.stdout"
+        fail_msg: "Resultado: {{ checkuidd.stdout }}"
+        success_msg: "Resultado: {{ checkuidd.stdout }}"
   when: hostvars[inventory_hostname].entorno == "EP"
 
 #- name: Validar espacio en el VGPROGPROD
