@@ -1,7 +1,7 @@
 ---
 - name: Validar usuario Qualys env. produccion
   become: true
-  shell: grep -qw zmqalysp /etc/passwd >/dev/null && echo "Usuario zmqalysp existe en el servidor" || echo "Sin Usuario Desarrollo Qualys"
+  shell: getent passwd | grep -qw zmqalysp >/dev/null && echo "Usuario zmqalysp existe en el servidor" || echo "Sin Usuario Desarrollo Qualys"
   register: checkuidp
   when: hostvars[inventory_hostname].entorno == "PR"
 
@@ -15,7 +15,7 @@
 
 - name: Validar usuario Qualys env. desarrollo
   become: true
-  shell: grep -qw zmqalysd /etc/passwd >/dev/null && echo "Usuario zmqalysd existe en el servidor" || echo "Sin Usuario Desarrollo Qualys"
+  shell: getent passwd | grep -qw zmqalysd >/dev/null && echo "Usuario zmqalysd existe en el servidor" || echo "Sin Usuario Desarrollo Qualys"
   register: checkuidd
   when: hostvars[inventory_hostname].entorno == "EP"
 
