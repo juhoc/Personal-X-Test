@@ -1,6 +1,6 @@
 ---
 - block:
-    - name: Validar usuario Qualys entorno PR
+    - name: Validar - usuario Qualys entorno PR
       become: true
       shell: |
         ugidqlys=$(id 2>/dev/null zmqalysd | tr -s '= ()' ',' | cut -d, -f3,6)
@@ -11,7 +11,7 @@
         fi
       register: checkuid
     
-    - name: Resultado de la validacion de usuario Qualys
+    - name: Resultado - usuario Qualys entorno PR
       assert:
         that:
           - "'OK' in checkuid.stdout"
@@ -20,7 +20,7 @@
   when: hostvars[inventory_hostname].entorno == "PR"
 
 - block:
-    - name: Validar usuario Qualys entorno EP
+    - name: Validar - usuario Qualys entorno EP
       become: true
       shell: |
         ugidqlys=$(id 2>/dev/null zmqalysd | tr -s '= ()' ',' | cut -d, -f3,6)
@@ -31,7 +31,7 @@
         fi
       register: checkuid
     
-    - name: Resultado de la validacion de usuario Qualys
+    - name: Resultado - usuario Qualys entorno EP
       assert:
         that:
           - "'OK' in checkuid.stdout"
