@@ -23,11 +23,18 @@
     - name: Validar - usuario Qualys entorno EP
       become: true
       shell: |
-        ugidqlys=$(id 2>/dev/null zmqalysd | tr -s '= ()' ',' | cut -d, -f3,6)
-        if [ "$ugidqlys" = "zmqalysd,grpalysd" ]; then
+#        ugidqlys=$(id 2>/dev/null zmqalysd | tr -s '= ()' ',' | cut -d, -f3,6)
+        usrqlys=$(getent passwd | grep ^zmqalysd | cut -d':' -f1)
+        groqlys=$(getent group | grep ^grpalysd | cut -d':' -f1)
+
+        if [ "$usrqlys,$groqlys" = "zmqalysd,grpalysd" ]; then
           echo "zmqalysd,grpalysd,OK"
-        else
-          echo "zmqalysd,grpalysd,KO"
+        elif [ "$usrqlys,$groqlys" = "zmqalysd," ]; then
+          echo "zmqalysd,sin grupo,KO"
+        elif [ "$usrqlys,$groqlys" = ",grpalysd" ]; then
+          echo "sin usuario,grpalysd,KO"
+        elif [ "$usrqlys,$groqlys" = "," ]; then
+          echo "sin usuario,sin grupo,KO"
         fi
       register: checkuid
     
