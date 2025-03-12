@@ -37,56 +37,57 @@
         success_msg: "Resultado: {{ checkuidd.stdout }}"
   when: hostvars[inventory_hostname].entorno == "EP"
 
-- name: Validar espacio en el VGPROGPROD
-  become: true
-  shell: |
-    vgname=VGPROGPROD
-    vfree=$(vgs --units g --noheadings -o vg_free $vgname | tr -d ' ')
-    vfree_GB=$(echo $vfree | tr -d 'gG')
-    vgsize=1.01
-    if (( $(echo "$vfree_GB < $vgsize" | bc -l) )); then
-        echo KO
-    else
-        echo "$vgname,$vfree,OK"
-    fi
-  register: checkvg
-
-- name: Resultado de la validacion de usuario Qualys
-  assert:
-    that:
-      - "'OK' in checkvg.stdout"
-    fail_msg: |
-      - "El {{ checkvg.stdout.split(',')[0] }} no solo tiene espacio {{ checkvg.stdout.split(',')[1] }}, no se puede crear el FS Qualys"
-      - "Se recomienda utilizar el Jobtempate bvm_jobtemplate_admin_logical_volume_manager_v2"
-      - "Para agregar disco, expandir {{ checkvg.stdout.split(',')[1] }}"
-    success_msg: "El {{ checkvg.stdout.split(',')[0] }} tiene espacio de {{ checkvg.stdout.split(',')[1] }}, para crear el FS Qualys"
-
-- name: Crear LogicaVolume LVQUALYS
-  become: true
-  lvol:
-    vg: "{{ checkvg.stdout.split(',')[0] }}"
-    lv: LVQUALYS
-    size: 1.09g
-    force: yes
-
-- name: Crear punto de montura Qualys
-  become: true
-  file:
-    path: /qualys
-    state: directory
-    mode: "0755"
-
-- name: Formatear LogicaVolume LVQUALYS
-  become: true
-  filesystem:
-    fstype: xfs
-    dev: "/dev/{{ checkvg.stdout.split(',')[0] }}/LVQUALYS"
-
-- name: Montar el LogicaVolume LVQUALYS
-  become: true
-  mount:
-    path: /qualys
-    src: "/dev/{{ checkvg.stdout.split(',')[0] }}/LVQUALYS"
-    fstype: xfs
-    state: mounted
-
+#- name: Validar espacio en el VGPROGPROD
+#  become: true
+#  shell: |
+#    vgname=VGPROGPROD
+#    vfree=$(vgs --units g --noheadings -o vg_free $vgname | tr -d ' ')
+#    vfree_GB=$(echo $vfree | tr -d 'gG')
+#    vgsize=1.01
+#    if (( $(echo "$vfree_GB < $vgsize" | bc -l) )); then
+#        echo KO
+#    else
+#        echo "$vgname,$vfree,OK"
+#    fi
+#  register: checkvg
+#
+#- name: Resultado de la validacion de usuario Qualys
+#  assert:
+#    that:
+#      - "'OK' in checkvg.stdout"
+#    fail_msg: |
+#      - "El {{ checkvg.stdout.split(',')[0] }} no solo tiene espacio {{ checkvg.stdout.split(',')[1] }}, no se puede crear el FS Qualys"
+#      - "Se recomienda utilizar el Jobtempate bvm_jobtemplate_admin_logical_volume_manager_v2"
+#      - "Para agregar disco, expandir {{ checkvg.stdout.split(',')[1] }}"
+#    success_msg: "El {{ checkvg.stdout.split(',')[0] }} tiene espacio de {{ checkvg.stdout.split(',')[1] }}, para crear el FS Qualys"
+#
+#- name: Crear LogicaVolume LVQUALYS
+#  become: true
+#  lvol:
+#    vg: "{{ checkvg.stdout.split(',')[0] }}"
+#    lv: LVQUALYS
+#    size: 1.09g
+#    force: yes
+#
+#- name: Crear punto de montura Qualys
+#  become: true
+#  file:
+#    path: /qualys
+#    state: directory
+#    mode: "0755"
+#
+#- name: Formatear LogicaVolume LVQUALYS
+#  become: true
+#  filesystem:
+#    fstype: xfs
+#    dev: "/dev/{{ checkvg.stdout.split(',')[0] }}/LVQUALYS"
+#
+#- name: Montar el LogicaVolume LVQUALYS
+#  become: true
+#  mount:
+#    path: /qualys
+#    src: "/dev/{{ checkvg.stdout.split(',')[0] }}/LVQUALYS"
+#    fstype: xfs
+#    state: mounted
+#
+#
