@@ -77,6 +77,6 @@
   mount:
     path: /qualys
     src: "/dev/{{ checkvg.stdout.split(',')[0] }}/LVQUALYS"
-    fstype: "{{ xfs }}"
+    fstype: xfs
     state: mounted
 
