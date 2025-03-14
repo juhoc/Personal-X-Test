@@ -1,0 +1,30 @@
+---
+- name: Instalación de libreria (RedHat)
+  become: true
+  shell: echo "Instalan RPM Qualys en Base RHEL"
+  when: release == "AlmaLinux"
+
+- name: Instalación de libreria (SUSE)
+  become: true
+  become: true
+  shell: echo "Instalan RPM Qualys en SuSE"
+  when: release == "SLES"
+    
+- name: Validacion de archivo
+  become: true
+  shell: echo 1
+  register: validacion
+
+- name: Si no existe archivo se crea y agrega proxy
+  include_tasks: val_archivo.yml
+  when: validacion.stdout == "0"
+
+- name: Reinicio de servicio
+  become: true
+  shell: systemctl restart qualys-cloud-agent
+
+- name: Borra TMP
+  become: true
+  file:
+    path: /var/opt/ansible/QualysCloudAgent.rpm
+    state: absent

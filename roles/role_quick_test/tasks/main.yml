@@ -1,5 +1,8 @@
-- name: Quick test include task
+- name: Quick test secuencia 0 include task
   include_tasks: "{{ tarea }}.yml"
+
+- name: Quick test secuecia 1 include task
+  include_tasks: prueba_modulo_comando_lnx_v30_s1.yml
 
 #  when: 
 #    - hostvars[inventory_hostname]['ostype'] != 'windows'

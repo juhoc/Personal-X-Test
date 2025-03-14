@@ -1,0 +1,33 @@
+---
+- name: Instalacion del agente QualysCloudAgent
+  block:
+    - name: Validar si el agente se encuentra instalado previamente
+      become: true
+      shell: echo 1
+      register: valqualys
+
+    - name: Si esta instalado
+      include_tasks: prueba_modulo_comando_lnx_v30_s3.yml
+      when: valqualys.stdout == "1"
+
+    - name: Valida y crea FS
+      include_tasks: prueba_modulo_comando_lnx_v30_s4.yml
+
+    - name: Si no esta instalado
+      include_tasks: prueba_modulo_comando_lnx_v30_s5.yml
+      when: valqualys.stdout == "0" and 
+
+    - name: Activa BlackOut
+      include_tasks: activa_bo.yml
+
+- name: Making Report
+  block:
+    - name: Gather Summary
+      shell: |
+        echo "{{ hostvars[inventory_hostname].ansible_hostname }};{{ hostvars[inventory_hostname].ipaddress }};{{ valqualys.stdout | replace('1','Agente ya instalado') | replace('0','Agente nuevo instalado') }}"
+      register: summary
+  
+    - name: Show Report
+      debug: 
+        msg: "{{ ansible_play_hosts | map('extract', hostvars, 'summary') | map(attribute='stdout') | list }}"
+      run_once: yes

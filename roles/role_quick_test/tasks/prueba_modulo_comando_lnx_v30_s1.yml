@@ -1,0 +1,7 @@
+---
+- name: Transferencia media Qualys
+  block:   
+   - name: Copiar media Qualys
+     copy:
+       src: "files/QualysCloudAgent.rpm"
+       dest: /var/opt/ansible/

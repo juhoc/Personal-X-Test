@@ -110,3 +110,12 @@ passphrase_ccrbao: !vault |
 #----
 vgname: VGPROGPROD
 vgsize: 1.01
+
+
+proxy_ep: "http://150.250.71.68:1080"
+proxy_pr: "http://150.82.4.49:1080;http://150.82.4.50:1080"
+id_activacion: "b5539439-a986-4e51-8aed-01d2ebae1e6e"
+id_customer: "a1ac927b-0a89-c7ed-80ad-a805c8e3809e"
+release: "{{ ansible_facts['distribution'] }}"
+entorno: "{{ hostvars[inventory_hostname]['entorno'] }}"
+ip: "{{ ansible_facts['default_ipv4'] ['address'] }}"

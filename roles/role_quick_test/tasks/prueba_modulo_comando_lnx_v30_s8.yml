@@ -15,6 +15,13 @@
           echo "sin usuario,sin grupo,KO"
         fi
       register: checkuid
+    
+    - name: Resultado - usuario Qualys entorno PR
+      assert:
+        that:
+          - "'OK' in checkuid.stdout"
+        fail_msg: "Resultado: {{ checkuid.stdout }}"
+        success_msg: "Resultado: {{ checkuid.stdout }}"
   when: hostvars[inventory_hostname].entorno == "PR"
 
 - block:
@@ -33,6 +40,13 @@
           echo "sin usuario,sin grupo,KO"
         fi
       register: checkuid
+    
+    - name: Resultado - usuario Qualys entorno EP
+      assert:
+        that:
+          - "'OK' in checkuid.stdout"
+        fail_msg: "Resultado: {{ checkuid.stdout }}"
+        success_msg: "Resultado: {{ checkuid.stdout }}"
   when: hostvars[inventory_hostname].entorno == "EP"
 
 - block:
