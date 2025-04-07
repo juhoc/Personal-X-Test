@@ -35,5 +35,5 @@
       args:
         executable: /bin/bash
 #        chdir: /bmc/soft3ros/veritas/netbackup/agents
-      no_log: false        
+      no_log: true        
       delegate_to: asitsmaop0.bvm.bluecare.kyndryl.net
