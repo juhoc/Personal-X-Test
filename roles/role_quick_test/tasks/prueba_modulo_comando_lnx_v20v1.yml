@@ -30,8 +30,8 @@
         echo "{{ mi_passphrase }}" | ssh-add /home/ccrbao/.ssh/id_rsa
         scp -o StrictHostKeyChecking=no ccrbao@{{ item }}:/tmp/My_XML_File.xml /tmp
       loop: "{{ ip_host.split(',') }}"
-      args:
-        executable: /bin/bash
-        chdir: /bmc/soft3ros/veritas/netbackup/agents
-      no_log: true        
+#      args:
+#        executable: /bin/bash
+#        chdir: /bmc/soft3ros/veritas/netbackup/agents
+#      no_log: true        
       delegate_to: asitsmaop0.bvm.bluecare.kyndryl.net
