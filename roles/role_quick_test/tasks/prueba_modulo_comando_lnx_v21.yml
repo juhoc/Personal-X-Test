@@ -10,7 +10,7 @@
       run_once: true
       delegate_to: localhost
 
-    - name: Copiar archivo con sftp utilizando passphrase
+    - name: Trasnsferir archivo con sftp utilizando passphrase
       become: true
       become_user: ccrbao
       become_method: su
@@ -21,6 +21,17 @@
         sftp -o StrictHostKeyChecking=no ccrbao@{{ hostvars[inventory_hostname].ipaddress }}:/tmp <<< $'put {{ software }}'
       args:
         executable: /bin/bash
-        chdir: /bmc/soft3ros/veritas/netbackup/agents
+        chdir: "{{ rponbu }}"
       no_log: false      
       delegate_to: asitsmaop0.bvm.bluecare.kyndryl.net
+
+    - name: Copiar archivo /var/opt/ansible
+      become: true
+      copy:
+        src: "{{ software }}"
+        dest: "{{ pathasb }}"
+        owner: bvmuxat2
+        group: automate
+      remote_src: true
+      args:
+        chdir: /tmp
