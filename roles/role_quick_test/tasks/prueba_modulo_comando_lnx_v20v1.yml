@@ -29,11 +29,11 @@
       shell: |
         eval $(ssh-agent -s)
         echo "{{ mi_passphrase }}" | ssh-add /home/ccrbao/.ssh/id_rsa
-        scp -o StrictHostKeyChecking=no ccrbao@{{ hostvars[inventory_hostname].ipaddress }}:/tmp/My_XML_File.xml /tmp
+        scp -o StrictHostKeyChecking=no ccrbao@{{ hostvars[inventory_hostname].ipaddress }}:My_XML_File.xml /tmp
 #      loop: "{{ ip_host }}"
 #      loop: "{{ ip_host.split(',') }}"
       args:
         executable: /bin/bash
-#        chdir: /bmc/soft3ros/veritas/netbackup/agents
+        chdir: /tmp
       no_log: true        
       delegate_to: asitsmaop0.bvm.bluecare.kyndryl.net
