@@ -10,28 +10,28 @@
       run_once: true
       delegate_to: localhost
 
-    - name: Validar usuarios
+#    - name: Validar usuarios
+#      become: true
+#      become_user: ccrbao
+#      become_method: su
+#      become_exe: sudo su -
+#      shell: "echo IP: {{ item }}"
+#      args:
+#        executable: /bin/bash
+#      loop: "{{ ip_host }}"
+#      loop: "{{ ip_host.split(',') }}"
+
+    - name: Copiar archivo con scp usando la credencial de AWX
       become: true
       become_user: ccrbao
       become_method: su
       become_exe: sudo su -
-      shell: "echo IP: {{ item }}"
-      args:
-        executable: /bin/bash
-#      loop: "{{ ip_host }}"
-      loop: "{{ ip_host.split(',') }}"
-
-    - name: Copiar archivo con scp usando la credencial de AWX
-      become: true
-#      become_user: ccrbao
-#      become_method: su
-#      become_exe: sudo su -
       shell: |
         eval $(ssh-agent -s)
         echo "{{ mi_passphrase }}" | ssh-add /home/ccrbao/.ssh/id_rsa
-        scp -o StrictHostKeyChecking=no ccrbao@{{ item }}:/tmp/My_XML_File.xml /tmp
+        scp -o StrictHostKeyChecking=no ccrbao@{{ hostvars[inventory_hostname].ipaddress }}:/tmp/My_XML_File.xml /tmp
 #      loop: "{{ ip_host }}"
-      loop: "{{ ip_host.split(',') }}"
+#      loop: "{{ ip_host.split(',') }}"
       args:
         executable: /bin/bash
 #        chdir: /bmc/soft3ros/veritas/netbackup/agents
