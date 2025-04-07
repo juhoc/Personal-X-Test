@@ -10,7 +10,17 @@
       run_once: true
       delegate_to: localhost
 
-    - name: Trasnsferir archivo con sftp utilizando passphrase
+    - name: Validar usuarios
+      become: true
+      become_user: ccrbao
+      become_method: su
+      become_exe: sudo su -
+      shell: "echo IP: {{ item }}"
+      args:
+        executable: /bin/bash
+      loop: "{{ ip_host.split(',') }}"
+
+    - name: Copiar archivo con scp usando la credencial de AWX
       become: true
       become_user: ccrbao
       become_method: su
@@ -18,9 +28,10 @@
       shell: |
         eval $(ssh-agent -s)
         echo "{{ mi_passphrase }}" | ssh-add /home/ccrbao/.ssh/id_rsa
-        sftp -o StrictHostKeyChecking=no ccrbao@{{ hostvars[inventory_hostname].ipaddress }}:/tmp/My_XML_File.xml /tmp'
-#      args:
-#        executable: /bin/bash
-#        chdir: "{{ rponbu }}"
-#      no_log: false      
+        scp -o StrictHostKeyChecking=no ccrbao@{{ item }}:/tmp/My_XML_File.xml /tmp
+      loop: "{{ ip_host.split(',') }}"
+      args:
+        executable: /bin/bash
+        chdir: /bmc/soft3ros/veritas/netbackup/agents
+      no_log: true        
       delegate_to: asitsmaop0.bvm.bluecare.kyndryl.net
