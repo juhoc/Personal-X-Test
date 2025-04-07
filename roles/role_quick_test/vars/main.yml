@@ -46,7 +46,7 @@ dim_siop18: 3
 
 #---variables correo
 #bvmuxat2_home: /var/opt/ansible/
-smtp: 192.168.0.60
+smtp: 192.168.56.5
 smtpport: 25
 mailfrom: itoperationintegration.mx@company-xz.net
 mailto: julio.cesar.hoyos.corredor@company-xz.net
