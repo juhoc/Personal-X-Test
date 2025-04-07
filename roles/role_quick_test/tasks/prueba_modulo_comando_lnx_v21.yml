@@ -28,8 +28,10 @@
     - name: Copiar archivo a directprop ansible
       become: true
       copy:
-        src: "/tmp/{{ software }}"
+        src: "{{ software }}"
         dest: "{{ pathasb }}"
         owner: bvmuxat2
         group: automate
-      remote_src: true
+        remote_src: true
+      args:
+        chdir: /tmp
