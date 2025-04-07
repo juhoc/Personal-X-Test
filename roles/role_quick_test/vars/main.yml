@@ -96,7 +96,7 @@ unidadpaca: P:\installers\
 api_rest_bao: https://150.100.43.207
 api_rest_bao_port: 38080
 remote_path: /aplicativo/home/ccrbao/baoAnsible/
-mi_passphrase: 'cDQ1NVcwcmRjaDRnM2k3Nw=='
+#mi_passphrase: 'cDQ1NVcwcmRjaDRnM2k3Nw=='
 
 mi_passphrase: !vault |
       $ANSIBLE_VAULT;1.1;AES256
