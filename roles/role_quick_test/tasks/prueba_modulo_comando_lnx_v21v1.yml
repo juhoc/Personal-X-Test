@@ -17,7 +17,7 @@
       become_exe: sudo su -
       shell: |
         eval $(ssh-agent -s)
-        echo '{{ mi_passphrase }}' | ssh-add /home/ccrbao/.ssh/id_rsa
+        echo {{ mi_passphrase }} | ssh-add /home/ccrbao/.ssh/id_rsa
         sftp -o StrictHostKeyChecking=no ccrbao@{{ hostvars[inventory_hostname].ipaddress }}:/tmp/My_XML_File.xml /tmp'
       args:
         executable: /bin/bash
