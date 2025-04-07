@@ -17,10 +17,10 @@
       become_exe: sudo su -
       shell: |
         eval $(ssh-agent -s)
-        echo {{ mi_passphrase | b64decode() }} | ssh-add /home/ccrbao/.ssh/id_rsa
-        sftp -o StrictHostKeyChecking=no ccrbao@{{ hostvars[inventory_hostname].ipaddress }}:/tmp <<< $'put {{ software }}'
-      args:
+        echo "{{ mi_passphrase | b64decode() }}"" | ssh-add /home/ccrbao/.ssh/id_rsa
+#        sftp -o StrictHostKeyChecking=no ccrbao@{{ hostvars[inventory_hostname].ipaddress }}:/tmp <<< $'put {{ software }}'
+#      args:
 #        executable: /bin/bash
-        chdir: /bmc/soft3ros/veritas/netbackup/agents
-      no_log: false      
+#        chdir: /bmc/soft3ros/veritas/netbackup/agents
+#      no_log: false      
       delegate_to: asitsmaop0.bvm.bluecare.kyndryl.net
