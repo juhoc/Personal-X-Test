@@ -25,7 +25,7 @@
       no_log: false      
       delegate_to: asitsmaop0.bvm.bluecare.kyndryl.net
 
-    - name: Copiar archivo /var/opt/ansible
+    - name: Copiar archivo a directprop ansible
       become: true
       copy:
         src: "{{ software }}"

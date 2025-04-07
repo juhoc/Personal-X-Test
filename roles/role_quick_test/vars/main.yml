@@ -120,3 +120,5 @@ entorno: "{{ hostvars[inventory_hostname]['entorno'] }}"
 ip: "{{ ansible_facts['default_ipv4'] ['address'] }}"
 
 
+rponbu: "/bmc/soft3ros/veritas/netbackup/agents"
+pathasb: "/var/opt/ansible"
