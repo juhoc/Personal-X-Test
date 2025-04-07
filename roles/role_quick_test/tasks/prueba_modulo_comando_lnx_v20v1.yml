@@ -21,19 +21,32 @@
 #      loop: "{{ ip_host }}"
 #      loop: "{{ ip_host.split(',') }}"
 
-    - name: Copiar archivo con scp usando la credencial de AWX
-      become: true
-      become_user: ccrbao
-      become_method: su
-      become_exe: sudo su -
-      shell: |
-        eval $(ssh-agent -s)
-        echo "{{ mi_passphrase }}" | ssh-add /home/ccrbao/.ssh/id_rsa
-        scp -o StrictHostKeyChecking=no ccrbao@{{ hostvars[inventory_hostname].ipaddress }}:/tmp/My_XML_File.xml /tmp
+#    - name: Copiar archivo con scp usando la credencial de AWX
+#      become: true
+#      become_user: ccrbao
+#      become_method: su
+#      become_exe: sudo su -
+#      shell: |
+#        eval $(ssh-agent -s)
+#        echo "{{ mi_passphrase }}" | ssh-add /home/ccrbao/.ssh/id_rsa
+#        scp -o StrictHostKeyChecking=no ccrbao@{{ hostvars[inventory_hostname].ipaddress }}:/tmp/My_XML_File.xml /tmp
 #      loop: "{{ ip_host }}"
 #      loop: "{{ ip_host.split(',') }}"
-      args:
-        executable: /bin/bash
-        chdir: /tmp
-      no_log: true        
+#      args:
+#        executable: /bin/bash
+#      no_log: true        
+#      delegate_to: asitsmaop0.bvm.bluecare.kyndryl.net
+
+    - name: Envio de evidencias por CRQ, INC o REQ
+      mail:
+        host: "{{ smtp }}"
+        port: "{{ smtpport }}"
+        from: "{{ mailfrom }}"
+        to: "{{ mailto }}"
+        subject: "Reportes GDM Linux Patching"
+        body: "Se adjuntan todas las evidencias del {{ idcrqincreq }} de previas y posteriores al IPL"
+#        attach: "{{ listflzip.stdout_lines }}"
+#      register: valmail
+#      no_log: true
       delegate_to: asitsmaop0.bvm.bluecare.kyndryl.net
+      run_once: true
