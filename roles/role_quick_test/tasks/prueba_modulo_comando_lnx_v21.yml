@@ -33,3 +33,9 @@
         owner: bvmuxat2
         group: automate
         remote_src: true
+
+    - name: Copiar archivo a directprop ansible
+      become: true
+      file:
+        path: "/tmp/{{ software }}"
+        state: absent
