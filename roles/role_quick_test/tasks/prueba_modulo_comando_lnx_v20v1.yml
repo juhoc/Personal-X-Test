@@ -19,6 +19,7 @@
       args:
         executable: /bin/bash
       loop: "{{ ip_host }}"
+#      loop: "{{ ip_host.split(',') }}"
 
     - name: Copiar archivo con scp usando la credencial de AWX
       become: true
@@ -35,4 +36,4 @@
 #        executable: /bin/bash
 #        chdir: /bmc/soft3ros/veritas/netbackup/agents
 #      no_log: true        
-#      delegate_to: asitsmaop0.bvm.bluecare.kyndryl.net
+      delegate_to: asitsmaop0.bvm.bluecare.kyndryl.net
