@@ -25,7 +25,7 @@
       no_log: false      
       delegate_to: asitsmaop0.bvm.bluecare.kyndryl.net
 
-    - name: Copiar archivo a directprop ansible
+    - name: Copiar archivo a dirctorio Ansible
       become: true
       copy:
         src: "/tmp/{{ software }}"
@@ -34,7 +34,7 @@
         group: automate
         remote_src: true
 
-    - name: Copiar archivo a directprop ansible
+    - name: Borrar archivo de directorio Temporal
       become: true
       file:
         path: "/tmp/{{ software }}"
