@@ -66,8 +66,7 @@
         owner: ccrbao
         group: grpcrbao
       remote_src: false
-      run_once: true
-
+  
     - name: Validar archivo XML de mallas Control-M en equipo remoto
       become: true
       stat:
