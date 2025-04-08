@@ -10,7 +10,7 @@
       args:
         chdir: /Ctrlmemp/portal/scripts
       register: ctmscript_async
-      async: 10
+      async: 3600
       poll: 0
 
     - name: Esperar a que termine el script (hasta el timeout)
