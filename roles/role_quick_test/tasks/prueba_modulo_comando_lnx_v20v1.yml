@@ -32,7 +32,7 @@
       become: true
       stat:
         path: /tmp/export_CCR_ADA.xml
-        state: absent
+      register: valarch
 
     - name: Envir por correo del archivo XML de mallas Control-M
       mail:
