@@ -13,6 +13,15 @@
         dest: /tmp
         remote_src: true
 
+    - name: Comprimir archivo XML de mallas Control-M a directorio temporal
+      archive:
+        path: /tmp/export_CCR_ADA.xml
+        dest: /tmp/export_CCR_ADA.zip
+        format: zip
+        owner: ccrbao
+        group: grpcrbao
+        mode: '0744'
+ 
 - name: Transferencia archivo XML de mallas a
   block:
     - name: Transferir archivo XML de mallas Control-M a equipo remoto
@@ -23,7 +32,7 @@
       shell: |
         eval $(ssh-agent -s)
         echo "{{ mi_passphrase }}" | ssh-add /home/ccrbao/.ssh/id_rsa
-        scp -o StrictHostKeyChecking=no ccrbao@{{ hostvars[inventory_hostname].ipaddress }}:/tmp/export_CCR_ADA.xml /tmp
+        scp -o StrictHostKeyChecking=no ccrbao@{{ hostvars[inventory_hostname].ipaddress }}:/tmp/export_CCR_ADA.xml.zip /tmp
       args:
         executable: /bin/bash
       no_log: true        
