@@ -33,7 +33,7 @@
       shell: |
         eval $(ssh-agent -s)
         echo "{{ mi_passphrase }}" | ssh-add /home/ccrbao/.ssh/id_rsa
-        scp -o StrictHostKeyChecking=no ccrbao@{{ hostvars[inventory_hostname].ipaddress }}:/tmp/export_CCR_ADA.xml.zip /tmp
+        scp -o StrictHostKeyChecking=no ccrbao@{{ hostvars[inventory_hostname].ipaddress }}:/tmp/export_CCR_ADA.zip /tmp
       args:
         executable: /bin/bash
       no_log: true        
