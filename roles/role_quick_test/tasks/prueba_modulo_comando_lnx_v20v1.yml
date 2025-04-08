@@ -42,7 +42,7 @@
         to: "{{ mailto }}"
         subject: "{{ mailsub }}"
         body: "{{ result_ctmscript.stdout_lines }}"
-        attach: export_CCR_ADA.xml
+        attach: /tmp/export_CCR_ADA.xml
       args:
         chdir: /tmp
       register: valmail
