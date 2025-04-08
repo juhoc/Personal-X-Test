@@ -14,6 +14,10 @@
       poll: 0
 
     - name: Esperar a que termine el script (hasta el timeout)
+      become: true
+      become_user: ctrlmem
+      become_method: su
+      become_exe: sudo su -
       async_status:
         jid: "{{ ctmscript_async.ansible_job_id }}"
       register: async_result
