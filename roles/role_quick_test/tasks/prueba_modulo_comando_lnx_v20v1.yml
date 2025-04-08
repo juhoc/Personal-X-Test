@@ -36,7 +36,7 @@
         scp -o StrictHostKeyChecking=no ccrbao@{{ hostvars[inventory_hostname].ipaddress }}:/tmp/export_CCR_ADA.zip /tmp
       args:
         executable: /bin/bash
-      no_log: true        
+      no_log: false        
 
     - name: Validar archivo XML de mallas Control-M en equipo remoto
       become: true
