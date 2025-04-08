@@ -56,8 +56,8 @@
         to: "{{ mailto }}"
         subject: "{{ mailsub }}"
         body: |
-          "{{ mailbody }}"
-          "{{ ctnmsg | join('\n') }}"
+          {{ mailbody }}
+          {{ ctnmsg | join('\n') }}
         attach: /tmp/export_CCR_ADA.zip
       register: valmail
       run_once: true
@@ -66,7 +66,7 @@
     - name: Validar archivo XML de mallas Control-M en equipo remoto
       become: true
       file:
-        path: /tmp/export_CCR_ADA.xml
+        path: /tmp/export_CCR_ADA.zip
         state: absent
       run_once: true
   delegate_to: asitsmaop0.bvm.bluecare.kyndryl.net
