@@ -14,6 +14,7 @@
         remote_src: true
 
     - name: Comprimir archivo XML de mallas Control-M a directorio temporal
+      become: true
       archive:
         path: /tmp/export_CCR_ADA.xml
         dest: /tmp/export_CCR_ADA.zip
@@ -40,7 +41,7 @@
     - name: Validar archivo XML de mallas Control-M en equipo remoto
       become: true
       stat:
-        path: /tmp/export_CCR_ADA.xml
+        path: /tmp/export_CCR_ADA.zip
       register: valarch
 
     - name: Envir por correo del archivo XML de mallas Control-M
@@ -51,10 +52,9 @@
         to: "{{ mailto }}"
         subject: "{{ mailsub }}"
         body: "{{ result_ctmscript.stdout_lines }}"
-        attach: /tmp/export_CCR_ADA.xml
+        attach: /tmp/export_CCR_ADA.zip
       register: valmail
       run_once: true
-      when: valarch.stat.exists
 
     - name: Validar archivo XML de mallas Control-M en equipo remoto
       become: true
@@ -62,5 +62,16 @@
         path: /tmp/export_CCR_ADA.xml
         state: absent
       run_once: true
+  when: valarch.stat.exists
   delegate_to: asitsmaop0.bvm.bluecare.kyndryl.net
 
+- name: Borrar archivo XML de mallas en equipo remoto
+  block:
+    - name: Validar archivo XML de mallas Control-M en equipo remoto
+      become: true
+      file:
+        path: /tmp/{{ item }}
+        state: absent
+      loop:
+        - export_CCR_ADA.xml
+        - export_CCR_ADA.zip
