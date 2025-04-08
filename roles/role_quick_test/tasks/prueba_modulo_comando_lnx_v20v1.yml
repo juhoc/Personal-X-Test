@@ -2,9 +2,19 @@
 - name: Ejecutar shell script - reporte XML Control-M mallas
   block:
     - name: Ejecutar script CTM obtener_mallas_ADA.sh
-      shell: |
-        echo -e "\n\nINICIANDO PROCESO\n\n\nCREANDO ARCHIVO ARG PARA USAR EN SIGUIENTE PASO\n\n\nEXPORTANDO TABLAS\n\n\nInfo: Returned buffer contains 3529 folders\nInfo: Export completed successfully with 3529 Folders, 0 Smart Folders, 0 Sub Folders, and 107496 Jobs, exported to /Ctrlmemp/portal/archivos/export_CCR_ADA.xml\n\n0\n\nLIMPIANDO  ARCHIVOS TEMPORALES\n\n\nPROCESO TERMINADO"
+      become: true
+      become_user: ctrlmem
+      become_method: su
+      become_exe: sudo su -
+      shell: ./obtener_mallas_ADA.sh
+      args:
+        chdir: /Ctrlmemp/portal/scripts
       register: ctmscript
+
+#    - name: Ejecutar script CTM obtener_mallas_ADA.sh
+#      shell: |
+#        echo -e "\n\nINICIANDO PROCESO\n\n\nCREANDO ARCHIVO ARG PARA USAR EN SIGUIENTE PASO\n\n\nEXPORTANDO TABLAS\n\n\nInfo: Returned buffer contains 3529 folders\nInfo: Export completed successfully with 3529 Folders, 0 Smart Folders, 0 Sub Folders, and 107496 Jobs, exported to /Ctrlmemp/portal/archivos/export_CCR_ADA.xml\n\n0\n\nLIMPIANDO  ARCHIVOS TEMPORALES\n\n\nPROCESO TERMINADO"
+#      register: ctmscript
 
     - name: Limpiar mensaje salida reporte XML Control-M mallas
       set_fact:
