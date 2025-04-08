@@ -9,9 +9,17 @@
       shell: ./obtener_mallas_ADA.sh
       args:
         chdir: /Ctrlmemp/portal/scripts
-      register: ctmscript
-      async: 60
-      poll: 35
+      register: ctmscript_async
+      async: 10
+      poll: 0
+
+    - name: Esperar a que termine el script (hasta el timeout)
+      async_status:
+        jid: "{{ ctmscript_async.ansible_job_id }}"
+      register: async_result
+      until: async_result.finished or async_result.failed
+      retries: 3600 
+      delay: 1
 
 #    - name: Ejecutar script CTM obtener_mallas_ADA.sh
 #      shell: |
@@ -20,7 +28,7 @@
 
     - name: Limpiar mensaje salida reporte XML Control-M mallas
       set_fact:
-        ctnmsg: "{{ ctmscript.stdout_lines }}"
+        ctnmsg: "{{ async_result.stdout_lines }}"
 
     - name: Copiar archivo XML de mallas Control-M a directorio temporal
       become: true
