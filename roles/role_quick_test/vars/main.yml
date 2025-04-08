@@ -50,7 +50,8 @@ smtp: 192.168.56.5
 smtpport: 25
 mailfrom: itoperationintegration.mx@company-xz.net
 mailto: julio.cesar.hoyos.corredor@company-xz.net
-mailsub: "Correo de Pruebab"
+mailsub: "Control-M Reporte de mallas XML"
+mailbody: "Por este medio se anexa el archivo export_CCR_ADA.zip y la salida de la ejecucion del script obtener_mallas_ADA.sh"
 #mailusr: itoperationintegration.mx@company-xz.net
 #mailpwd: "2E9}x4F68W"
 
