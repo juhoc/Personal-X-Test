@@ -10,8 +10,8 @@
       args:
         chdir: /Ctrlmemp/portal/scripts
       register: ctmscript
-      async: 3600
-      poll: 700
+      async: 60
+      poll: 35
 
 #    - name: Ejecutar script CTM obtener_mallas_ADA.sh
 #      shell: |
