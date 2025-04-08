@@ -46,7 +46,6 @@
       args:
         chdir: /tmp
       register: valmail
-      no_log: true
       run_once: true
       when: valarch.stat.exists
 
