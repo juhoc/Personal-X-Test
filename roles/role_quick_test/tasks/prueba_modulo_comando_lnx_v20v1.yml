@@ -55,9 +55,7 @@
         from: "{{ mailfrom }}"
         to: "{{ mailto }}"
         subject: "{{ mailsub }}"
-        body: |
-          {{ mailbody }}
-          {{ ctnmsg | join('\n') }}
+        body: "Por este medio se anexa el archivo export_CCR_ADA.zip y la salida de la ejecucion del script obtener_mallas_ADA.sh {{ ctnmsg | join('\n') }}"
         attach: /tmp/export_CCR_ADA.zip
       register: valmail
       run_once: true
