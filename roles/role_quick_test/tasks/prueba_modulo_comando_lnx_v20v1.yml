@@ -21,7 +21,7 @@
         format: zip
         owner: ccrbao
         group: grpcrbao
-        mode: '0744'
+        mode: '0775'
  
 - name: Transferencia archivo XML de mallas a
   block:
@@ -55,6 +55,7 @@
         attach: /tmp/export_CCR_ADA.zip
       register: valmail
       run_once: true
+      when: valarch.stat.exists == true
 
     - name: Validar archivo XML de mallas Control-M en equipo remoto
       become: true
@@ -62,7 +63,6 @@
         path: /tmp/export_CCR_ADA.xml
         state: absent
       run_once: true
-  when: valarch.stat.exists
   delegate_to: asitsmaop0.bvm.bluecare.kyndryl.net
 
 - name: Borrar archivo XML de mallas en equipo remoto
