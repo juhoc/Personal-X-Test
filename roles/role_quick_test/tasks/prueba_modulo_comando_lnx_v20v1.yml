@@ -7,8 +7,8 @@
       register: ctmscript
 
     - name: Limpiar mensaje salida reporte XML Control-M mallas
-     set_fact:
-       ctnmsg: "{{ ctmscript.stdout_lines }}"
+      set_fact:
+        ctnmsg: "{{ ctmscript.stdout_lines }}"
 
     - name: Copiar archivo XML de mallas Control-M a directorio temporal
       become: true
