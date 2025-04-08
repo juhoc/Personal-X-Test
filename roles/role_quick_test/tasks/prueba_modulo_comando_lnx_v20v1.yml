@@ -43,8 +43,6 @@
         subject: "{{ mailsub }}"
         body: "{{ result_ctmscript.stdout_lines }}"
         attach: /tmp/export_CCR_ADA.xml
-      args:
-        chdir: /tmp
       register: valmail
       run_once: true
       when: valarch.stat.exists
