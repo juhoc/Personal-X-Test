@@ -23,7 +23,7 @@
       register: async_result
       until: async_result.finished or async_result.failed
       retries: 3600 
-      delay: 1
+      delay: 60
 
 #    - name: Ejecutar script CTM obtener_mallas_ADA.sh
 #      shell: |
