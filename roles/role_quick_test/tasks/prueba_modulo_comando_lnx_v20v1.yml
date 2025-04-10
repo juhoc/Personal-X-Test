@@ -91,7 +91,7 @@
 #         path: /tmp/export_CCR_ADA.zip
 #         state: absent
 #       run_once: true
-#   delegate_to: asitsmaop0.bvm.bluecare.kyndryl.net
+  delegate_to: asitsmaop0.bvm.bluecare.kyndryl.net
 
 # - name: Borrar archivo XML de mallas en equipo remoto
 #   block:
