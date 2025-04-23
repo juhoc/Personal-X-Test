@@ -7,7 +7,7 @@
 
     - name: Filtrar unidades
       set_fact:
-        unidad_ansible: "{{ letradisco.stdout_lines | select('match', '^D|^V') | list | replace('[', '' ) | replace(']', '' ) | trim | regex_replace(\"'\", '') }}"
+        unidad_ansible: "{{ letradisco.stdout_lines | select('match', '^D|^V') | list | replace('[', '' ) | replace(']', '' ) | replace(' ', '') | trim | regex_replace(\"'\", '') }}"
 
     - name: Mostrar unidades
       debug:
