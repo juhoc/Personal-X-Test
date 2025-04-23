@@ -5,16 +5,27 @@
       win_shell: (Get-PSDrive -PSProvider FileSystem | Where-Object {$_.Root -ne 'C:\'} | Select-Object -ExpandProperty Root) -join ' '
       register: windrives
 
+    # - name: Determinar la unidad Windows
+    #   set_fact:
+    #     windrive: >-
+    #       {% if windrives.stdout in ["D:\","V:\"] %}
+    #       V:\
+    #       {% elif windrives.stdout in ["D:\"] %}
+    #       D:\
+    #       {% else %}
+    #       C:\
+    #       {% enfif %}
+
     - name: Determinar la unidad Windows
       set_fact:
         windrive: >-
-          {% if windrives.stdout in ["D:\","V:\"] %}
-          V:\
-          {% elif windrives.stdout in ["D:\"] %}
-          D:\
+          {% if 'V:' in windrives.stdout %}
+            V:\
+          {% elif 'D:' in windrives.stdout %}
+            D:\
           {% else %}
-          C:\
-          {% enfif %}
+            C:\
+          {% endif %}
 
     - name: Mostrar unida Windows detectada
       debug:
