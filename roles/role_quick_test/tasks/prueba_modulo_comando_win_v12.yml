@@ -11,7 +11,7 @@
 
     - name: Mostrar unidades
       debug:
-        msg: "{{ unidad_ansible.split(',')[0] }}"
+        msg: "{{ unidad_ansible.split(',')[1] }}"
 
     # - name: Crear directorio
     #   win_file:
