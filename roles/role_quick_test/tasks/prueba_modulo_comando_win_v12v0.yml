@@ -1,0 +1,29 @@
+---
+- name: Pruebas de Unidades Windows
+  block:
+    - name: Validar unidades Windows D:\ y/o V:\
+      win_shell: (Get-PSDrive -PSProvider FileSystem | Where-Object {$_.Root -ne 'C:\'} | Select-Object -ExpandProperty Root) -join ' '
+      register: windrives
+
+    - name: Determinar la unidad Windows
+      set_fact:
+        windrive: >-
+          {% if windrives.stdout in ["D:\","V:\"] %}
+          V:\
+          {% elif windrives.stdout in ["D:\"] %}
+          D:\
+          {% else %}
+          C:\
+          {% enfif %}
+
+    - name: Mostrar unida Windows detectada
+      debug:
+        msg: "{{ unidad_ansible }}"
+
+    - name: Crear directorio
+      win_file:
+        path: "{{ windrive }}TEMP"
+        state: directory
+
+    - name: Listar contenido de la unidad
+      win_shell: dir "{{ windrive }}"
