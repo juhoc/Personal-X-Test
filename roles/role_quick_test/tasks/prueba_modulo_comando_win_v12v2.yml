@@ -1,4 +1,7 @@
 ---
+- name: Quick test secuencia 0 include task
+  include_tasks: prueba_modulo_comando_win_v12v1.yml
+
 - block:
     - name: Mostrar unidad Windows detectada
       debug:
