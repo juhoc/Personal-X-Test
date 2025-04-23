@@ -9,9 +9,9 @@
       set_fact:
         unidad_ansible: "{{ letradisco.stdout_lines | select('match', '^D|^V') | list | replace('[', '' ) | replace(']', '' ) | trim | regex_replace(\"'\", '') }}"
 
-    # - name: Mostrar unidades
-    #   debug:
-    #     msg: "{{ unidad_ansible }}"
+    - name: Mostrar unidades
+      debug:
+        msg: "{{ unidad_ansible.split(',')[0] }}"
 
     # - name: Crear directorio
     #   win_file:
