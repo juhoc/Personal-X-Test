@@ -21,11 +21,11 @@
 
     - name: Mostrar unidad Windows detectada
       debug:
-        msg: "Unidad Windows detectada para Ansible: {{ windriv }}"
+        msg: "Unidad Windows detectada para Ansible: {{ windriv | trim }}"
 
     - name: Crear directorio (ejemplo)
       win_file:
-        path: "{{ windriv }}TEMP_ANSIBLE"
+        path: "{{ windriv | trim }}TEMP_ANSIBLE"
         state: directory
 
     - name: Listar contenido de la unidad (ejemplo)
