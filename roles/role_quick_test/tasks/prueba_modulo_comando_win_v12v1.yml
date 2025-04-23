@@ -1,0 +1,32 @@
+---
+- block:
+    - name: Validar si las unidades D:\ y/o V:\ existen
+      win_shell: Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Root
+      register: windrives
+
+    - name: Filtrar unidades D:\ y V:\
+      set_fact:
+        potential_drives: "{{ windrives.stdout_lines | select('match', '^[DV]:\\\\$') | list }}"
+
+    - name: Determinar la unidad Windows a usar
+      set_fact:
+        windriv: >-
+          {% if 'V:\\' in potential_drives %}
+            V:\\
+          {% elif 'D:\\' in potential_drives %}
+            D:\\
+          {% else %}
+            C:\\ # Unidad por defecto si no se encuentra D:\ o V:\ (ajusta según necesidad)
+          {% endif %}
+
+    - name: Mostrar unidad Windows detectada
+      debug:
+        msg: "Unidad Windows detectada para Ansible: {{ windriv }}"
+
+    - name: Crear directorio (ejemplo)
+      win_file:
+        path: "{{ windriv }}TEMP_ANSIBLE"
+        state: directory
+
+    - name: Listar contenido de la unidad (ejemplo)
+      win_shell: dir "{{ windriv }}"
