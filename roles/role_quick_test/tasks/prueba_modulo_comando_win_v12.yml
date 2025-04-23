@@ -3,20 +3,20 @@
   block:
     - name: Validar si las unidad D:\ y/o V:\ existen
       win_shell: Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Root
-      register: letradisco
+      register: windrives
 
     - name: Filtrar unidades
       set_fact:
-        unidad_ansible: "{{ letradisco.stdout_lines | select('match', '^D|^V') | list | replace('[', '' ) | replace(']', '' ) | replace(' ', '') | trim | regex_replace(\"'\", '') }}"
+        windriv: "{{ windrives.stdout_lines | select('match', '^D|^V') | list | replace('[', '' ) | replace(']', '' ) | replace(' ', '') | trim | regex_replace(\"'\", '') }}"
 
     - name: Mostrar unidades
       debug:
-        msg: "{{ unidad_ansible.split(',')[1] }}"
+        msg: "{{ windriv.split(',')[1] }}"
 
     # - name: Crear directorio
     #   win_file:
-    #     path: "{{ unidad_ansible }}TEMP"
+    #     path: "{{ windriv }}TEMP"
     #     state: directory
 
     # - name: Listar contenido de la unidad
-    #   win_shell: dir "{{ unidad_ansible }}"
+    #   win_shell: dir "{{ windriv }}"
