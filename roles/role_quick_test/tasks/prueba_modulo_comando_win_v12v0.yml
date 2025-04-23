@@ -2,7 +2,7 @@
 - name: Pruebas de Unidades Windows
   block:
     - name: Validar unidades Windows D:\ y/o V:\
-      win_shell: (Get-PSDrive -PSProvider FileSystem | Where-Object {$_.Root -ne 'C:\'} | Select-Object -ExpandProperty Root) -join ' '
+      win_shell: (Get-PSDrive -PSProvider FileSystem | Where-Object {$_.Root -ne 'C:\\\\'} | Select-Object -ExpandProperty Root) -join ' '
       register: windrives
 
     # - name: Determinar la unidad Windows
