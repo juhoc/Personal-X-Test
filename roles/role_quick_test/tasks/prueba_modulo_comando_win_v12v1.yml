@@ -18,15 +18,3 @@
           {% else %}
             C:\\ # Unidad por defecto si no se encuentra D:\ o V:\ (ajusta según necesidad)
           {% endif %}
-
-    # - name: Mostrar unidad Windows detectada
-    #   debug:
-    #     msg: "Unidad Windows detectada para Ansible: {{ windrive | trim }}"
-
-    # - name: Crear directorio (ejemplo)
-    #   win_file:
-    #     path: "{{ windrive | trim }}TEMP_ANSIBLE"
-    #     state: directory
-
-    # - name: Listar contenido de la unidad (ejemplo)
-    #   win_shell: dir "{{ windrive | trim }}"
