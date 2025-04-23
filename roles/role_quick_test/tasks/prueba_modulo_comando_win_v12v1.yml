@@ -10,7 +10,7 @@
 
     - name: Determinar la unidad Windows a usar
       set_fact:
-        windriv: >-
+        windrive: >-
           {% if 'V:\\' in potential_drives %}
             V:\\
           {% elif 'D:\\' in potential_drives %}
@@ -21,12 +21,12 @@
 
     - name: Mostrar unidad Windows detectada
       debug:
-        msg: "Unidad Windows detectada para Ansible: {{ windriv | trim }}"
+        msg: "Unidad Windows detectada para Ansible: {{ windrive | trim }}"
 
     - name: Crear directorio (ejemplo)
       win_file:
-        path: "{{ windriv | trim }}TEMP_ANSIBLE"
+        path: "{{ windrive | trim }}TEMP_ANSIBLE"
         state: directory
 
     - name: Listar contenido de la unidad (ejemplo)
-      win_shell: dir "{{ windriv }}"
+      win_shell: dir "{{ windrive | trim }}"
