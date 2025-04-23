@@ -9,14 +9,14 @@
       set_fact:
         unidad_ansible: "{{ letradisco.stdout_lines | select('match', '^D|^V') | list | replace('[', '' ) | replace(']', '' ) | trim | regex_replace(\"'\", '') }}"
 
-    - name: Mostrar unidades
-      debug:
-        msg: "{{ unidad_ansible }}"
+    # - name: Mostrar unidades
+    #   debug:
+    #     msg: "{{ unidad_ansible }}"
 
-    - name: Crear directorio
-      win_file:
-        path: "{{ unidad_ansible }}TEMP"
-        state: directory
+    # - name: Crear directorio
+    #   win_file:
+    #     path: "{{ unidad_ansible }}TEMP"
+    #     state: directory
 
-    - name: Listar contenido de la unidad
-      win_shell: dir "{{ unidad_ansible }}"
+    # - name: Listar contenido de la unidad
+    #   win_shell: dir "{{ unidad_ansible }}"
