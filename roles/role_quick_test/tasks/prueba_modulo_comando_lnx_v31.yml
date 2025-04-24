@@ -1,0 +1,10 @@
+---
+- name: Bloques Nun. 1 Replace sudoers
+  block:
+    - name: Ejecutar script y generar archivo XML
+      become: true
+      script: ./script.sh
+      register: script_result
+      args:
+        chdir: /controlm/ag700
+
