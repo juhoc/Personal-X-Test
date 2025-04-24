@@ -3,8 +3,6 @@
   block:
     - name: Ejecutar script y generar archivo XML
       become: true
-      shell: ./script.sh
-      args:
-        chdir: /controlm/ag700
+      script: /controlm/ag700/script.sh
       register: script_result
 
