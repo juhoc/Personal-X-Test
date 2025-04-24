@@ -8,3 +8,9 @@
         chdir: /controlm/ag700
       register: script_result
 
+    - name: Copiar archivo XML a otro equipo
+      become: true
+      copy:
+        src:  /controlm/ag700/myfile.xml
+        dest: vbldtst01.bvm.bluecare.kyndryl.net:/controlm/ag700/myfile.xml
+      delegate_to: vbldtst01.bvm.bluecare.kyndryl.net
