@@ -13,4 +13,5 @@
       copy:
         src:  /controlm/ag700/myfile.xml
         dest: vbldtst01.bvm.bluecare.kyndryl.net:/controlm/ag700/myfile.xml
+        remote_src: true
       delegate_to: vbldtst01.bvm.bluecare.kyndryl.net
