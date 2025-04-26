@@ -35,9 +35,9 @@
         path: /Ctrlmemp/portal/archivos/export_CCR_ADA.xml
         dest: /Ctrlmemp/portal/archivos/export_CCR_ADA.tar.gz
         format: gz
-        owner: ccrbao
-        group: grpcrbao
-        mode: '0775'
+        owner: ctrlmem
+        group: grpctrlm
+        mode: '0755'
 
     # - name: Copiar archivo XML de mallas Control-M a directorio temporal
     #   become: true
