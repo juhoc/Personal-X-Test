@@ -70,13 +70,20 @@
         path: /Ctrlmccrp/export_CCR_ADA.tar.gz
       register: valarch
 
-    - name: Comprimir archivo XML de mallas Control-M a directorio temporal
+    - name: Descomprimir archivo tar.gz XML de mallas Control-M a directorio temporal
       become: true
       unarchive:
         src: /Ctrlmccrp/export_CCR_ADA.tar.gz
         dest: /Ctrlmccrp/
         remote_src: true
         format: gz
+      ignore_erros: true
+
+    - name: Descomprimir archivo tar.gz XML de mallas Control-M a directorio temporal
+      become: true
+      shell: tar xfz export_CCR_ADA.tar.gz
+      args:
+        chdir: /Ctrlmccrp
   delegate_to: vbldtst00.bvm.bluecare.kyndryl.net
 
 
