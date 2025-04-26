@@ -47,8 +47,7 @@
     #     remote_src: true
 
  
-- name: Carga archivo XML de mallas al Nodo de Control
-  block:
+- block:
     - name: Carga archivo XML de mallas Control-M a Nodo de Control
       become: true
       fetch:
@@ -57,21 +56,20 @@
         flat: true
       run_once: true
 
-- name: Descarga archivo XML de mallas del Nodo Administrado
-  block:
+- block:
     - name: Descarga archivo XML de mallas Control-M al Nodo Administrado
       become: true
       copy:
         src: /tmp/export_CCR_ADA.zip
-        dest: /tmp/export_CCR_ADA.zip
-        owner: ccrbao
-        group: grpcrbao
+        dest: /Ctrlmccrp/export_CCR_ADA.zip
+        owner: ctrlmmx
+        group: grpctrlm
         remote_src: false
 
     - name: Validar archivo XML de mallas Control-M en equipo remoto
       become: true
       stat:
-        path: /tmp/export_CCR_ADA.zip
+        path: /Ctrlmccrp/export_CCR_ADA.zip
       register: valarch
   delegate_to: vbldtst00.bvm.bluecare.kyndryl.net
 
