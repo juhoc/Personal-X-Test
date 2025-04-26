@@ -75,6 +75,7 @@
       unarchive:
         src: /Ctrlmemp/portal/archivos/export_CCR_ADA.tar.gz
         dest: /Ctrlmemp/portal/archivos/
+        remote_src: true
   delegate_to: vbldtst00.bvm.bluecare.kyndryl.net
 
 
