@@ -75,6 +75,7 @@
       unarchive:
         src: /Ctrlmccrp/export_CCR_ADA.gz
         dest: /Ctrlmccrp/
+        remote_src: true
 
     # - name: Descomprimir archivo gz XML de mallas Control-M a directorio temporal
     #   become: true
