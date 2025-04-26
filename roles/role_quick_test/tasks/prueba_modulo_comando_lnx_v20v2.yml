@@ -72,14 +72,6 @@
 
     - name: Descomprimir archivo tar.gz XML de mallas Control-M a directorio temporal
       become: true
-      unarchive:
-        src: /Ctrlmccrp/export_CCR_ADA.tar.gz
-        dest: /Ctrlmccrp/
-        remote_src: true
-      ignore_erros: true
-
-    - name: Descomprimir archivo tar.gz XML de mallas Control-M a directorio temporal
-      become: true
       shell: tar xfz export_CCR_ADA.tar.gz
       args:
         chdir: /Ctrlmccrp
