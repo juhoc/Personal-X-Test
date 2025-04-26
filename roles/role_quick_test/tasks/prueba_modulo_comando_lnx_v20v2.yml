@@ -60,8 +60,8 @@
     - name: Descarga archivo XML de mallas Control-M al Nodo Administrado
       become: true
       copy:
-        src: /tmp/export_CCR_ADA.zip
-        dest: /Ctrlmccrp/export_CCR_ADA.zip
+        src: /tmp/export_CCR_ADA.tar.gz
+        dest: /Ctrlmccrp/
         owner: ctrlmmx
         group: grpctrlm
         remote_src: false
@@ -69,8 +69,14 @@
     - name: Validar archivo XML de mallas Control-M en equipo remoto
       become: true
       stat:
-        path: /Ctrlmccrp/export_CCR_ADA.zip
+        path: /Ctrlmccrp/export_CCR_ADA.tar.gz
       register: valarch
+
+    - name: Comprimir archivo XML de mallas Control-M a directorio temporal
+      become: true
+      unarchive:
+        src: /Ctrlmemp/portal/archivos/export_CCR_ADA.tar.gz
+        dest: /Ctrlmemp/portal/archivos/
   delegate_to: vbldtst00.bvm.bluecare.kyndryl.net
 
 
