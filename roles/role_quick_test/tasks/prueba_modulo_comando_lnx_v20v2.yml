@@ -76,6 +76,7 @@
         src: /Ctrlmccrp/export_CCR_ADA.tar.gz
         dest: /Ctrlmccrp/
         remote_src: true
+        format: gz
   delegate_to: vbldtst00.bvm.bluecare.kyndryl.net
 
 
