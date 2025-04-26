@@ -33,7 +33,7 @@
       become: true
       archive:
         path: /Ctrlmemp/portal/archivos/export_CCR_ADA.xml
-        dest: /Ctrlmemp/portal/archivos/export_CCR_ADA.tar.gz
+        dest: /Ctrlmemp/portal/archivos/export_CCR_ADA.gz
         format: gz
         owner: ctrlmem
         group: grpctrlm
@@ -49,7 +49,7 @@
     - name: Carga archivo XML de mallas Control-M a Nodo de Control
       become: true
       fetch:
-        src: /Ctrlmemp/portal/archivos/export_CCR_ADA.tar.gz
+        src: /Ctrlmemp/portal/archivos/export_CCR_ADA.gz
         dest: /tmp/
         flat: true
       run_once: true
@@ -58,7 +58,7 @@
     - name: Descarga archivo XML de mallas Control-M al Nodo Administrado
       become: true
       copy:
-        src: /tmp/export_CCR_ADA.tar.gz
+        src: /tmp/export_CCR_ADA.gz
         dest: /Ctrlmccrp/
         owner: ctrlmmx
         group: grpctrlm
@@ -67,10 +67,17 @@
     - name: Validar archivo XML de mallas Control-M en equipo remoto
       become: true
       stat:
-        path: /Ctrlmccrp/export_CCR_ADA.tar.gz
+        path: /Ctrlmccrp/export_CCR_ADA.gz
       register: valarch
 
-    - name: Descomprimir archivo tar.gz XML de mallas Control-M a directorio temporal
+    - name: Descomprimir archivo gz XML de mallas Control-M a directorio temporal
+      become: true
+      unarchive:
+      src: /Ctrlmccrp/export_CCR_ADA.gz
+      dest: /Ctrlmccrp/
+
+
+    - name: Descomprimir archivo gz XML de mallas Control-M a directorio temporal
       become: true
       shell: tar xfz export_CCR_ADA.tar.gz
       args:
