@@ -1,57 +1,58 @@
 ---
 - name: Ejecutar shell script - reporte XML Control-M mallas
   block:
-    - name: Ejecutar script CTM obtener_mallas_ADA.sh
-      become: true
-      become_user: ctrlmem
-      become_method: su
-      become_exe: sudo su -
-      shell: ./obtener_mallas_ADA.sh
-      args:
-        chdir: /Ctrlmemp/portal/scripts
-      register: ctmscript_async
-      async: 3600
-      poll: 0
+    # - name: Ejecutar script CTM obtener_mallas_ADA.sh
+    #   become: true
+    #   become_user: ctrlmem
+    #   become_method: su
+    #   become_exe: sudo su -
+    #   shell: ./obtener_mallas_ADA.sh
+    #   args:
+    #     chdir: /Ctrlmemp/portal/scripts
+    #   register: ctmscript_async
+    #   async: 3600
+    #   poll: 0
 
-    - name: Esperar a que termine el script (hasta el timeout)
-      become: true
-      become_user: ctrlmem
-      become_method: su
-      become_exe: sudo su -
-      async_status:
-        jid: "{{ ctmscript_async.ansible_job_id }}"
-      register: async_result
-      until: async_result.finished or async_result.failed
-      retries: 3600 
-      delay: 60
+    # - name: Esperar a que termine el script (hasta el timeout)
+    #   become: true
+    #   become_user: ctrlmem
+    #   become_method: su
+    #   become_exe: sudo su -
+    #   async_status:
+    #     jid: "{{ ctmscript_async.ansible_job_id }}"
+    #   register: async_result
+    #   until: async_result.finished or async_result.failed
+    #   retries: 3600 
+    #   delay: 60
 
-    - name: Limpiar mensaje salida reporte XML Control-M mallas
-      set_fact:
-        ctnmsg: "{{ async_result.stdout_lines }}"
-
-    - name: Copiar archivo XML de mallas Control-M a directorio temporal
-      become: true
-      copy:
-        src: /Ctrlmemp/portal/archivos/export_CCR_ADA.xml
-        dest: /tmp
-        remote_src: true
+    # - name: Limpiar mensaje salida reporte XML Control-M mallas
+    #   set_fact:
+    #     ctnmsg: "{{ async_result.stdout_lines }}"
 
     - name: Comprimir archivo XML de mallas Control-M a directorio temporal
       become: true
       archive:
-        path: /tmp/export_CCR_ADA.xml
-        dest: /tmp/export_CCR_ADA.zip
-        format: zip
+        path: /Ctrlmemp/portal/archivos/export_CCR_ADA.xml
+        dest: /Ctrlmemp/portal/archivos/export_CCR_ADA.tar.gz
+        format: gz
         owner: ccrbao
         group: grpcrbao
         mode: '0775'
+
+    # - name: Copiar archivo XML de mallas Control-M a directorio temporal
+    #   become: true
+    #   copy:
+    #     src: /Ctrlmemp/portal/archivos/export_CCR_ADA.xml
+    #     dest: /tmp
+    #     remote_src: true
+
  
 - name: Carga archivo XML de mallas al Nodo de Control
   block:
     - name: Carga archivo XML de mallas Control-M a Nodo de Control
       become: true
       fetch:
-        src: /tmp/export_CCR_ADA.zip
+        src: /Ctrlmemp/portal/archivos/export_CCR_ADA.tar.gz
         dest: /tmp/
         flat: true
       run_once: true
@@ -66,48 +67,54 @@
         owner: ccrbao
         group: grpcrbao
         remote_src: false
-  
+
     - name: Validar archivo XML de mallas Control-M en equipo remoto
       become: true
       stat:
         path: /tmp/export_CCR_ADA.zip
       register: valarch
+  delegate_to: vbldtst00.bvm.bluecare.kyndryl.net
 
-    - name: Envir por correo del archivo XML de mallas Control-M
-      mail:
-        host: "{{ smtp }}"
-        port: "{{ smtpport }}"
-        from: "{{ mailfrom }}"
-        to: "{{ mailto }}"
-        subject: "{{ mailsub }}"
-        body: "Por este medio se anexa el archivo export_CCR_ADA.zip y la salida de la ejecucion del script obtener_mallas_ADA.sh {{ ctnmsg | join('\n') }}"
-        attach: /tmp/export_CCR_ADA.zip
-      register: valmail
-      run_once: true
-      when: valarch.stat.exists == true
 
-    - name: Validar archivo XML de mallas Control-M en equipo remoto
-      become: true
-      file:
-        path: /tmp/export_CCR_ADA.zip
-        state: absent
-      run_once: true
 
-    - name: Borrar archivo XML de mallas Control-M en equipo remoto
-      become: true
-      file:
-        path: /tmp/export_CCR_ADA.zip
-        state: absent
-      run_once: true
-  delegate_to: asitsmaop0.bvm.bluecare.kyndryl.net
 
-- name: Borrar archivo XML de mallas en equipo remoto
-  block:
-    - name: Borrar archivo XML de mallas Control-M en equipo remoto
-      become: true
-      file:
-        path: /tmp/{{ item }}
-        state: absent
-      loop:
-        - export_CCR_ADA.xml
-        - export_CCR_ADA.zip
+
+
+#     - name: Envir por correo del archivo XML de mallas Control-M
+#       mail:
+#         host: "{{ smtp }}"
+#         port: "{{ smtpport }}"
+#         from: "{{ mailfrom }}"
+#         to: "{{ mailto }}"
+#         subject: "{{ mailsub }}"
+#         body: "Por este medio se anexa el archivo export_CCR_ADA.zip y la salida de la ejecucion del script obtener_mallas_ADA.sh {{ ctnmsg | join('\n') }}"
+#         attach: /tmp/export_CCR_ADA.zip
+#       register: valmail
+#       run_once: true
+#       when: valarch.stat.exists == true
+
+#     - name: Validar archivo XML de mallas Control-M en equipo remoto
+#       become: true
+#       file:
+#         path: /tmp/export_CCR_ADA.zip
+#         state: absent
+#       run_once: true
+
+#     - name: Borrar archivo XML de mallas Control-M en equipo remoto
+#       become: true
+#       file:
+#         path: /tmp/export_CCR_ADA.zip
+#         state: absent
+#       run_once: true
+#   delegate_to: asitsmaop0.bvm.bluecare.kyndryl.net
+
+# - name: Borrar archivo XML de mallas en equipo remoto
+#   block:
+#     - name: Borrar archivo XML de mallas Control-M en equipo remoto
+#       become: true
+#       file:
+#         path: /tmp/{{ item }}
+#         state: absent
+#       loop:
+#         - export_CCR_ADA.xml
+#         - export_CCR_ADA.zip
