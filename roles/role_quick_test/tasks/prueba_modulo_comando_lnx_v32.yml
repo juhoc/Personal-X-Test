@@ -6,10 +6,11 @@
         paths: /Ctrlmccrp
         patterns: "export_CCR_ADA*.xml"
         age: 7d
-        recurse: yes
+        recurse: true
       register: archxmlrem
 
     - name: Borrar archivos XML con más de 7 días de antigüedad
+      become: true
       file:
         path: "{{ item.path }}"
         state: absent
