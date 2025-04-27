@@ -1,0 +1,10 @@
+---
+- block:
+    - name: Eliminar archivos XML de mallas Control-M con más de 7 días de antigüedad
+      find:
+        paths: /Ctrlmccrp
+        patterns: "export_CCR_ADA*.xml"
+        age: 7d
+        recurse: no
+      register: archxmlrem
+  delegate_to: vbldtst00.bvm.bluecare.kyndryl.net
