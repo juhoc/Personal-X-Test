@@ -5,7 +5,7 @@
       find:
         paths: /Ctrlmccrp
         patterns: "export_CCR_ADA*.xml"
-        age: 7d
+        age: 8d
         recurse: true
       register: archxmlrem
 
