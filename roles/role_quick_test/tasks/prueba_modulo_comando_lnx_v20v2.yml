@@ -24,16 +24,16 @@
     #   retries: 3600 
     #   delay: 60
 
-    - name: Limpiar mensaje salida reporte XML Control-M mallas
-      set_fact:
+#    - name: Limpiar mensaje salida reporte XML Control-M mallas
+#      set_fact:
 #        ctnmsg: "{{ async_result.stdout_lines }}"
-        current_day: "{{ '%d%m%Y' | strftime(ansible_date_time.date) }}"
+#        current_day: "{{ '%d%m%Y' | strftime(ansible_date_time.date) }}"
 
     - name: Comprimir archivo XML de mallas Control-M a directorio temporal
       become: true
       copy:
         path: /Ctrlmemp/portal/archivos/export_CCR_ADA.xml
-        dest: "/Ctrlmemp/portal/archivos/export_CCR_ADA_{{ current_day }}.xml"
+        dest: "/Ctrlmemp/portal/archivos/export_CCR_ADA_{{ ansible_date_time.date | strftime('%d%m%Y') }}.xml"
         owner: ctrlmem
         group: grpctrlm
         mode: '0755'
@@ -41,7 +41,7 @@
     - name: Comprimir archivo XML de mallas Control-M a directorio temporal
       become: true
       archive:
-        path: "/Ctrlmemp/portal/archivos/export_CCR_ADA_{{ current_day }}.xml"
+        path: "/Ctrlmemp/portal/archivos/export_CCR_ADA_{{ ansible_date_time.date | strftime('%d%m%Y') }}.xml"
         dest: /Ctrlmemp/portal/archivos/export_CCR_ADA.zip
         format: zip
         owner: ctrlmem
