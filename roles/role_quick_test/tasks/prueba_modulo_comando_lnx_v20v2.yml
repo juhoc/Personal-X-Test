@@ -37,6 +37,7 @@
         owner: ctrlmem
         group: grpctrlm
         mode: '0755'
+        remote_src: true
 
     - name: Comprimir archivo XML de mallas Control-M a directorio temporal
       become: true
