@@ -1,6 +1,5 @@
 ---
-- name: Ejecutar shell script - reporte XML Control-M mallas
-  block:
+- block:
     # - name: Ejecutar script CTM obtener_mallas_ADA.sh
     #   become: true
     #   become_user: ctrlmem
@@ -25,14 +24,24 @@
     #   retries: 3600 
     #   delay: 60
 
-    # - name: Limpiar mensaje salida reporte XML Control-M mallas
-    #   set_fact:
-    #     ctnmsg: "{{ async_result.stdout_lines }}"
+    - name: Limpiar mensaje salida reporte XML Control-M mallas
+      set_fact:
+#        ctnmsg: "{{ async_result.stdout_lines }}"
+        current_day: "{{ ansible_date_time.date | strftime('%d%m%Y') }}"
+
+    - name: Comprimir archivo XML de mallas Control-M a directorio temporal
+      become: true
+      copy:
+        path: /Ctrlmemp/portal/archivos/export_CCR_ADA.xml
+        dest: "/Ctrlmemp/portal/archivos/export_CCR_ADA_{{ current_day }}.xml"
+        owner: ctrlmem
+        group: grpctrlm
+        mode: '0755'
 
     - name: Comprimir archivo XML de mallas Control-M a directorio temporal
       become: true
       archive:
-        path: /Ctrlmemp/portal/archivos/export_CCR_ADA.xml
+        path: "/Ctrlmemp/portal/archivos/export_CCR_ADA_{{ current_day }}.xml"
         dest: /Ctrlmemp/portal/archivos/export_CCR_ADA.zip
         format: zip
         owner: ctrlmem
