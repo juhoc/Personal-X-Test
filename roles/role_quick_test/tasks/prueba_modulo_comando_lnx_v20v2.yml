@@ -24,16 +24,12 @@
     #   retries: 3600 
     #   delay: 60
 
-    - name: Formato tiempo debug
-      debug:
-        msg: "{{ lookup('pipe', 'date +%d%m%y' ) }}"
-
-    - name: Formato tiempo set_fact
+    - name: Utilizar echo para ambientar Control-M
       set_fact:
 #        ctnmsg: "{{ async_result.stdout_lines }}"
         current_day: "{{ lookup('pipe', 'date +%d%m%y' ) }}"
 
-    - name: Comprimir archivo XML de mallas Control-M a directorio temporal
+    - name: Renombrar archivo fechado XML de mallas Control-M
       become: true
       copy:
         src: /Ctrlmemp/portal/archivos/export_CCR_ADA.xml
@@ -43,7 +39,7 @@
         mode: '0755'
         remote_src: true
 
-    - name: Comprimir archivo XML de mallas Control-M a directorio temporal
+    - name: Comprimir archivo fechado XML de mallas Control-M
       become: true
       archive:
         path: "/Ctrlmemp/portal/archivos/export_CCR_ADA_{{ current_day }}.xml"
@@ -53,20 +49,19 @@
         group: grpctrlm
         mode: '0755'
 
-    # - name: Copiar archivo XML de mallas Control-M a directorio temporal
-    #   become: true
-    #   copy:
-    #     src: /Ctrlmemp/portal/archivos/export_CCR_ADA.xml
-    #     dest: /tmp
-    #     remote_src: true
-
-    - name: Carga archivo XML de mallas Control-M a Nodo de Control
+    - name: Carga archivo fechado XML de mallas Control-M a Nodo de Control
       become: true
       fetch:
         src: /Ctrlmemp/portal/archivos/export_CCR_ADA.zip
         dest: /tmp/
         flat: true
       run_once: true
+
+    - name: Remover archivo fechado XML de mallas Control-M
+      become: true
+      file:
+        path: "/Ctrlmemp/portal/archivos/export_CCR_ADA_{{ current_day }}.xml"
+        state: absent
 
 - block:
     - name: Descarga archivo XML de mallas Control-M al Nodo Administrado
@@ -92,12 +87,6 @@
         owner: ctrlmmx
         group: grpctrlm
         remote_src: true
-
-    # - name: Descomprimir archivo gz XML de mallas Control-M a directorio temporal
-    #   become: true
-    #   shell: tar xfz export_CCR_ADA.tar.gz
-    #   args:
-    #     chdir: /Ctrlmccrp
   delegate_to: vbldtst00.bvm.bluecare.kyndryl.net
 
 
