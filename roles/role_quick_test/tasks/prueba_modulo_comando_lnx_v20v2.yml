@@ -33,7 +33,7 @@
       become: true
       copy:
         src: /Ctrlmemp/portal/archivos/export_CCR_ADA.xml
-        dest: "/Ctrlmemp/portal/archivos/export_CCR_ADA_{{ ansible_date_time.date | strftime('%d%m%Y') }}.xml"
+        dest: "/Ctrlmemp/portal/archivos/export_CCR_ADA_{{ ansible_date_time.date }}.xml"
         owner: ctrlmem
         group: grpctrlm
         mode: '0755'
@@ -41,7 +41,7 @@
     - name: Comprimir archivo XML de mallas Control-M a directorio temporal
       become: true
       archive:
-        path: "/Ctrlmemp/portal/archivos/export_CCR_ADA_{{ ansible_date_time.date | strftime('%d%m%Y') }}.xml"
+        path: "/Ctrlmemp/portal/archivos/export_CCR_ADA_{{ ansible_date_time.date }}.xml"
         dest: /Ctrlmemp/portal/archivos/export_CCR_ADA.zip
         format: zip
         owner: ctrlmem
