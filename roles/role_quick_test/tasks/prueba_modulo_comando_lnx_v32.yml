@@ -1,11 +1,17 @@
 ---
 - block:
-    - name: Eliminar archivos XML de mallas Control-M con más de 7 días de antigüedad
+    - name: Buscar archivos XML con más de 7 días de antigüedad
       become: true
       find:
         paths: /Ctrlmccrp
         patterns: "export_CCR_ADA*.xml"
         age: 7d
-        recurse: no
+        recurse: yes
       register: archxmlrem
+
+    - name: Borrar archivos XML con más de 7 días de antigüedad
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ archxmlrem.files }}"
   delegate_to: vbldtst00.bvm.bluecare.kyndryl.net
