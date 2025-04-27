@@ -31,7 +31,7 @@
 
     - name: Formato tiempo
       debug:
-        msg: "{{ lookup('pipe', 'date +%d%m%Y' ) }}"
+        msg: "{{ lookup('pipe', 'date +%d%m%y' ) }}"
 
     - name: Comprimir archivo XML de mallas Control-M a directorio temporal
       become: true
