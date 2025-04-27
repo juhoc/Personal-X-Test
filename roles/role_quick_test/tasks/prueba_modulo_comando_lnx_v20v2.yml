@@ -27,7 +27,7 @@
     - name: Limpiar mensaje salida reporte XML Control-M mallas
       set_fact:
 #        ctnmsg: "{{ async_result.stdout_lines }}"
-        current_day: "{{ ansible_date_time.date | strftime('%d%m%Y') }}"
+        current_day: "{{ ansible_date_time.date | '%d%m%Y' | strftime }}"
 
     - name: Comprimir archivo XML de mallas Control-M a directorio temporal
       become: true
