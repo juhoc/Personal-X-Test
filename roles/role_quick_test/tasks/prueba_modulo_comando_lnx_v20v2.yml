@@ -24,14 +24,14 @@
     #   retries: 3600 
     #   delay: 60
 
-#    - name: Limpiar mensaje salida reporte XML Control-M mallas
-#      set_fact:
-#        ctnmsg: "{{ async_result.stdout_lines }}"
-#        current_day: "{{ '%d%m%Y' | strftime(ansible_date_time.date) }}"
-
-    - name: Formato tiempo
+    - name: Formato tiempo debug
       debug:
         msg: "{{ lookup('pipe', 'date +%d%m%y' ) }}"
+
+    - name: Formato tiempo set_fact
+      set_fact:
+#        ctnmsg: "{{ async_result.stdout_lines }}"
+        current_day: "{{ lookup('pipe', 'date +%d%m%y' ) }}"
 
     - name: Comprimir archivo XML de mallas Control-M a directorio temporal
       become: true
