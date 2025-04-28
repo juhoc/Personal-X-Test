@@ -128,7 +128,6 @@ pathasb: "/var/opt/ansible"
 mailtoA1: itctmintegration.mx@company-xz.net
 mailsubA1: "¡Alerta! Script Faltante en Servidor {{ inventory_hostname }}"
 mailbodyA1: |
-      <!DOCTYPE html>
       <html lang="es">
       <head>
           <meta charset="UTF-8">
@@ -160,7 +159,6 @@ mailbodyA1: |
 mailtoA2: itasbintegration.mx@company-xz.net
 mailsubA2: ¡Alerta! No se genero archivo respaldos mallas Control-M
 mailbodyA2: |
-      <!DOCTYPE html>
       <html lang="es">
       <head>
           <meta charset="UTF-8">
