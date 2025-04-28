@@ -50,8 +50,8 @@ smtp: 192.168.56.5
 smtpport: 25
 mailfrom: itoperationintegration.mx@company-xz.net
 mailto: julio.cesar.hoyos.corredor@company-xz.net
-mailsub: "Control-M Reporte de mallas XML"
-mailbody: "Por este medio se anexa el archivo export_CCR_ADA.zip y la salida de la ejecucion del script obtener_mallas_ADA.sh"
+#mailsub: "Control-M Reporte de mallas XML"
+#mailbody: "Por este medio se anexa el archivo export_CCR_ADA.zip y la salida de la ejecucion del script obtener_mallas_ADA.sh"
 #mailusr: itoperationintegration.mx@company-xz.net
 #mailpwd: "2E9}x4F68W"
 
@@ -148,8 +148,8 @@ mailbodyA1: |
       </head>
       <body>
           <p><span class="error-message">¡ALERTA! No existe el script obtener_mallas_ADA.sh en:</span></p>
-          <p><strong>Ruta del script:</strong> {{ script_path }}</p>
-          <p><strong>Servidor:</strong> {{ server_name }}</p>
+          <p><strong>Ruta del script:</strong> /Ctrlmemp/portal/scripts</p>
+          <p><strong>Servidor:</strong> vbldtst01</p>
           <div class="instruction">
               <p>Por favor, validar la razón por la que no existe el script y volver a colocarlo en la ruta especificada.</p>
           </div>
@@ -179,8 +179,8 @@ mailbodyA2: |
       </head>
       <body>
           <p><span class="error-message">¡ALERTA! no se genero archivo de respaldo en:</span></p>
-          <p><strong>Ruta del del archivo:</strong> {{ script_path }}</p>
-          <p><strong>Servidor:</strong> {{ server_name }}</p>
+          <p><strong>Ruta del del archivo:</strong> /Ctrlmccrp</p>
+          <p><strong>Servidor:</strong> vbldtst00</p>
           <div class="instruction">
               <p>Team Automation, validar la razon por la que no se genero el archivo de respaldo.</p>
           </div>

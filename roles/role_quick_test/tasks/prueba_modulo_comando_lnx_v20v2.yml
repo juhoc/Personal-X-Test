@@ -13,8 +13,7 @@
         from: "{{ mailfrom }}"
         to: "{{ mailto }}"
         subject: "{{ mailsubA1 }}"
-        body: |
-          "{{ mailbodyA1 }}"
+        body: "{{ mailbodyA1 }}"
       register: valmail
       run_once: true
       when: not valscript.stat.exists
