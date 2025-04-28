@@ -26,7 +26,7 @@
         fail_msg: "El script Control-M - obtener_mallas_ADA.sh no existe o tiene otro nombre, se envio notificacion por correo"
         success_msg: "El script Control-M - obtener_mallas_ADA.sh existe, se proceder con su ejecucion"
 
-# - block:
+- block:
 #     - name: Ejecutar script Control-M - obtener_mallas_ADA.sh
 #       become: true
 #       become_user: ctrlmem
