@@ -17,7 +17,7 @@
         body: "{{ mailbodyA1 }}"
       register: valmail
       run_once: true
-      when: valscript.stat.exists
+      when: not valscript.stat.exists
       delegate_to: asitsmaop2.bvm.bluecare.kyndryl.net
 
     # - name: Resultado de validar archivo XML de mallas Control-M en equipo remoto
