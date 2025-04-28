@@ -125,6 +125,7 @@ rponbu: "/bmc/soft3ros/veritas/netbackup/agents"
 pathasb: "/var/opt/ansible"
 
 ###-------------------------CONTROL-M
+mailtoA1: itctmintegration.mx@company-xz.net
 mailsubA1: "¡Alerta! Script Faltante en Servidor {{ inventory_hostname }}"
 mailbodyA1: |
       <!DOCTYPE html>
@@ -151,11 +152,12 @@ mailbodyA1: |
           <p><strong>Ruta del script:</strong> /Ctrlmemp/portal/scripts</p>
           <p><strong>Servidor:</strong> vbldtst01</p>
           <div class="instruction">
-              <p>Por favor, validar la razón por la que no existe el script y volver a colocarlo en la ruta especificada.</p>
+              <p>Favor, validar la razón por la que no existe el script o un posible cambiado de nombre.</p>
           </div>
       </body>
       </html>
 
+mailtoA2: itasbintegration.mx@company-xz.net
 mailsubA2: ¡Alerta! No se genero archivo respaldos mallas Control-M
 mailbodyA2: |
       <!DOCTYPE html>

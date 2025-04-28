@@ -11,11 +11,10 @@
         host: "{{ smtp }}"
         port: "{{ smtpport }}"
         from: "{{ mailfrom }}"
-        to: "{{ mailto }}"
+        to: "{{ mailtoA1 }}"
         subject: "{{ mailsubA1 }}"
         subtype: html
         body: "{{ mailbodyA1 }}"
-      register: valmail
       run_once: true
       when: not valscript.stat.exists
       delegate_to: asitsmaop2.bvm.bluecare.kyndryl.net
@@ -24,7 +23,7 @@
       assert:
         that:
           - valscript.stat.exists
-        fail_msg: "El script Control-M - obtener_mallas_ADA.sh no existe, se encio notificacion por correo"
+        fail_msg: "El script Control-M - obtener_mallas_ADA.sh no existe o tiene otro nombre, se envio notificacion por correo"
         success_msg: "El script Control-M - obtener_mallas_ADA.sh existe, se proceder con su ejecucion"
 
 # - block:
@@ -52,98 +51,138 @@
 #       retries: 3600 
 #       delay: 60
 
-#     - name: Utilizar echo para ambientar variables script Control-M
-#       set_fact:
-#         ctnmsg: "{{ async_result.stdout_lines }}"
-#         current_day: "{{ lookup('pipe', 'date +%d%m%y' ) }}"
+    - name: Utilizar echo para ambientar variables script Control-M
+      set_fact:
+        ctnmsg: "{{ async_result.stdout_lines }}"
+        current_day: "{{ lookup('pipe', 'date +%d%m%y' ) }}"
 
-#     - name: Renombrar archivo fechado XML de mallas Control-M
-#       become: true
-#       copy:
-#         src: /Ctrlmemp/portal/archivos/export_CCR_ADA.xml
-#         dest: "/Ctrlmemp/portal/archivos/export_CCR_ADA_{{ current_day }}.xml"
-#         owner: ctrlmem
-#         group: grpctrlm
-#         mode: '0755'
-#         remote_src: true
+    - name: Renombrar archivo fechado XML de mallas Control-M
+      become: true
+      copy:
+        src: /Ctrlmemp/portal/archivos/export_CCR_ADA.xml
+        dest: "/Ctrlmemp/portal/archivos/export_CCR_ADA_{{ current_day }}.xml"
+        owner: ctrlmem
+        group: grpctrlm
+        mode: '0755'
+        remote_src: true
 
-#     - name: Comprimir archivo fechado XML de mallas Control-M
-#       become: true
-#       archive:
-#         path: "/Ctrlmemp/portal/archivos/export_CCR_ADA_{{ current_day }}.xml"
-#         dest: /Ctrlmemp/portal/archivos/export_CCR_ADA.zip
-#         format: zip
-#         owner: ctrlmem
-#         group: grpctrlm
-#         mode: '0755'
+    - name: Comprimir archivo fechado XML de mallas Control-M
+      become: true
+      archive:
+        path: "/Ctrlmemp/portal/archivos/export_CCR_ADA_{{ current_day }}.xml"
+        dest: /Ctrlmemp/portal/archivos/export_CCR_ADA.zip
+        format: zip
+        owner: ctrlmem
+        group: grpctrlm
+        mode: '0755'
 
-#     - name: Carga archivo fechado XML de mallas Control-M a Nodo de Control
-#       become: true
-#       fetch:
-#         src: /Ctrlmemp/portal/archivos/export_CCR_ADA.zip
-#         dest: /tmp/
-#         flat: true
-#       run_once: true
+    - name: Carga archivo fechado XML de mallas Control-M a Nodo de Control
+      become: true
+      fetch:
+        src: /Ctrlmemp/portal/archivos/export_CCR_ADA.zip
+        dest: /tmp/
+        flat: true
+      run_once: true
 
-#     - name: Remover archivo fechado XML de mallas Control-M
-#       become: true
-#       file:
-#         path: "/Ctrlmemp/portal/archivos/export_CCR_ADA_{{ current_day }}.xml"
-#         state: absent
+    - name: Remover archivo fechado XML de mallas Control-M
+      become: true
+      file:
+        path: "/Ctrlmemp/portal/archivos/export_CCR_ADA_{{ current_day }}.xml"
+        state: absent
 
-# - block:
-#     - name: Descarga archivo XML de mallas Control-M al Nodo Administrado
-#       become: true
-#       copy:
-#         src: /tmp/export_CCR_ADA.zip
-#         dest: /Ctrlmccrp/
-#         owner: ctrlmmx
-#         group: grpctrlm
-#         remote_src: false
+- block:
+    - name: Descarga archivo XML de mallas Control-M al Nodo Administrado
+      become: true
+      copy:
+        src: /tmp/export_CCR_ADA.zip
+        dest: /Ctrlmccrp/
+        owner: ctrlmmx
+        group: grpctrlm
+        remote_src: false
 
-#     - name: Validar archivo XML de mallas Control-M en equipo remoto
-#       become: true
-#       stat:
-#         path: /Ctrlmccrp/export_CCR_ADA.zip
-#       register: valarch
+    - name: Validar archivo zip de mallas Control-M
+      become: true
+      stat:
+        path: /Ctrlmccrp/export_CCR_ADA.zip
+      register: valarch
 
-#     - name: Resultado de validar archivo XML de mallas Control-M en equipo remoto
-#       assert:
-#         that:
-#           - valarch.stat.exists
-#         fail_msg: "La transferencia no fue exitosa del archivo export_CCR_ADA.zip de mallas Control-M"
-#         success_msg: "La transferencia fue exitosa del archivo export_CCR_ADA.zip de mallas Control-M"
+    - name: Enviar correo de notificacion de alertamiento en caso de no existir archivo zip de mallas Control-M
+      mail:
+        host: "{{ smtp }}"
+        port: "{{ smtpport }}"
+        from: "{{ mailfrom }}"
+        to: "{{ mailtoA2 }}"
+        subject: "{{ mailsubA2 }}"
+        subtype: html
+        body: "{{ mailbodyA2 }}"
+      run_once: true
+      when: not valarch.stat.exists
+      delegate_to: asitsmaop2.bvm.bluecare.kyndryl.net
 
-#     - name: Descomprimir archivo gz XML de mallas Control-M a directorio temporal
-#       become: true
-#       unarchive:
-#         src: /Ctrlmccrp/export_CCR_ADA.zip
-#         dest: /Ctrlmccrp/
-#         owner: ctrlmmx
-#         group: grpctrlm
-#         remote_src: true
+    - name: Resultado de validar archivo XML de mallas Control-M en equipo remoto
+      assert:
+        that:
+          - valarch.stat.exists
+        fail_msg: "La transferencia no fue exitosa del archivo export_CCR_ADA.zip de mallas Control-M"
+        success_msg: "La transferencia fue exitosa del archivo export_CCR_ADA.zip de mallas Control-M"
 
-#     - name: Remover archivo zip de mallas Control-M
-#       become: true
-#       file:
-#         path: /Ctrlmccrp/export_CCR_ADA.zip
-#         state: absent
+    - name: Descomprimir archivo gz XML de mallas Control-M a directorio temporal
+      become: true
+      unarchive:
+        src: /Ctrlmccrp/export_CCR_ADA.zip
+        dest: /Ctrlmccrp/
+        owner: ctrlmmx
+        group: grpctrlm
+        remote_src: true
 
-#     - name: Buscar archivos XML de mallas Control-M con más de 7 días de antigüedad
-#       find:
-#         paths: /Ctrlmccrp
-#         patterns: "export_CCR_ADA*.xml"
-#         age: 7d
-#         recurse: no
-#       register: archxmlrem
+    - name: Remover archivo zip de mallas Control-M
+      become: true
+      file:
+        path: /Ctrlmccrp/export_CCR_ADA.zip
+        state: absent
 
-#     - name: Borrar archivos XML de mallas Control-M con más de 7 días de antigüedad
-#       become: true
-#       file:
-#         path: "{{ item.path }}"
-#         state: absent
-#       loop: "{{ archxmlrem.files }}"
-#   delegate_to: lvpapctmydmp01.bvm.bluecare.kyndryl.net
+    - name: Buscar archivos XML de mallas Control-M con más de 7 días de antigüedad
+      find:
+        paths: /Ctrlmccrp
+        patterns: "export_CCR_ADA*.xml"
+        age: 7d
+        recurse: no
+      register: archxmlrem
+
+    - name: Borrar archivos XML de mallas Control-M con más de 7 días de antigüedad
+      become: true
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ archxmlrem.files }}"
+  delegate_to: lvpapctmydmp01.bvm.bluecare.kyndryl.net
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #     - name: Envir por correo del archivo XML de mallas Control-M
 #       mail:
