@@ -123,8 +123,8 @@
       assert:
         that:
           - valarch.stat.exists
-        fail_msg: "La transferencia no fue exitosa del archivo export_CCR_ADA.zip de mallas Control-M"
-        success_msg: "La transferencia fue exitosa del archivo export_CCR_ADA.zip de mallas Control-M"
+        fail_msg: "No existe archivo export_CCR_ADA.zip de respaldo de mallas Control-M"
+        success_msg: "Existe archivo export_CCR_ADA.zip de respaldo de mallas Control-M"
 
     - name: Descomprimir archivo gz XML de mallas Control-M a directorio temporal
       become: true
