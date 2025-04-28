@@ -123,3 +123,66 @@ ip: "{{ ansible_facts['default_ipv4'] ['address'] }}"
 
 rponbu: "/bmc/soft3ros/veritas/netbackup/agents"
 pathasb: "/var/opt/ansible"
+
+###-------------------------CONTROL-M
+mailsubA1: "¡Alerta! Script Faltante en Servidor {{ inventory_hostname }}"
+mailbodyA1: |
+      <!DOCTYPE html>
+      <html lang="es">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Notificación de Script Faltante</title>
+          <style>
+              body {
+                  font-family: sans-serif;
+              }
+              .error-message {
+                  color: red;
+                  font-weight: bold;
+              }
+              .instruction {
+                  margin-top: 15px;
+              }
+          </style>
+      </head>
+      <body>
+          <p><span class="error-message">¡ALERTA! No existe el script obtener_mallas_ADA.sh en:</span></p>
+          <p><strong>Ruta del script:</strong> {{ script_path }}</p>
+          <p><strong>Servidor:</strong> {{ server_name }}</p>
+          <div class="instruction">
+              <p>Por favor, validar la razón por la que no existe el script y volver a colocarlo en la ruta especificada.</p>
+          </div>
+      </body>
+      </html>
+
+mailsubA2: ¡Alerta! No se genero archivo respaldos mallas Control-M
+mailbodyA2: |
+      <!DOCTYPE html>
+      <html lang="es">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Notificación de Archivo Faltante</title>
+          <style>
+              body {
+                  font-family: sans-serif;
+              }
+              .error-message {
+                  color: red;
+                  font-weight: bold;
+              }
+              .instruction {
+                  margin-top: 15px;
+              }
+          </style>
+      </head>
+      <body>
+          <p><span class="error-message">¡ALERTA! no se genero archivo de respaldo en:</span></p>
+          <p><strong>Ruta del del archivo:</strong> {{ script_path }}</p>
+          <p><strong>Servidor:</strong> {{ server_name }}</p>
+          <div class="instruction">
+              <p>Team Automation, validar la razon por la que no se genero el archivo de respaldo.</p>
+          </div>
+      </body>
+      </html>

@@ -1,32 +1,59 @@
 ---
 - block:
-    # - name: Ejecutar script CTM obtener_mallas_ADA.sh
-    #   become: true
-    #   become_user: ctrlmem
-    #   become_method: su
-    #   become_exe: sudo su -
-    #   shell: ./obtener_mallas_ADA.sh
-    #   args:
-    #     chdir: /Ctrlmemp/portal/scripts
-    #   register: ctmscript_async
-    #   async: 3600
-    #   poll: 0
+    - name: Validar script Control-M - obtener_mallas_ADA.sh
+      become: true
+      stat:
+        path: /Ctrlmemp/portal/scripts/obtener_mallas_ADA.sh
+      register: valscript
 
-    # - name: Esperar a que termine el script (hasta el timeout)
-    #   become: true
-    #   become_user: ctrlmem
-    #   become_method: su
-    #   become_exe: sudo su -
-    #   async_status:
-    #     jid: "{{ ctmscript_async.ansible_job_id }}"
-    #   register: async_result
-    #   until: async_result.finished or async_result.failed
-    #   retries: 3600 
-    #   delay: 60
+    - name: Enviar correo de notificacion de alertamiento en caso de no existir script
+      mail:
+        host: "{{ smtp }}"
+        port: "{{ smtpport }}"
+        from: "{{ mailfrom }}"
+        to: "{{ mailto }}"
+        subject: "{{ mailsubA1 }}"
+        body: "{{ mailbodyA1 }}"
+      register: valmail
+      run_once: true
+      when: not valscript.stat.exists
+      delegate_to: asitsmaop2.bvm.bluecare.kyndryl.net
 
-    - name: Utilizar echo para ambientar Control-M
+    - name: Resultado de validar archivo XML de mallas Control-M en equipo remoto
+      assert:
+        that:
+          - not valscript.stat.exists
+        fail_msg: "El script Control-M - obtener_mallas_ADA.sh existe, se proceder con su ejecucion"
+        success_msg: "El script Control-M - obtener_mallas_ADA.sh no existe, se encio notificacion por correo"
+
+- block:
+    - name: Ejecutar script Control-M - obtener_mallas_ADA.sh
+      become: true
+      become_user: ctrlmem
+      become_method: su
+      become_exe: sudo su -
+      shell: ./obtener_mallas_ADA.sh
+      args:
+        chdir: /Ctrlmemp/portal/scripts
+      register: ctmscript_async
+      async: 3600
+      poll: 0
+
+    - name: Esperar a que termine el script Control-M (hasta el timeout)
+      become: true
+      become_user: ctrlmem
+      become_method: su
+      become_exe: sudo su -
+      async_status:
+        jid: "{{ ctmscript_async.ansible_job_id }}"
+      register: async_result
+      until: async_result.finished or async_result.failed
+      retries: 3600 
+      delay: 60
+
+    - name: Utilizar echo para ambientar variables script Control-M
       set_fact:
-#        ctnmsg: "{{ async_result.stdout_lines }}"
+        ctnmsg: "{{ async_result.stdout_lines }}"
         current_day: "{{ lookup('pipe', 'date +%d%m%y' ) }}"
 
     - name: Renombrar archivo fechado XML de mallas Control-M
@@ -79,6 +106,13 @@
         path: /Ctrlmccrp/export_CCR_ADA.zip
       register: valarch
 
+    - name: Resultado de validar archivo XML de mallas Control-M en equipo remoto
+      assert:
+        that:
+          - valarch.stat.exists
+        fail_msg: "La transferencia no fue exitosa del archivo export_CCR_ADA.zip de mallas Control-M"
+        success_msg: "La transferencia fue exitosa del archivo export_CCR_ADA.zip de mallas Control-M"
+
     - name: Descomprimir archivo gz XML de mallas Control-M a directorio temporal
       become: true
       unarchive:
@@ -88,19 +122,27 @@
         group: grpctrlm
         remote_src: true
 
-    - name: Eliminar archivos XML de mallas Control-M con más de 7 días de antigüedad
+    - name: Remover archivo zip de mallas Control-M
+      become: true
+      file:
+        path: /Ctrlmccrp/export_CCR_ADA.zip
+        state: absent
+
+    - name: Buscar archivos XML de mallas Control-M con más de 7 días de antigüedad
       find:
         paths: /Ctrlmccrp
         patterns: "export_CCR_ADA*.xml"
         age: 7d
         recurse: no
       register: archxmlrem
-  delegate_to: vbldtst00.bvm.bluecare.kyndryl.net
 
-
-
-
-
+    - name: Borrar archivos XML de mallas Control-M con más de 7 días de antigüedad
+      become: true
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ archxmlrem.files }}"
+  delegate_to: lvpapctmydmp01.bvm.bluecare.kyndryl.net
 
 #     - name: Envir por correo del archivo XML de mallas Control-M
 #       mail:
