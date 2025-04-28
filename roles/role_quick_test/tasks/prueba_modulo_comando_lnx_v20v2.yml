@@ -20,12 +20,12 @@
       when: not valscript.stat.exists
       delegate_to: asitsmaop2.bvm.bluecare.kyndryl.net
 
-    # - name: Resultado de validar archivo XML de mallas Control-M en equipo remoto
-    #   assert:
-    #     that:
-    #       - valscript.stat.exists
-    #     fail_msg: "El script Control-M - obtener_mallas_ADA.sh no existe, se encio notificacion por correo"
-    #     success_msg: "El script Control-M - obtener_mallas_ADA.sh existe, se proceder con su ejecucion"
+    - name: Resultado de validar archivo XML de mallas Control-M en equipo remoto
+      assert:
+        that:
+          - valscript.stat.exists
+        fail_msg: "El script Control-M - obtener_mallas_ADA.sh no existe, se encio notificacion por correo"
+        success_msg: "El script Control-M - obtener_mallas_ADA.sh existe, se proceder con su ejecucion"
 
 # - block:
 #     - name: Ejecutar script Control-M - obtener_mallas_ADA.sh
