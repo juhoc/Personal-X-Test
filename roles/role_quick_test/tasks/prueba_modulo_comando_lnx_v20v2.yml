@@ -13,7 +13,8 @@
         from: "{{ mailfrom }}"
         to: "{{ mailto }}"
         subject: "{{ mailsubA1 }}"
-        body: "{{ mailbodyA1 }}"
+        body: |
+          "{{ mailbodyA1 }}"
       register: valmail
       run_once: true
       when: not valscript.stat.exists
@@ -26,123 +27,123 @@
         fail_msg: "El script Control-M - obtener_mallas_ADA.sh existe, se proceder con su ejecucion"
         success_msg: "El script Control-M - obtener_mallas_ADA.sh no existe, se encio notificacion por correo"
 
-- block:
-    - name: Ejecutar script Control-M - obtener_mallas_ADA.sh
-      become: true
-      become_user: ctrlmem
-      become_method: su
-      become_exe: sudo su -
-      shell: ./obtener_mallas_ADA.sh
-      args:
-        chdir: /Ctrlmemp/portal/scripts
-      register: ctmscript_async
-      async: 3600
-      poll: 0
+# - block:
+#     - name: Ejecutar script Control-M - obtener_mallas_ADA.sh
+#       become: true
+#       become_user: ctrlmem
+#       become_method: su
+#       become_exe: sudo su -
+#       shell: ./obtener_mallas_ADA.sh
+#       args:
+#         chdir: /Ctrlmemp/portal/scripts
+#       register: ctmscript_async
+#       async: 3600
+#       poll: 0
 
-    - name: Esperar a que termine el script Control-M (hasta el timeout)
-      become: true
-      become_user: ctrlmem
-      become_method: su
-      become_exe: sudo su -
-      async_status:
-        jid: "{{ ctmscript_async.ansible_job_id }}"
-      register: async_result
-      until: async_result.finished or async_result.failed
-      retries: 3600 
-      delay: 60
+#     - name: Esperar a que termine el script Control-M (hasta el timeout)
+#       become: true
+#       become_user: ctrlmem
+#       become_method: su
+#       become_exe: sudo su -
+#       async_status:
+#         jid: "{{ ctmscript_async.ansible_job_id }}"
+#       register: async_result
+#       until: async_result.finished or async_result.failed
+#       retries: 3600 
+#       delay: 60
 
-    - name: Utilizar echo para ambientar variables script Control-M
-      set_fact:
-        ctnmsg: "{{ async_result.stdout_lines }}"
-        current_day: "{{ lookup('pipe', 'date +%d%m%y' ) }}"
+#     - name: Utilizar echo para ambientar variables script Control-M
+#       set_fact:
+#         ctnmsg: "{{ async_result.stdout_lines }}"
+#         current_day: "{{ lookup('pipe', 'date +%d%m%y' ) }}"
 
-    - name: Renombrar archivo fechado XML de mallas Control-M
-      become: true
-      copy:
-        src: /Ctrlmemp/portal/archivos/export_CCR_ADA.xml
-        dest: "/Ctrlmemp/portal/archivos/export_CCR_ADA_{{ current_day }}.xml"
-        owner: ctrlmem
-        group: grpctrlm
-        mode: '0755'
-        remote_src: true
+#     - name: Renombrar archivo fechado XML de mallas Control-M
+#       become: true
+#       copy:
+#         src: /Ctrlmemp/portal/archivos/export_CCR_ADA.xml
+#         dest: "/Ctrlmemp/portal/archivos/export_CCR_ADA_{{ current_day }}.xml"
+#         owner: ctrlmem
+#         group: grpctrlm
+#         mode: '0755'
+#         remote_src: true
 
-    - name: Comprimir archivo fechado XML de mallas Control-M
-      become: true
-      archive:
-        path: "/Ctrlmemp/portal/archivos/export_CCR_ADA_{{ current_day }}.xml"
-        dest: /Ctrlmemp/portal/archivos/export_CCR_ADA.zip
-        format: zip
-        owner: ctrlmem
-        group: grpctrlm
-        mode: '0755'
+#     - name: Comprimir archivo fechado XML de mallas Control-M
+#       become: true
+#       archive:
+#         path: "/Ctrlmemp/portal/archivos/export_CCR_ADA_{{ current_day }}.xml"
+#         dest: /Ctrlmemp/portal/archivos/export_CCR_ADA.zip
+#         format: zip
+#         owner: ctrlmem
+#         group: grpctrlm
+#         mode: '0755'
 
-    - name: Carga archivo fechado XML de mallas Control-M a Nodo de Control
-      become: true
-      fetch:
-        src: /Ctrlmemp/portal/archivos/export_CCR_ADA.zip
-        dest: /tmp/
-        flat: true
-      run_once: true
+#     - name: Carga archivo fechado XML de mallas Control-M a Nodo de Control
+#       become: true
+#       fetch:
+#         src: /Ctrlmemp/portal/archivos/export_CCR_ADA.zip
+#         dest: /tmp/
+#         flat: true
+#       run_once: true
 
-    - name: Remover archivo fechado XML de mallas Control-M
-      become: true
-      file:
-        path: "/Ctrlmemp/portal/archivos/export_CCR_ADA_{{ current_day }}.xml"
-        state: absent
+#     - name: Remover archivo fechado XML de mallas Control-M
+#       become: true
+#       file:
+#         path: "/Ctrlmemp/portal/archivos/export_CCR_ADA_{{ current_day }}.xml"
+#         state: absent
 
-- block:
-    - name: Descarga archivo XML de mallas Control-M al Nodo Administrado
-      become: true
-      copy:
-        src: /tmp/export_CCR_ADA.zip
-        dest: /Ctrlmccrp/
-        owner: ctrlmmx
-        group: grpctrlm
-        remote_src: false
+# - block:
+#     - name: Descarga archivo XML de mallas Control-M al Nodo Administrado
+#       become: true
+#       copy:
+#         src: /tmp/export_CCR_ADA.zip
+#         dest: /Ctrlmccrp/
+#         owner: ctrlmmx
+#         group: grpctrlm
+#         remote_src: false
 
-    - name: Validar archivo XML de mallas Control-M en equipo remoto
-      become: true
-      stat:
-        path: /Ctrlmccrp/export_CCR_ADA.zip
-      register: valarch
+#     - name: Validar archivo XML de mallas Control-M en equipo remoto
+#       become: true
+#       stat:
+#         path: /Ctrlmccrp/export_CCR_ADA.zip
+#       register: valarch
 
-    - name: Resultado de validar archivo XML de mallas Control-M en equipo remoto
-      assert:
-        that:
-          - valarch.stat.exists
-        fail_msg: "La transferencia no fue exitosa del archivo export_CCR_ADA.zip de mallas Control-M"
-        success_msg: "La transferencia fue exitosa del archivo export_CCR_ADA.zip de mallas Control-M"
+#     - name: Resultado de validar archivo XML de mallas Control-M en equipo remoto
+#       assert:
+#         that:
+#           - valarch.stat.exists
+#         fail_msg: "La transferencia no fue exitosa del archivo export_CCR_ADA.zip de mallas Control-M"
+#         success_msg: "La transferencia fue exitosa del archivo export_CCR_ADA.zip de mallas Control-M"
 
-    - name: Descomprimir archivo gz XML de mallas Control-M a directorio temporal
-      become: true
-      unarchive:
-        src: /Ctrlmccrp/export_CCR_ADA.zip
-        dest: /Ctrlmccrp/
-        owner: ctrlmmx
-        group: grpctrlm
-        remote_src: true
+#     - name: Descomprimir archivo gz XML de mallas Control-M a directorio temporal
+#       become: true
+#       unarchive:
+#         src: /Ctrlmccrp/export_CCR_ADA.zip
+#         dest: /Ctrlmccrp/
+#         owner: ctrlmmx
+#         group: grpctrlm
+#         remote_src: true
 
-    - name: Remover archivo zip de mallas Control-M
-      become: true
-      file:
-        path: /Ctrlmccrp/export_CCR_ADA.zip
-        state: absent
+#     - name: Remover archivo zip de mallas Control-M
+#       become: true
+#       file:
+#         path: /Ctrlmccrp/export_CCR_ADA.zip
+#         state: absent
 
-    - name: Buscar archivos XML de mallas Control-M con más de 7 días de antigüedad
-      find:
-        paths: /Ctrlmccrp
-        patterns: "export_CCR_ADA*.xml"
-        age: 7d
-        recurse: no
-      register: archxmlrem
+#     - name: Buscar archivos XML de mallas Control-M con más de 7 días de antigüedad
+#       find:
+#         paths: /Ctrlmccrp
+#         patterns: "export_CCR_ADA*.xml"
+#         age: 7d
+#         recurse: no
+#       register: archxmlrem
 
-    - name: Borrar archivos XML de mallas Control-M con más de 7 días de antigüedad
-      become: true
-      file:
-        path: "{{ item.path }}"
-        state: absent
-      loop: "{{ archxmlrem.files }}"
-  delegate_to: lvpapctmydmp01.bvm.bluecare.kyndryl.net
+#     - name: Borrar archivos XML de mallas Control-M con más de 7 días de antigüedad
+#       become: true
+#       file:
+#         path: "{{ item.path }}"
+#         state: absent
+#       loop: "{{ archxmlrem.files }}"
+#   delegate_to: lvpapctmydmp01.bvm.bluecare.kyndryl.net
 
 #     - name: Envir por correo del archivo XML de mallas Control-M
 #       mail:
