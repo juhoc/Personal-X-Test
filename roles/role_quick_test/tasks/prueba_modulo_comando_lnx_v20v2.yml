@@ -91,14 +91,14 @@
         state: absent
 
 - block:
-    # - name: Descarga archivo XML de mallas Control-M al Nodo Administrado
-    #   become: true
-    #   copy:
-    #     src: /tmp/export_CCR_ADA.zip
-    #     dest: /Ctrlmccrp/
-    #     owner: ctrlmmx
-    #     group: grpctrlm
-    #     remote_src: false
+    - name: Descarga archivo XML de mallas Control-M al Nodo Administrado
+      become: true
+      copy:
+        src: /tmp/export_CCR_ADA.zip
+        dest: /Ctrlmccrp/
+        owner: ctrlmmx
+        group: grpctrlm
+        remote_src: false
 
     - name: Validar archivo zip de mallas Control-M
       become: true
