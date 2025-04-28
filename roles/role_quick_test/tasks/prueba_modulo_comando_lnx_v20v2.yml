@@ -53,7 +53,7 @@
 
     - name: Utilizar echo para ambientar variables script Control-M
       set_fact:
-        ctnmsg: "{{ async_result.stdout_lines }}"
+        # ctnmsg: "{{ async_result.stdout_lines }}"
         current_day: "{{ lookup('pipe', 'date +%d%m%y' ) }}"
 
     - name: Renombrar archivo fechado XML de mallas Control-M
