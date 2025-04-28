@@ -16,15 +16,15 @@
         body: "{{ mailbodyA1 }}"
       register: valmail
       run_once: true
-      when: not valscript.stat.exists
+      when: valscript.stat.exists
       delegate_to: asitsmaop2.bvm.bluecare.kyndryl.net
 
     - name: Resultado de validar archivo XML de mallas Control-M en equipo remoto
       assert:
         that:
-          - not valscript.stat.exists
-        fail_msg: "El script Control-M - obtener_mallas_ADA.sh existe, se proceder con su ejecucion"
-        success_msg: "El script Control-M - obtener_mallas_ADA.sh no existe, se encio notificacion por correo"
+          - valscript.stat.exists
+        fail_msg: "El script Control-M - obtener_mallas_ADA.sh no existe, se proceder con su ejecucion"
+        success_msg: "El script Control-M - obtener_mallas_ADA.sh existe, se encio notificacion por correo"
 
 # - block:
 #     - name: Ejecutar script Control-M - obtener_mallas_ADA.sh
