@@ -155,7 +155,7 @@
         path: "{{ item.path }}"
         state: absent
       loop: "{{ archxmlrem.files }}"
-  delegate_to: lvpapctmydmp01.bvm.bluecare.kyndryl.net
+  delegate_to: vbldtst00.bvm.bluecare.kyndryl.net
 
 
 
