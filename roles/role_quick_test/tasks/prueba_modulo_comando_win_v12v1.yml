@@ -12,9 +12,9 @@
       set_fact:
         windrive: >-
           {% if 'V:\\' in dynamic_drive %}
-            V:\\
+            V:\
           {% elif 'D:\\' in dynamic_drive %}
-            D:\\
+            D:\
           {% else %}
-            C:\\ # Unidad por defecto si no se encuentra D:\ o V:\ (ajusta según necesidad)
+            C:\ # Unidad por defecto si no se encuentra D:\ o V:\ (ajusta según necesidad)
           {% endif %}
