@@ -1,0 +1,4 @@
+---
+- name: Mostrar ansible_win_logical_drives
+  debug:
+    var: ansible_win_logical_drives
