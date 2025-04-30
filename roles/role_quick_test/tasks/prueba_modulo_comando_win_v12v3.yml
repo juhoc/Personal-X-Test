@@ -1,4 +1,14 @@
 ---
-- name: Mostrar ansible_win_logical_drives
-  debug:
-    var: ansible_win_logical_drives
+- block:
+    - name: Ejecutar win_setup y mostrar resultados
+      win_setup:
+        gather_subset:
+          - hardware
+          - network
+          - system
+          - storage  # Incluye la categoría de almacenamiento
+      register: win_setup_output
+
+    - name: Mostrar la salida de win_setup
+      debug:
+        var: win_setup_output
