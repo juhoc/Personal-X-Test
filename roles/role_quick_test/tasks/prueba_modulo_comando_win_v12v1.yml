@@ -8,7 +8,7 @@
     - name: Filtrar unidades D:\ y V:\
       set_fact:
         #dynamic_drive: "{{ windrives.stdout_lines | select('match', '^[DV]:\\\\$') | list | trim }}"
-        dynamic_drive: "{{ windrives.stdout_lines | select('match', '^[DV]:') | list | replace('\\', '')}}"
+        dynamic_drive: "{{ windrives.stdout_lines | select('match', '^[DV]:') | list | replace('\', '')}}"
 
     - name: Determinar la unidad Windows a usar
       set_fact:
