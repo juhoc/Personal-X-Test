@@ -8,15 +8,15 @@
     - name: Filtrar unidades D:\ y V:\
       set_fact:
         #dynamic_drive: "{{ windrives.stdout_lines | select('match', '^[DV]:\\\\$') | list | trim }}"
-        dynamic_drive: "{{ windrives.stdout_lines | select('match', '^[DV]:') | list | replace('\', '')}}"
+        dynamic_drive: "{{ windrives.stdout_lines | select('match', '^[DV]:') | list | replace('\', '') }}"
 
     - name: Determinar la unidad Windows a usar
       set_fact:
         windrive: >-
           {% if 'V:\\' in dynamic_drive %}
-            V:\
+            V:
           {% elif 'D:\\' in dynamic_drive %}
-            D:\
+            D:
           {% else %}
-            C:\ # Unidad por defecto si no se encuentra D:\ o V:\ (ajusta según necesidad)
+            C: # Unidad por defecto si no se encuentra D:\ o V:\ (ajusta según necesidad)
           {% endif %}
