@@ -1,8 +1,8 @@
 ---
 - block:
     - name: Validar si las unidades D:\ y/o V:\ existen
-      win_shell: Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Root
-      #win_shell: Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Root | ForEach-Object {$_.TrimEnd('\')}
+      #win_shell: Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Root
+      win_shell: Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Root | ForEach-Object {$_.TrimEnd('\\\\')}
       register: windrives
 
     - name: Filtrar unidades D:\ y V:\
