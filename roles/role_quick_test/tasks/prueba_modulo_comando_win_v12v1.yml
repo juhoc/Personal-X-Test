@@ -13,9 +13,9 @@
     - name: Determinar la unidad Windows a usar
       set_fact:
         windrive: >-
-          {% if 'V:' in dynamic_drive %}
+          {% if 'V:\\' in dynamic_drive %}
             V:\
-          {% elif 'D:' in dynamic_drive %}
+          {% elif 'D:\\' in dynamic_drive %}
             D:\
           {% else %}
             C:\ # Unidad por defecto si no se encuentra D:\ o V:\ (ajusta según necesidad)
