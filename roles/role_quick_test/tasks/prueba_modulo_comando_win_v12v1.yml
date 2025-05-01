@@ -1,19 +1,21 @@
 ---
 - block:
     - name: Validar si las unidades D:\ y/o V:\ existen
-      win_shell: Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Root
+      #win_shell: Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Root
+      win_shell: Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Root | ForEach-Object {$_.TrimEnd('\')}
       register: windrives
 
     - name: Filtrar unidades D:\ y V:\
       set_fact:
-        dynamic_drive: "{{ windrives.stdout_lines | select('match', '^[DV]:\\\\$') | list | trim }}"
+        #dynamic_drive: "{{ windrives.stdout_lines | select('match', '^[DV]:\\\\$') | list | trim }}"
+        dynamic_drive: "{{ windrives.stdout_lines | select('match', '^[DV]:') | list }}"
 
     - name: Determinar la unidad Windows a usar
       set_fact:
         windrive: >-
-          {% if 'V:\\' in dynamic_drive %}
+          {% if 'V:' in dynamic_drive %}
             V:\
-          {% elif 'D:\\' in dynamic_drive %}
+          {% elif 'D:' in dynamic_drive %}
             D:\
           {% else %}
             C:\ # Unidad por defecto si no se encuentra D:\ o V:\ (ajusta según necesidad)
