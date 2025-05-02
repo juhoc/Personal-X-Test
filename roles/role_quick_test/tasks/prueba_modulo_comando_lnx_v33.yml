@@ -3,4 +3,4 @@
     - name: Ejecplo
       become: true
       shell: echo "{{ item }}"
-      loop: "{{ el_texto }}"
+      loop: "{{ el_texto | list }}"
