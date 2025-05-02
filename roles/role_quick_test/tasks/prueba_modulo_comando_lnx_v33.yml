@@ -1,0 +1,6 @@
+---
+- block:
+    - name: Ejecplo
+      become: true
+      shell: echo "{{ item }}"
+      loop: "{{ el_texto }}"
