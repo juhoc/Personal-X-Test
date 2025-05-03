@@ -3,4 +3,4 @@
     - name: Ejemplo
       become: true
       shell: echo "{{ item }}"
-      loop: "{{ el_texto('\n') }}"
+      loop: "{{ el_texto.split('\n') }}"
