@@ -1,6 +1,6 @@
 ---
 - block:
-    - name: Ejecplo
+    - name: Ejemplo
       become: true
       shell: echo "{{ item }}"
-      loop: "{{ el_texto | list }}"
+      loop: "{{ el_texto('\n') }}"
