@@ -31,7 +31,8 @@
         remote_src: true
 
     - name: Validar archivos split en el localhost
-      local_action:
-        module: shell
-        args: "ls -lrt /var/opt/ansible/{{ idhelix }}_foto_prueba"
+      become: true
+      shell: "ls -lrt {{ idhelix }}_foto_prueba"
+      args:
+        chdir: /var/opt/ansible
 #####
