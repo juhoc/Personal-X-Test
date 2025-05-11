@@ -28,6 +28,7 @@
       copy:
         src: "/tmp/{{ idhelix }}_foto_prueba"
         dest: /var/opt/ansible/
+        remote_src: true
 
     - name: Validar archivos split en el localhost
       local_action:
