@@ -27,7 +27,7 @@
       become: true
       copy:
         src: "/tmp/{{ idhelix }}_foto_prueba"
-        dest: /var/opt/ansible
+        dest: /var/opt/ansible/
 
     - name: Validar archivos split en el localhost
       local_action:
