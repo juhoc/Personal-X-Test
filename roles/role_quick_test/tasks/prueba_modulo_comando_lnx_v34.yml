@@ -33,3 +33,4 @@
       local_action:
         module: shell
         args: "ls -lrt /var/opt/ansible/{{ idcrqincreq }}_foto_prueba"
+#####
