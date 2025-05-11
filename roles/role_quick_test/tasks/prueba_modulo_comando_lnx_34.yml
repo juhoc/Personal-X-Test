@@ -1,0 +1,35 @@
+---
+- name: Tareas por bloques - Validacion formato CRQ o ICR
+  block:
+    - set_fact:
+        idcrqincreq: "{{ idcrqincreq | trim }}"
+      run_once: true
+      delegate_to: localhost
+
+    - name: Validando Formato de Cambio o Incidente
+      assert:
+        that:
+          - idcrqincreq | string | regex_search('(CRQ|INC|REQ)[0-9]{12}')
+        fail_msg: "El CRQ, INC o REQ no cumplen con la condiciones del formato"
+        success_msg: "El CRQ, INC o REQ cumplen con las condiciones del formato"
+      run_once: true
+      delegate_to: localhost
+
+- name: Test Transferir - Descargar
+  block:
+    - name: Transferir archivo plano
+      become: true
+      file:
+        path: "/tmp/{{ idcrqincreq }}_foto_prueba"
+        state: touch
+
+    - name: Transferir archivo plano
+      become: true
+      copy:
+        src: "/tmp/{{ idcrqincreq }}_foto_prueba"
+        dest: /var/opt/ansible
+
+    - name: Validar archivos split en el localhost
+      local_action:
+        module: shell
+        args: "ls -lrt /var/opt/ansible/{{ idcrqincreq }}_foto_prueba"
