@@ -20,7 +20,7 @@
     - name: Crear directorio
       become: true
       file:
-      path: "{{ lvm_params.lv_mount_point }}"
-      state: directory
-      mode: '0755'
+        path: "{{ lvm_params.lv_mount_point }}"
+        state: directory
+        mode: '0755'
 #####
