@@ -18,6 +18,7 @@
 - name: Test Transferir - Descargar
   block:
     - name: Crear directorio
+      become: true
       ansible.builtin.file:
       path: "{{ lvm_params.lv_mount_point }}"
       state: directory
