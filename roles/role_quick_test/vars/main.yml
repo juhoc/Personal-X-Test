@@ -188,4 +188,4 @@ mailbodyA2: |
       </html>
 
 lvm_params:
-  lv_mount_point: "{{ lv_mount_point }} "
+  lv_mount_point: "{{ lv_mount_point }}"
