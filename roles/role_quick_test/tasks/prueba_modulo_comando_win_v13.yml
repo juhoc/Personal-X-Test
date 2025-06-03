@@ -33,4 +33,5 @@
       set_stats: 
         data: 
           resultado: "{{ resultado.msg }}"
+        per_host: no
       run_once: true
