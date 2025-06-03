@@ -19,7 +19,7 @@
   block:
     - name: Crear directorio
       become: true
-      ansible.builtin.file:
+      file:
       path: "{{ lvm_params.lv_mount_point }}"
       state: directory
       mode: '0755'
