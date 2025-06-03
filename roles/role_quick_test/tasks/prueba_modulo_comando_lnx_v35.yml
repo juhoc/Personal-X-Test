@@ -1,0 +1,25 @@
+---
+- name: Tareas por bloques - Validacion formato CRQ o ICR
+  block:
+    - set_fact:
+        idhelix: "{{ idcrqincreq | trim }}"
+      run_once: true
+      delegate_to: localhost
+
+    - name: Validando Formato de Cambio o Incidente
+      assert:
+        that:
+          - idhelix | string | regex_search('(CRQ|INC|REQ)[0-9]{12}')
+        fail_msg: "El CRQ, INC o REQ no cumplen con la condiciones del formato"
+        success_msg: "El CRQ, INC o REQ cumplen con las condiciones del formato"
+      run_once: true
+      delegate_to: localhost
+
+- name: Test Transferir - Descargar
+  block:
+    - name: Crear directorio
+      ansible.builtin.file:
+      path: "{{ lvm_params.lv_mount_point }}"
+      state: directory
+      mode: '0755'
+#####

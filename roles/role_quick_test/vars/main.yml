@@ -186,3 +186,6 @@ mailbodyA2: |
           </div>
       </body>
       </html>
+
+lvm_params.lv:
+  lv_mount_point: "{{ lvmountpoint }} "
