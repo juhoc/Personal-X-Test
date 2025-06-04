@@ -59,13 +59,12 @@
         vollogicos: "{{ lv_info.stdout_lines }}"
 
 
-    - name: Mostrar resumen completo de almacenamiento
-      debug:
-        msg: |
-          ===== RESUMEN DE ALMACENAMIENTO =====
-          === DISCOS FÍSICOS ===
-            "{{ discos | join('\n') }}"
-
+    - name: Imprime rasultado
+      set_stats: 
+        data: 
+          resultpre: "{{ discos.msg }}"
+        per_host: no
+      run_once: true
 
 #     - name: Mostrar resumen completo de almacenamiento
 #       debug:
