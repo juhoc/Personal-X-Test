@@ -67,4 +67,5 @@
           total_vollogicos: "{{ vollogicos }}"
         per_host: no
       run_once: true
+  when: operation_mode == "analize_lvm"  
 
