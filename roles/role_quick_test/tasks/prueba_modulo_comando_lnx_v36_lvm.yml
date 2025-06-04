@@ -71,6 +71,7 @@
 
 - block:
     - name: Crear particion
+      become: true
       parted:
         device: "{{ df }}"
         number: "{{ np }}"
@@ -129,6 +130,7 @@
 
 - block:
     - name: Extender el volumen logico
+      become: true
       lvol:
         vg: "{{ vg }}"
         lv: "{{ lv }}"
