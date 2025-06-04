@@ -67,5 +67,54 @@
           total_vollogicos: "{{ vollogicos }}"
         per_host: no
       run_once: true
-  when: operation_mode == "analize_lvm"  
+  when: tarea == "analize_lvm"
 
+- block:
+    - name: Crear particion
+      parted:
+        device: "{{ df }}"
+        number: "{{ np }}"
+        flags: [ lvm ]
+        state: present
+        part_end: "{{ psz }}"
+  when: tarea == "partition_dsk"
+
+- block:
+    - name: Crear VolumeGroup
+      become: true
+      lvg:
+        vg: "{{ vg }}"
+        pvs: "{{ df }}"
+        pesize: "4"
+  when: tarea == "create_vg"
+
+- block:
+    - name: Crear LogicaVolume PATROL
+      become: true
+      lvol:
+        vg: "{{ vg }}"
+        lv: "{{ lv }}"
+        size: "{{ sz }}"
+        force: yes
+
+    - name: Crear punto de montura PATROL
+      become: true
+      file:
+        path: "{{ mp }}"
+        state: directory
+        mode: "0755"
+
+    - name: Formatear LogicaVolume PATROL
+      become: true
+      filesystem:
+        fstype: "{{ tfs }}"
+        dev: "/dev/{{ vg }}/{{ lv }}"
+
+    - name: Montar el LogicaVolume PATROL
+      become: true
+      mount:
+        path: /patrol
+        src: "/dev/{{ vg }}/{{ lv }}"
+        fstype: "{{ tfs }}"
+        state: mounted
+  when: tarea == "create_lv"
