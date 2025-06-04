@@ -58,23 +58,10 @@
         volgrupos: "{{ vg_info.stdout_lines }}"
         vollogicos: "{{ lv_info.stdout_lines }}"
 
-    - shell: |
-        echo "{{ discos | trim }}"
-        echo "{{ particiones | trim }}"
-        echo "{{ volfisicos | trim }}"
-        echo "{{ volgrupos | trim }}"
-        echo "{{ vollogicos | trim }}"
-      register: result_dfglv
-
-    - name: Reporte
-      debug:
-        msg: "{{ ansible_play_hosts | map('extract', hostvars, 'result_dfglv') | map(attribute='stdout_lines' | list }}"
-      register: result_dfglv1
-
     - name: Imprime rasultado
       set_stats: 
         data: 
-          resultpre: "{{ result_dfglv1.msg }}"
+          tdiscos: "{{ discos }}"
         per_host: no
       run_once: true
 
