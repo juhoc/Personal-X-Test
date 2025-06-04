@@ -61,7 +61,11 @@
     - name: Imprime rasultado
       set_stats: 
         data: 
-          tdiscos: "{{ discos }}"
+          tota_discos: "{{ discos }}"
+          total_particiones: "{{ particiones }}"
+          total_volfisicos: "{{ volfisicos }}"
+          total_volgrupos: "{{ volgrupos }}"
+          total_vollogicos: "{{ vollogicos }}"
         per_host: no
       run_once: true
 
