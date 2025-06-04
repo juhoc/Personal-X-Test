@@ -89,7 +89,7 @@
   when: tarea == "create_vg"
 
 - block:
-    - name: Crear LogicaVolume PATROL
+    - name: Crear LogicaVolume
       become: true
       lvol:
         vg: "{{ vg }}"
@@ -97,20 +97,20 @@
         size: "{{ sz }}"
         force: yes
 
-    - name: Crear punto de montura PATROL
+    - name: Crear punto de montura
       become: true
       file:
         path: "{{ mp }}"
         state: directory
         mode: "0755"
 
-    - name: Formatear LogicaVolume PATROL
+    - name: Formatear LogicaVolume
       become: true
       filesystem:
         fstype: "{{ tfs }}"
         dev: "/dev/{{ vg }}/{{ lv }}"
 
-    - name: Montar el LogicaVolume PATROL
+    - name: Montar el LogicaVolume
       become: true
       mount:
         path: /patrol
