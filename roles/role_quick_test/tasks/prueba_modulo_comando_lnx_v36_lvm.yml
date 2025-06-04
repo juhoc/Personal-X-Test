@@ -108,7 +108,7 @@
     - name: Formatear LogicaVolume
       become: true
       filesystem:
-        fstype: "{{    }}"
+        fstype: "{{ tfs }}"
         dev: "/dev/{{ vg }}/{{ lv }}"
 
     - name: Montar el LogicaVolume
