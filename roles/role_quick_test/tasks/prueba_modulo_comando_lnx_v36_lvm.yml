@@ -125,7 +125,7 @@
       lvg:
         vg: "{{ vg }}"
         pvs: "{{ df }}"
-  when: tarea == "exten_vg"
+  when: tarea == "extend_vg"
 
 - block:
     - name: Extender el volumen logico
@@ -135,4 +135,4 @@
       size: "{{ lvsz }}"
       resizefs: true
       force: true
-  when: tarea == "exten_lv"
+  when: tarea == "extend_lv"
