@@ -130,9 +130,9 @@
 - block:
     - name: Extender el volumen logico
       lvol:
-      vg: "{{ vg }}"
-      lv: "{{ lv }}"
-      size: "{{ lvsz }}"
-      resizefs: true
-      force: true
+        vg: "{{ vg }}"
+        lv: "{{ lv }}"
+        size: "{{ lvsz }}"
+        resizefs: true
+        force: true
   when: tarea == "extend_lv"
