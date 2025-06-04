@@ -61,7 +61,7 @@
 
     - name: Mostrar resumen completo de almacenamiento
       debug:
-        msg: |
+        msg: >-
           ===== RESUMEN DE ALMACENAMIENTO =====
           === DISCOS FÍSICOS ===
           - "{{ discos | join('\n') }}"
