@@ -89,4 +89,5 @@
           No hay Logical Volumes
           {% endif %}
           ====================================
+      register: result_lvm 
   when: operation_mode == "analize_lvm"
