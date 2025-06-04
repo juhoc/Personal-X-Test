@@ -49,7 +49,7 @@
       changed_when: false
       ignore_errors: true # Corregido a 'true' para consistencia
 
-- black:
+- block:
     set_fact:
       discos: "{{ all_disk.stdout_lines }}"
       particiones: "{{ all_partitions.stdout_lines }}"
