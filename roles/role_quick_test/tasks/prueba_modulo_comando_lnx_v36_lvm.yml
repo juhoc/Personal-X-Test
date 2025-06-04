@@ -50,12 +50,13 @@
       ignore_errors: true # Corregido a 'true' para consistencia
 
 - block:
-    set_fact:
-      discos: "{{ all_disk.stdout_lines }}"
-      particiones: "{{ all_partitions.stdout_lines }}"
-      volfisicos: "{{ pv_info.stdout_lines }}"
-      volgrupos: "{{ vg_info.stdout_lines }}"
-      vollogicos: "{{ lv_info.stdout_lines }}"
+    - name: Validar archivos esperados previas IPL del OS Linux
+      set_fact:
+        discos: "{{ all_disk.stdout_lines }}"
+        particiones: "{{ all_partitions.stdout_lines }}"
+        volfisicos: "{{ pv_info.stdout_lines }}"
+        volgrupos: "{{ vg_info.stdout_lines }}"
+        vollogicos: "{{ lv_info.stdout_lines }}"
 
 #     - name: Mostrar resumen completo de almacenamiento
 #       debug:
