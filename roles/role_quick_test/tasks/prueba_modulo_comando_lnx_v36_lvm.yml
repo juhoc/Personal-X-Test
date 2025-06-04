@@ -108,13 +108,13 @@
     - name: Formatear LogicaVolume
       become: true
       filesystem:
-        fstype: "{{ tfs }}"
+        fstype: "{{    }}"
         dev: "/dev/{{ vg }}/{{ lv }}"
 
     - name: Montar el LogicaVolume
       become: true
       mount:
-        path: "{{ mp }}"
+        path: "{{ pm }}"
         src: "/dev/{{ vg }}/{{ lv }}"
         fstype: "{{ tfs }}"
         state: mounted
