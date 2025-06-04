@@ -92,6 +92,6 @@
       register: result_lvm 
   when: operation_mode == "analize_lvm"
 
-- block
+- block:
     set_fact:
       textsalida: "{{ result_lvm.stdout_lines }}"
