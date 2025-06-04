@@ -52,7 +52,7 @@
 - block:
     - name: Validar archivos esperados previas IPL del OS Linux
       set_fact:
-        discos: "{{ all_disk.stdout_lines }}"
+        discos: "{{ all_disks.stdout_lines }}"
         particiones: "{{ all_partitions.stdout_lines }}"
         volfisicos: "{{ pv_info.stdout_lines }}"
         volgrupos: "{{ vg_info.stdout_lines }}"
