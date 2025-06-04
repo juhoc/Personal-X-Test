@@ -94,13 +94,13 @@
       lvol:
         vg: "{{ vg }}"
         lv: "{{ lv }}"
-        size: "{{ sz }}"
+        size: "{{ lvsz }}"
         force: yes
 
     - name: Crear punto de montura
       become: true
       file:
-        path: "{{ mp }}"
+        path: "{{ pm }}"
         state: directory
         mode: "0755"
 
@@ -113,8 +113,26 @@
     - name: Montar el LogicaVolume
       become: true
       mount:
-        path: /patrol
+        path: "{{ mp }}"
         src: "/dev/{{ vg }}/{{ lv }}"
         fstype: "{{ tfs }}"
         state: mounted
   when: tarea == "create_lv"
+
+- block:
+    - name: Extebder el grupo de volumenes
+      become: true
+      lvg:
+        vg: "{{ vg }}"
+        pvs: "{{ df }}"
+  when: tarea == "exten_vg"
+
+- block:
+    - name: Extender el volumen logico
+      lvol:
+      vg: "{{ vg }}"
+      lv: "{{ lv }}"
+      size: "{{ lvsz }}"
+      resizefs: true
+      force: true
+  when: tarea == "exten_lv"
