@@ -64,7 +64,7 @@
         msg: >-
           ===== RESUMEN DE ALMACENAMIENTO =====
           === DISCOS FÍSICOS ===
-          - "{{ discos | join('\n') }}"
+            "{{ discos | join('\n') }}"
 
 
 #     - name: Mostrar resumen completo de almacenamiento
@@ -113,24 +113,3 @@
 # - block:
 #     set_fact:
 #       textsalida: "{{ result_lvm.stdout_lines }}"
-
-
-- name: Obtener datos de almacenamiento JSON (ejemplo con lsblk)
-  ansible.builtin.command: lsblk -J -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINT
-  register: lsblk_output
-
-- name: Mostrar solo los discos físicos y su tamaño
-  ansible.builtin.debug:
-    msg: |
-      ===== DISCOS FÍSICOS Y TAMAÑO =====
-      {% for item in lsblk_output.stdout | from_json | json_query("blockdevices[?type=='disk']") %}
-      - {{ item.name | rjust(10) }}: {{ item.size }}
-      {% endfor %}
-
-- name: Mostrar particiones con punto de montaje
-  ansible.builtin.debug:
-    msg: |
-      ===== PARTICIONES MONTADAS =====
-      {% for item in lsblk_output.stdout | from_json | json_query("blockdevices[].children[?mountpoint]") %}
-      - {{ item.name | rjust(15) }}: {{ item.mountpoint | default('N/A') }} ({{ item.fstype | default('N/A') }})
-      {% endfor %}
