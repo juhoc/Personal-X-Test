@@ -1,0 +1,92 @@
+---
+- name: Tareas por bloques - Validacion formato CRQ o ICR
+  block:
+    - set_fact:
+        idhelix: "{{ idcrqincreq | trim }}"
+      run_once: true
+      delegate_to: localhost
+
+    - name: Validando Formato de Cambio o Incidente
+      assert:
+        that:
+          - idhelix | string | regex_search('(CRQ|INC|REQ)[0-9]{12}')
+        fail_msg: "El CRQ, INC o REQ no cumplen con la condiciones del formato"
+        success_msg: "El CRQ, INC o REQ cumplen con las condiciones del formato"
+      run_once: true
+      delegate_to: localhost
+
+- block:
+    - name: Obtener lista completa de discos
+      become: true
+      shell: set -o pipefail && lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINT -d -n -p | grep -E '^/dev/(sd|hd|vd|xvd|nvme)[a-z0-9]+' | grep 'disk'
+      register: all_disks
+      changed_when: false
+
+    - name: Obtener información de particiones
+      become: true
+      shell: set -o pipefail && lsblk -o NAME,SIZE,FSTYPE,MOUNTPOINT -n -p | grep -v 'disk$'
+      register: all_partitions
+      changed_when: false
+
+    - name: Listar Physical Volumes
+      become: true
+      shell: pvs --noheadings -o pv_name,vg_name,size,free
+      register: pv_info
+      changed_when: false
+      ignore_errors: true # Corregido a 'true' para consistenc
+
+    - name: Listar Volume Groups
+      become: true
+      shell: vgs --noheadings -o vg_name,vg_size,vg_free
+      register: vg_info
+      changed_when: false
+      ignore_errors: true # Corregido a 'true' para consistenc
+
+    - name: Listar Logical Volumes
+      become: true
+      shell: lvs --noheadings -o lv_name,vg_name,lv_size,path
+      register: lv_info
+      changed_when: false
+      ignore_errors: true # Corregido a 'true' para consistencia
+
+    - name: Mostrar resumen completo de almacenamiento
+      debug:
+        msg: |
+          ===== RESUMEN DE ALMACENAMIENTO =====
+          === DISCOS FÍSICOS ===
+          {% for disk in all_disks.stdout_lines %}
+          - {{ disk }}
+          {% endfor %}
+
+          === PARTICIONES ===
+          {% if all_partitions.stdout %}
+          {% for part in all_partitions.stdout_lines %}
+          - {{ part }}
+          {% endfor %}
+          {% else %}
+          No se encontraron particiones
+          {% endif %}
+
+          === VOLUMENES LVM ===
+          PVs:
+          {% if pv_info.stdout %}
+          {{ pv_info.stdout | replace("  ", " ") | trim }}
+          {% else %}
+          No hay Physical Volumes
+          {% endif %}
+
+          VGs:
+          {% if vg_info.stdout %}
+          {{ vg_info.stdout | replace("  ", " ") | trim }}
+          {% else %}
+          No hay Volume Groups
+          {% endif %}
+
+          LVs:
+          {% if lv_info.stdout %}
+          {{ lv_info.stdout | replace("  ", " ") | trim }}
+          {% else %}
+          No hay Logical Volumes
+          {% endif %}
+          ====================================
+  when: operation_mode == "analize_lvm"
