@@ -49,7 +49,6 @@
       changed_when: false
       ignore_errors: true # Corregido a 'true' para consistencia
 
-- block:
     - name: Validar archivos esperados previas IPL del OS Linux
       set_fact:
         discos: "{{ all_disks.stdout_lines }}"
@@ -69,49 +68,3 @@
         per_host: no
       run_once: true
 
-#     - name: Mostrar resumen completo de almacenamiento
-#       debug:
-#         msg: |
-#           ===== RESUMEN DE ALMACENAMIENTO =====
-#           === DISCOS FÍSICOS ===
-#           {% for disk in all_disks.stdout_lines %}
-#           - {{ disk }}
-#           {% endfor %}
-
-#           === PARTICIONES ===
-#           {% if all_partitions.stdout %}
-#           {% for part in all_partitions.stdout_lines %}
-#           - {{ part }}
-#           {% endfor %}
-#           {% else %}
-#           No se encontraron particiones
-#           {% endif %}
-
-#           === VOLUMENES LVM ===
-#           PVs:
-#           {% if pv_info.stdout %}
-#           {{ pv_info.stdout | replace("  ", " ") | trim }}
-#           {% else %}
-#           No hay Physical Volumes
-#           {% endif %}
-
-#           VGs:
-#           {% if vg_info.stdout %}
-#           {{ vg_info.stdout | replace("  ", " ") | trim }}
-#           {% else %}
-#           No hay Volume Groups
-#           {% endif %}
-
-#           LVs:
-#           {% if lv_info.stdout %}
-#           {{ lv_info.stdout | replace("  ", " ") | trim }}
-#           {% else %}
-#           No hay Logical Volumes
-#           {% endif %}
-#           ====================================
-#       register: result_lvm 
-#   when: operation_mode == "analize_lvm"
-
-# - block:
-#     set_fact:
-#       textsalida: "{{ result_lvm.stdout_lines }}"
