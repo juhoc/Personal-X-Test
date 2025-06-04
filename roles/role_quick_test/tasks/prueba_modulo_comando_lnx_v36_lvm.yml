@@ -49,49 +49,57 @@
       changed_when: false
       ignore_errors: true # Corregido a 'true' para consistencia
 
-    - name: Mostrar resumen completo de almacenamiento
-      debug:
-        msg: |
-          ===== RESUMEN DE ALMACENAMIENTO =====
-          === DISCOS FÍSICOS ===
-          {% for disk in all_disks.stdout_lines %}
-          - {{ disk }}
-          {% endfor %}
-
-          === PARTICIONES ===
-          {% if all_partitions.stdout %}
-          {% for part in all_partitions.stdout_lines %}
-          - {{ part }}
-          {% endfor %}
-          {% else %}
-          No se encontraron particiones
-          {% endif %}
-
-          === VOLUMENES LVM ===
-          PVs:
-          {% if pv_info.stdout %}
-          {{ pv_info.stdout | replace("  ", " ") | trim }}
-          {% else %}
-          No hay Physical Volumes
-          {% endif %}
-
-          VGs:
-          {% if vg_info.stdout %}
-          {{ vg_info.stdout | replace("  ", " ") | trim }}
-          {% else %}
-          No hay Volume Groups
-          {% endif %}
-
-          LVs:
-          {% if lv_info.stdout %}
-          {{ lv_info.stdout | replace("  ", " ") | trim }}
-          {% else %}
-          No hay Logical Volumes
-          {% endif %}
-          ====================================
-      register: result_lvm 
-  when: operation_mode == "analize_lvm"
-
-- block:
+- black:
     set_fact:
-      textsalida: "{{ result_lvm.stdout_lines }}"
+      discos: "{{ all_disk.stdout_lines }}"
+      particiones: "{{ all_partitions.stdout_lines }}"
+      volfisicos: "{{ pv_info.stdout_lines }}"
+      volgrupos: "{{ vg_info.stdout_lines }}"
+      vollogicos: "{{ lv_info.stdout_lines }}"
+
+#     - name: Mostrar resumen completo de almacenamiento
+#       debug:
+#         msg: |
+#           ===== RESUMEN DE ALMACENAMIENTO =====
+#           === DISCOS FÍSICOS ===
+#           {% for disk in all_disks.stdout_lines %}
+#           - {{ disk }}
+#           {% endfor %}
+
+#           === PARTICIONES ===
+#           {% if all_partitions.stdout %}
+#           {% for part in all_partitions.stdout_lines %}
+#           - {{ part }}
+#           {% endfor %}
+#           {% else %}
+#           No se encontraron particiones
+#           {% endif %}
+
+#           === VOLUMENES LVM ===
+#           PVs:
+#           {% if pv_info.stdout %}
+#           {{ pv_info.stdout | replace("  ", " ") | trim }}
+#           {% else %}
+#           No hay Physical Volumes
+#           {% endif %}
+
+#           VGs:
+#           {% if vg_info.stdout %}
+#           {{ vg_info.stdout | replace("  ", " ") | trim }}
+#           {% else %}
+#           No hay Volume Groups
+#           {% endif %}
+
+#           LVs:
+#           {% if lv_info.stdout %}
+#           {{ lv_info.stdout | replace("  ", " ") | trim }}
+#           {% else %}
+#           No hay Logical Volumes
+#           {% endif %}
+#           ====================================
+#       register: result_lvm 
+#   when: operation_mode == "analize_lvm"
+
+# - block:
+#     set_fact:
+#       textsalida: "{{ result_lvm.stdout_lines }}"
