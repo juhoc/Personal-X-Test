@@ -58,6 +58,15 @@
         volgrupos: "{{ vg_info.stdout_lines }}"
         vollogicos: "{{ lv_info.stdout_lines }}"
 
+
+    - name: Mostrar resumen completo de almacenamiento
+      debug:
+        msg: |
+          ===== RESUMEN DE ALMACENAMIENTO =====
+          === DISCOS FÍSICOS ===
+          - "{{ discos | join('\n') }}"
+
+
 #     - name: Mostrar resumen completo de almacenamiento
 #       debug:
 #         msg: |
