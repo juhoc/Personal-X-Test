@@ -70,6 +70,13 @@
   when: tarea == "analize_lvm"
 
 - block:
+    - name: Obtener hechos de particiones
+      community.general.parted_facts:
+        device: "{{ df }}"
+      register: sdb_facts
+  when: tarea == "partition_chk"
+
+- block:
     - name: Crear particion
       become: true
       parted:
