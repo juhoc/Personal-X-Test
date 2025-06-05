@@ -71,7 +71,7 @@
 
 - block:
     - name: Obtener hechos de particiones
-      community.general.parted_facts:
+      parted_facts:
         device: "{{ df }}"
       register: sdb_facts
   when: tarea == "partition_chk"
