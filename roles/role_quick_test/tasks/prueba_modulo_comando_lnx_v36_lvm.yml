@@ -75,7 +75,7 @@
       parted:
         device: "{{ df }}"
         number: "{{ np }}"
-        flags: [ lvm ]
+#        flags: [ lvm ]
         state: present
         part_end: "{{ psz }}"
   when: tarea == "partition_dsk"
