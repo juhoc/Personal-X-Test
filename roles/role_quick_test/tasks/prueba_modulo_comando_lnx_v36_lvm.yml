@@ -75,10 +75,14 @@
       parted:
         device: "{{ df }}"
         number: "{{ np }}"
-        flags: [ "{{ fst }}" ]
+        # flags: [ "{{ fst }}" ]
         state: "{{ st }}"
+        part_end: "{{ ptsze }}"
+        aling: "{{ pa }}"
+        unit: "{{ ptu }}"
+        labe: "{{ ptl }}"
         part_type: "{{ pt }}"
-        part_start: "{{ psz }}"
+        part_start: "{{ ptszi }}"
   when: tarea == "partition_dsk"
 
 - block:
@@ -139,3 +143,4 @@
         resizefs: true
         force: true
   when: tarea == "extend_lv"
+
