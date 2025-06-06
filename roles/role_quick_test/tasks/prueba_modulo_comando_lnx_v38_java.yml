@@ -1,0 +1,140 @@
+---
+- name: Tareas por bloques - Validacion formato CRQ o ICR
+  block:
+    - set_fact:
+        idhelix: "{{ idcrqincreq | trim }}"
+      run_once: true
+      delegate_to: localhost
+
+    - name: Validando Formato de Cambio o Incidente
+      assert:
+        that:
+          - idhelix | string | regex_search('(CRQ|INC|REQ)[0-9]{12}')
+        fail_msg: "El CRQ, INC o REQ no cumplen con la condiciones del formato"
+        success_msg: "El CRQ, INC o REQ cumplen con las condiciones del formato"
+      run_once: true
+      delegate_to: localhost
+
+- block:
+    - name: Obtener lista completa de discos
+      become: true
+      shell: set -o pipefail && lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINT -d -n -p | grep -E '^/dev/(sd|hd|vd|xvd|nvme)[a-z0-9]+' | grep 'disk'
+      register: all_disks
+      changed_when: false
+
+    - name: Obtener información de particiones
+      become: true
+      shell: set -o pipefail && lsblk -o NAME,SIZE,FSTYPE,MOUNTPOINT -n -p | grep -v 'disk$'
+      register: all_partitions
+      changed_when: false
+
+    - name: Listar Physical Volumes
+      become: true
+      shell: pvs --noheadings -o pv_name,vg_name,size,free
+      register: pv_info
+      changed_when: false
+      ignore_errors: true # Corregido a 'true' para consistenc
+
+    - name: Listar Volume Groups
+      become: true
+      shell: vgs --noheadings -o vg_name,vg_size,vg_free
+      register: vg_info
+      changed_when: false
+      ignore_errors: true # Corregido a 'true' para consistenc
+
+    - name: Listar Logical Volumes
+      become: true
+      shell: lvs --noheadings -o lv_name,vg_name,lv_size,path
+      register: lv_info
+      changed_when: false
+      ignore_errors: true # Corregido a 'true' para consistencia
+
+    - name: Validar archivos esperados previas IPL del OS Linux
+      set_fact:
+        discos: "{{ all_disks.stdout_lines }}"
+        particiones: "{{ all_partitions.stdout_lines }}"
+        volfisicos: "{{ pv_info.stdout_lines }}"
+        volgrupos: "{{ vg_info.stdout_lines }}"
+        vollogicos: "{{ lv_info.stdout_lines }}"
+
+    - name: Imprime rasultado
+      set_stats: 
+        data: 
+          tota_discos: "{{ discos }}"
+          total_particiones: "{{ particiones }}"
+          total_volfisicos: "{{ volfisicos }}"
+          total_volgrupos: "{{ volgrupos }}"
+          total_vollogicos: "{{ vollogicos }}"
+        per_host: no
+      run_once: true
+  when: tarea == "analize_lvm"
+
+- block:
+    - name: Crear particion
+      become: true
+      parted:
+        device: "{{ df }}"
+        number: "{{ np }}"
+        flags: [ lvm ]
+        state: present
+        part_end: "{{ psz }}"
+  when: tarea == "partition_dsk"
+
+- block:
+    - name: Crear VolumeGroup
+      become: true
+      lvg:
+        vg: "{{ vg }}"
+        pvs: "{{ df }}"
+        pesize: "4"
+  when: tarea == "create_vg"
+
+- block:
+    - name: Crear LogicaVolume
+      become: true
+      lvol:
+        vg: "{{ vg }}"
+        lv: "{{ lv }}"
+        size: "{{ lvsz }}"
+        force: yes
+
+    - name: Crear punto de montura
+      become: true
+      file:
+        path: "{{ pm }}"
+        state: directory
+        mode: "0755"
+
+    - name: Formatear LogicaVolume
+      become: true
+      filesystem:
+        fstype: "{{ tfs }}"
+        dev: "/dev/{{ vg }}/{{ lv }}"
+
+    - name: Montar el LogicaVolume
+      become: true
+      mount:
+        path: "{{ pm }}"
+        src: "/dev/{{ vg }}/{{ lv }}"
+        fstype: "{{ tfs }}"
+        state: mounted
+  when: tarea == "create_lv"
+
+- block:
+    - name: Extebder el grupo de volumenes
+      become: true
+      lvg:
+        vg: "{{ vg }}"
+        pvs: "{{ df }}"
+  when: tarea == "extend_vg"
+
+- block:
+    - name: Extender el volumen logico
+      become: true
+      lvol:
+        vg: "{{ vg }}"
+        lv: "{{ lv }}"
+        size: "{{ lvsz }}"
+        resizefs: true
+        force: true
+  when: tarea == "extend_lv"
