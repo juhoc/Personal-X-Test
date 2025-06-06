@@ -75,10 +75,8 @@
       parted:
         device: "{{ df }}"
         number: "{{ np }}"
-        # flags: [ "{{ fst }}" ]
         state: "{{ st }}"
         part_end: "{{ ptsze }}"
-        aling: "{{ pa }}"
         unit: "{{ ptu }}"
         labe: "{{ ptl }}"
         part_type: "{{ pt }}"
