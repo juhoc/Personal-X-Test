@@ -73,7 +73,7 @@
     - name: Resultado de la valida puntos de montura para Java
       assert:
         that:
-          - item.stat.exists == true
+          - result.stat.exists == true
         fail_msg: "No existe los puntos de montura /java_atm o /java_boss"
       loop: "{{ valdirjav.results }}"
       loop_control:
