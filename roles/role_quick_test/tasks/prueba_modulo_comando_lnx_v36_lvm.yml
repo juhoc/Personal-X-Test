@@ -78,7 +78,6 @@
         label: "{{ lbl }}"
         state: "{{ st }}"
 
-- block:
     - name: Crear particion
       become: true
       parted:
