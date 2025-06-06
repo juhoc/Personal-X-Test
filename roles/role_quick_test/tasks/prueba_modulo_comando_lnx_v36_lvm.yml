@@ -69,15 +69,24 @@
       run_once: true
   when: tarea == "analize_lvm"
 
+
 - block:
+    - name: Crear tabla de particion
+      become: true
+      parted:
+        device: "{{ df }}"
+        label: "{{ lbl }}"
+        state: "{{ st }}"
+
     - name: Crear particion
       become: true
       parted:
         device: "{{ df }}"
-        number: "{{ np }}"
-        flags: [ lvm ]
-        state: present
-        part_end: "{{ psz }}"
+        number: "{{ item }}"
+        part_start: "{{ (item - 1) * 5 }}GiB"
+        part_end: "{{ item * 5 }}GiB"
+        state: "{{ st }}"
+      loop: "{{ range(1, number_of_partitions + 1) | list }}"
   when: tarea == "partition_dsk"
 
 - block:
