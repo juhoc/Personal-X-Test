@@ -71,5 +71,5 @@
     - name: Resultado de la valida puntos de montura para Java
       assert:
        that:
-         - valdirjav.stat.path in "java"
+         - valdirjav.stat.exists
        fail_msg: "No existe los puntos de montura /java_atm o /java_boss"
