@@ -62,14 +62,19 @@
     - name: Validacion los puntos de montura para Java 
       become: true
       stat:
-        path: "{{ item }}"
+        path: "{{ dirjav }}"
       loop:
         - /java_atm
         - /jav_boss
+      loop_control:
+        loop_var: dirjav
       register: valdirjav
 
     - name: Resultado de la valida puntos de montura para Java
       assert:
        that:
-         - valdirjav.stat.exists
-       fail_msg: "No existe los puntos de montura /java_atm o /java_boss"
+         - item.stat.exists == true
+      loop: "{{ valdirjav.results }}"
+      loop_control:
+        loop_var: result
+      fail_msg: "No existe los puntos de montura /java_atm o /java_boss"
