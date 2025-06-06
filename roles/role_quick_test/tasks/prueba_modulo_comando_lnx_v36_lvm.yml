@@ -77,7 +77,6 @@
         device: "{{ df }}"
         label: "{{ lbl }}"
         state: "{{ st }}"
-  when: tarea == "partition_tbl"
 
 - block:
     - name: Crear particion
