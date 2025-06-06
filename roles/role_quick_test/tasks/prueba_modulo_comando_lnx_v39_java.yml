@@ -73,5 +73,6 @@
     - name: Resultado de la valida puntos de montura para Java
       assert:
         that:
-          - valdirjav.results | selectattr('stat.exists', 'defined') | selectattr('stat.exists', 'true') | list | length > 0
+          - valdirjav.results | selectattr('stat.exists', 'defined') | selectattr('stat.exists', true) | list | length > 0
+        success_msg: "Éxito: Al menos uno de los directorios de Java (/java_atm o /jav_boss) existe."
         fail_msg: "No existe los puntos de montura /java_atm o /java_boss"
