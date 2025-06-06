@@ -1,0 +1,60 @@
+- block:
+    - name: Validacion de VG Java
+      become: true
+      shell: vgs 2>/dev/null | grep -qi VGAPPS && echo OK || echo KO
+      register: vgvaljav
+
+    - name: Resultado de la valida VG Java
+      assert:
+        that:
+          - vgvaljav.stdout in "OK"
+        fail_msg: "El VG VGAPPS no existe"
+
+    - name: Validacion de LV Java
+      become: true
+      shell: lvs 2>/dev/null | egrep -qi "java[ctm]|java[boss]" && echo OK || echo KO
+      register: fsvaljav
+
+    - name: Resultado de la valida LV Java
+      assert:
+        that:
+          - fsvaljav.stdout in "OK"
+        fail_msg: "El LV LVJAVA no existe"
+
+    - name: Validacion del tamaño LV Java 
+      become: true
+      shell: |
+        freelv=$(df 2>/dev/null -h | egrep "java_atm|java_jboss" | tr -s ' ' ',' | cut -d, -f5 | tr -d '%')
+        if [ 50 -ge $freelv ] || [ 65 -ge $freelv ]; then
+          echo "OK,$freelv"
+        elif [ 70 -ge $freelv ] || [ 85 -ge $freelv ]; then
+          echo "Warinig,$freelv"
+        elif [ 95 -ge $freelv ]; then
+          echo "Critico,$freelv"
+        fi
+      register: lvszjav
+
+    - name: Resultado de la valida LV Java
+      assert:
+        that:
+          - lvszjav.stdout in "OK"
+        fail_msg: "El LV no cuenta con espacion"
+
+    - name: Validacion del tamaño VG Java 
+      become: true
+      shell: |
+        vgfree=$(vgs | grep -i VGAPPS | tr -s ' ' ',' | cut -d, -f8 | tr -d '<gG' | cut -d. -f1)
+        if [ $vgfree -ge 6 ]; then
+        echo "OK,$vgfree"
+        elif [ $vgfree -ge 5 ]; then
+        echo "Warinig,$vgfree"
+        elif [ $vgfree -ge 4 ]; then
+        echo "Critico,$vgfree"
+        fi
+      register: vgszjav
+
+    - name: Resultado de la valida VG Java
+      assert:
+        that:
+          - vgszjav.stdout in "OK"
+        fail_msg: "El VG no cuenta con espacion"
