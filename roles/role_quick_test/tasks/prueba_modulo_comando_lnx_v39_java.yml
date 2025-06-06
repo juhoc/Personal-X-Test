@@ -56,5 +56,5 @@
     - name: Resultado de la valida VG Java
       assert:
         that:
-          - vgszjav.stdout in "OK"
+          - vgszjav.stdout.split(',')[0] in "OK"
         fail_msg: "El VG no cuenta con espacion"
