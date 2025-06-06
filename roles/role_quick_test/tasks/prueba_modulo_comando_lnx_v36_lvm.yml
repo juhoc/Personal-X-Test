@@ -77,10 +77,10 @@
         number: "{{ np }}"
         state: "{{ st }}"
         part_end: "{{ ptsze }}"
-        unit: "{{ ptu }}"
-        labe: "{{ ptl }}"
-        part_type: "{{ pt }}"
-        part_start: "{{ ptszi }}"
+        # unit: "{{ ptu }}"
+        # labe: "{{ ptl }}"
+        # part_type: "{{ pt }}"
+        # part_start: "{{ ptszi }}"
   when: tarea == "partition_dsk"
 
 - block:
