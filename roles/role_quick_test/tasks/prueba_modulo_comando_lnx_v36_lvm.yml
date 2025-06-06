@@ -82,9 +82,10 @@
       parted:
         device: "{{ df }}"
         number: "{{ np }}"
-#        flags: [ lvm ]
-        state: present
-        part_end: "{{ psz }}"
+        flags: [ "{{ fst }}" ]
+        state: "{{ st }}"
+        part_type: "{{ pt }}"
+        part_start: "{{ psz }}"
   when: tarea == "partition_dsk"
 
 - block:
