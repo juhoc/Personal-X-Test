@@ -189,3 +189,5 @@ mailbodyA2: |
 
 lvm_params:
   lv_mount_point: "{{ lv_mount_point }}"
+
+number_of_partitions: "{{ number_of_partitions }}"
