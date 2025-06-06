@@ -72,7 +72,7 @@
 
     - name: Resultado de la valida puntos de montura para Java
       assert:
-       that:
+        that:
          - item.stat.exists == true
       loop: "{{ valdirjav.results }}"
       loop_control:
