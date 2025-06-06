@@ -69,7 +69,7 @@
       register: valdirjav
 
     - name: Resultado de la valida puntos de montura para Java
-     assert:
+      assert:
        that:
          - valdirjav.stat.path in "java_atm" or valdirjav.stat.path in "java_boss"
        fail_msg: "No existe los puntos de montura /java_atm o /java_boss"
