@@ -37,7 +37,7 @@
     - name: Resultado de la valida LV Java
       assert:
         that:
-          - lvszjav.stdout in "OK"
+          - lvszjav.stdout.split(',')[0] in "OK"
         fail_msg: "El LV no cuenta con espacion"
 
     - name: Validacion del tamaño VG Java 
