@@ -1,0 +1,42 @@
+---
+- name: Tareas por bloques - Validacion formato CRQ o ICR
+  block:
+    - set_fact:
+        idhelix: "{{ idcrqincreq | trim }}"
+      run_once: true
+      delegate_to: localhost
+
+    - name: Validando Formato de Cambio o Incidente
+      assert:
+        that:
+          - idhelix | string | regex_search('(CRQ|INC|REQ)[0-9]{12}')
+        fail_msg: "El CRQ, INC o REQ no cumplen con la condiciones del formato"
+        success_msg: "El CRQ, INC o REQ cumplen con las condiciones del formato"
+      run_once: true
+      delegate_to: localhost
+
+- block:
+    - name: Obtener información detallada
+      become: true
+      ansible.builtin.shell: |
+        set -o pipefail && echo "===== ANÁLISIS DETALLADO: {{ target_disk }} ====="
+        echo "--- INFORMACIÓN DE BLOQUES ---"
+        lsblk -o NAME,SIZE,FSTYPE,MOUNTPOINT,LABEL,UUID "{{ target_disk }}" # Añadí comillas para seguridad
+        echo "--- TABLA DE PARTICIONES ---"
+        parted -s "{{ target_disk }}" unit GB print free # Añadí comillas
+        echo "--- INFORMACIÓN SMART ---"
+        smartctl -i "{{ target_disk }}" | grep -E 'Model|Capacity|Rotation|Health' || echo "SMART no disponible" # Añadí comillas
+
+      register: disk_analysis
+
+    - name: Validar archivos esperados previas IPL del OS Linux
+      set_fact:
+        discos: "{{ disk_analysis.stdout_lines }}"
+
+    - name: Imprime rasultado
+      set_stats: 
+        data: 
+          tota_discos: "{{ discos }}"
+        per_host: no
+      run_once: true
+  when: tarea == "analize_lvm"

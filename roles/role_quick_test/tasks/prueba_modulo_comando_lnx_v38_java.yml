@@ -70,12 +70,14 @@
   when: tarea == "analize_lvm"
 
 - block:
-    - name: Crear tabla de particion
+    - name: Crear particion
       become: true
       parted:
         device: "{{ df }}"
-        label: "{{ lbl }}"
-        state: "{{ st }}"
+        number: "{{ np }}"
+        flags: [ lvm ]
+        state: present
+        part_end: "{{ psz }}"
   when: tarea == "partition_dsk"
 
 - block:
