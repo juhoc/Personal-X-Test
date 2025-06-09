@@ -1,0 +1,135 @@
+- block:
+    - name: Validando Formato de Cambio o Incidente
+      assert:
+        that:
+          - idcrqincreq | string | regex_search('(CRQ|INC|REQ)[0-9]{12}')
+        fail_msg: "El CRQ, INC o REQ no cumplen con la condiciones del formato"
+        success_msg: "El CRQ, INC o REQ cumplen con las condiciones del formato"
+      run_once: true
+      delegate_to: localhost
+
+- block:
+    - name: Validacion de VG Java
+      become: true
+      shell: vgs 2>/dev/null | grep -qi VGAPPS && echo OK || echo KO
+      register: vgvaljav
+
+    - name: Resultado de la valida VG Java
+      assert:
+        that:
+          - vgvaljav.stdout in "OK"
+        fail_msg: "El VG VGAPPS no existe"
+
+    - name: Validacion del tamaño VG Java 
+      become: true
+      shell: |
+        vgfree=$(vgs | grep -i VGAPPS | tr -s ' ' ',' | cut -d, -f8 | tr -d '<gG' | cut -d. -f1)
+        if [ $vgfree -ge 6 ]; then
+        echo "OK,$vgfree"
+        elif [ $vgfree -ge 5 ]; then
+        echo "KO,$vgfree"
+        elif [ $vgfree -ge 4 ]; then
+        echo "KO,$vgfree"
+        fi
+      register: vgszjav
+      when: vgvaljav in "VGAPPS"
+
+    - name: Resultado de la valida VG Java
+      assert:
+        that:
+          - vgszjav.stdout in "OK"
+        fail_msg: "El VG VGAPPS no tiene espacion suficiente"
+
+    # - name: Incluir role de remediacion VG, LV y Dir Java
+    #   include_role: role_remediar_prerrequisitos_vg_lv_dir_java
+    #   when: vgvaljav == ""
+
+    - name: Validacion de LV Java
+      become: true
+      shell: lvs 2>/dev/null | grep -qi "java_atm" && echo OK || echo KO
+      register: fsvaljav
+
+    - name: Resultado de la valida LV Java
+      assert:
+        that:
+          - fsvaljav.stdout in "OK"
+        fail_msg: "El LV LVJAVA no existe"
+        ignore_errors: true
+
+    - name: Incluir role de remediacion VG, LV y Dir Java
+      include_role: role_remediar_prerrequisitos_vg_lv_dir_java
+      when: fsvaljav in "KO"
+
+    - name: Validacion del tamaño LV Java 
+      become: true
+      shell: |
+        freelv=$(df 2>/dev/null -h | egrep "java_atm|java_jboss" | tr -s ' ' ',' | cut -d, -f5 | tr -d '%')
+        if [ 50 -ge $freelv ] || [ 65 -ge $freelv ]; then
+          echo "OK,$freelv"
+        elif [ 70 -ge $freelv ] || [ 85 -ge $freelv ]; then
+          echo "KO,$freelv"
+        elif [ 95 -ge $freelv ]; then
+          echo "KO,$freelv"
+        fi
+      register: lvszjav
+      when: fsvaljav in "OK"
+
+    - name: Incluir role de remediacion VG, LV y Dir Java
+      include_role: role_remediar_prerrequisitos_vg_lv_dir_java
+      when: fsvaljav in "KO"
+
+    # - name: Validacion los puntos de montura para Java 
+    #   become: true
+    #   stat:
+    #     path: "{{ dirjav }}"
+    #   loop:
+    #     - /java_atm
+    #     - /java_boss
+    #   loop_control:
+    #     loop_var: dirjav
+    #   register: valdirjav
+    #   when: fsvaljav in "OK"
+
+    # - name: Resultado de la valida puntos de montura para Java
+    #   assert:
+    #     that:
+    #       - valdirjav.results | selectattr('stat.exists', true) | list | length > 0
+    #     success_msg: "Éxito: Al menos uno de los directorios de Java (/java_atm o /jav_boss) existe."
+    #     fail_msg: "No existe los puntos de montura /java_atm o /java_boss"
+    #     ignore_errors: true
+
+    # - name: Resultado de la valida LV Java
+    #   assert:
+    #     that:
+    #       - fsvaljav.stdout in "OK"
+    #     fail_msg: "El LV LVJAVA no existe"
+
+    # - name: Resultado de la valida LV Java
+    #   assert:
+    #     that:
+    #       - lvszjav.stdout.split(',')[0] in "OK"
+    #     fail_msg: "El LV no cuenta con espacion {{ lvszjav.stdout.split(',')[1] }}"
+
+    # - name: Resultado de la valida VG Java
+    #   assert:
+    #     that:
+    #       - vgszjav.stdout.split(',')[0] in "OK"
+    #     fail_msg: "El VG no cuenta con espacion"
+
+    # - name: Validacion los puntos de montura para Java 
+    #   become: true
+    #   stat:
+    #     path: "{{ dirjav }}"
+    #   loop:
+    #     - /java_atm
+    #     - /jav_boss
+    #   loop_control:
+    #     loop_var: dirjav
+    #   register: valdirjav
+
+    # - name: Resultado de la valida puntos de montura para Java
+    #   assert:
+    #     that:
+    #       - valdirjav.results | selectattr('stat.exists', true) | list | length > 0
+    #     success_msg: "Éxito: Al menos uno de los directorios de Java (/java_atm o /jav_boss) existe."
+    #     fail_msg: "No existe los puntos de montura /java_atm o /java_boss"

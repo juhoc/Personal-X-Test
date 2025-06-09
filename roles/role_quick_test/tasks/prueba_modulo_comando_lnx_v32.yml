@@ -1,4 +1,4 @@
----
+  ---
 - block:
     - name: Buscar archivos XML con más de 7 días de antigüedad
       become: true

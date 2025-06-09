@@ -1,0 +1,120 @@
+- block:
+    - name: Crear LogicaVolume
+      become: true
+      lvol:
+        vg: VGAPPS
+        lv: LVJAVACTM
+        size: 5G
+        force: yes
+
+    - name: Crear punto de montura
+      become: true
+      file:
+        path: /java_atm
+        state: directory
+        mode: "0755"
+
+    - name: Formatear LogicaVolume
+      become: true
+      filesystem:
+        fstype: ext4
+        dev: /dev/VGAPPS/LVJAVACTM
+
+    - name: Montar el LogicaVolume
+      become: true
+      mount:
+        path: /java_atm
+        src: /dev/VGAPPS/LVJAVACTM
+        fstype: ext4
+        state: mounted
+  when: fsvaljav.split(',')[0] == "KO"
+
+- block:
+    - name: Extender el volumen logico
+      become: true
+      lvol:
+        vg: VGAPPS
+        lv: LVJAVACTM
+        size: 5G
+        resizefs: true
+        force: true
+  when: lvszjav.split(',')[0] == "KO"
+
+
+    # - name: Validacion de VG Java
+    #   become: true
+    #   shell: vgs 2>/dev/null | grep -qi VGAPPS && echo OK || echo KO
+    #   register: vgvaljav
+
+    # - name: Resultado de la valida VG Java
+    #   assert:
+    #     that:
+    #       - vgvaljav.stdout in "OK"
+    #     fail_msg: "El VG VGAPPS no existe"
+
+    # - name: Validacion de LV Java
+    #   become: true
+    #   shell: lvs 2>/dev/null | egrep -qi "java[ctm]|java[boss]" && echo OK || echo KO
+    #   register: fsvaljav
+
+    # - name: Resultado de la valida LV Java
+    #   assert:
+    #     that:
+    #       - fsvaljav.stdout in "OK"
+    #     fail_msg: "El LV LVJAVA no existe"
+
+    # - name: Validacion del tamaño LV Java 
+    #   become: true
+    #   shell: |
+    #     freelv=$(df 2>/dev/null -h | egrep "java_atm|java_jboss" | tr -s ' ' ',' | cut -d, -f5 | tr -d '%')
+    #     if [ 50 -ge $freelv ] || [ 65 -ge $freelv ]; then
+    #       echo "OK,$freelv"
+    #     elif [ 70 -ge $freelv ] || [ 85 -ge $freelv ]; then
+    #       echo "Warinig,$freelv"
+    #     elif [ 95 -ge $freelv ]; then
+    #       echo "Critico,$freelv"
+    #     fi
+    #   register: lvszjav
+
+    # - name: Resultado de la valida LV Java
+    #   assert:
+    #     that:
+    #       - lvszjav.stdout.split(',')[0] in "OK"
+    #     fail_msg: "El LV no cuenta con espacion {{ lvszjav.stdout.split(',')[1] }}"
+
+    # - name: Validacion del tamaño VG Java 
+    #   become: true
+    #   shell: |
+    #     vgfree=$(vgs | grep -i VGAPPS | tr -s ' ' ',' | cut -d, -f8 | tr -d '<gG' | cut -d. -f1)
+    #     if [ $vgfree -ge 6 ]; then
+    #     echo "OK,$vgfree"
+    #     elif [ $vgfree -ge 5 ]; then
+    #     echo "Warinig,$vgfree"
+    #     elif [ $vgfree -ge 4 ]; then
+    #     echo "Critico,$vgfree"
+    #     fi
+    #   register: vgszjav
+
+    # - name: Resultado de la valida VG Java
+    #   assert:
+    #     that:
+    #       - vgszjav.stdout.split(',')[0] in "OK"
+    #     fail_msg: "El VG no cuenta con espacion"
+
+    # - name: Validacion los puntos de montura para Java 
+    #   become: true
+    #   stat:
+    #     path: "{{ dirjav }}"
+    #   loop:
+    #     - /java_atm
+    #     - /jav_boss
+    #   loop_control:
+    #     loop_var: dirjav
+    #   register: valdirjav
+
+    # - name: Resultado de la valida puntos de montura para Java
+    #   assert:
+    #     that:
+    #       - valdirjav.results | selectattr('stat.exists', true) | list | length > 0
+    #     success_msg: "Éxito: Al menos uno de los directorios de Java (/java_atm o /jav_boss) existe."
+    #     fail_msg: "No existe los puntos de montura /java_atm o /java_boss"
