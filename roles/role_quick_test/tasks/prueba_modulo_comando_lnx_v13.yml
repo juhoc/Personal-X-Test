@@ -13,7 +13,12 @@
 - name: Archivos de evidencias servidores
   block:
     - file:
-        path: "{{ mountfsasb }}{{ item }}"
+        path: "{{ mountfsasb }}"
+        state: directory
+      become: true
+
+    - file:
+        path: "{{ gdmlcfsasb }}{{ item }}"
         state: touch
         owner: bvmuxat2
         group: automate
