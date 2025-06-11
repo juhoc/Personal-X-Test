@@ -60,19 +60,19 @@
       include_tasks: remediar/java_prerrequisitos.yml
       when: fsvaljav.stdout in "KO"
 
-    - name: Validacion del tamaño LV Java 
-      become: true
-      shell: |
-        freelv=$(df 2>/dev/null -h | egrep "java_atm|java_jboss" | tr -s ' ' ',' | cut -d, -f5 | tr -d '%')
-        if [ 50 -ge $freelv ] || [ 65 -ge $freelv ]; then
-          echo "OK,$freelv"
-        elif [ 70 -ge $freelv ] || [ 85 -ge $freelv ]; then
-          echo "KO,$freelv"
-        elif [ 95 -ge $freelv ]; then
-          echo "KO,$freelv"
-        fi
-      register: lvszjav
-      when: fsvaljav.stdout in "OK"
+    # - name: Validacion del tamaño LV Java 
+    #   become: true
+    #   shell: |
+    #     freelv=$(df 2>/dev/null -h | egrep "java_atm|java_jboss" | tr -s ' ' ',' | cut -d, -f5 | tr -d '%')
+    #     if [ 50 -ge $freelv ] || [ 65 -ge $freelv ]; then
+    #       echo "OK,$freelv"
+    #     elif [ 70 -ge $freelv ] || [ 85 -ge $freelv ]; then
+    #       echo "KO,$freelv"
+    #     elif [ 95 -ge $freelv ]; then
+    #       echo "KO,$freelv"
+    #     fi
+    #   register: lvszjav
+    #   when: fsvaljav.stdout in "OK"
 
     - name: Incluir role de remediacion VG, LV y Dir Java
       include_tasks: remediar/java_prerrequisitos.yml
