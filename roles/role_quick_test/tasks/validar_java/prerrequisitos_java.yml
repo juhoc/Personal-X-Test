@@ -54,7 +54,7 @@
         that:
           - fsvaljav.stdout in "OK"
         fail_msg: "El LV LVJAVA no existe"
-        ignore_errors: true
+      ignore_errors: true
 
     - name: Incluir role de remediacion VG, LV y Dir Java
       include_role: role_remediar_prerrequisitos_vg_lv_dir_java
