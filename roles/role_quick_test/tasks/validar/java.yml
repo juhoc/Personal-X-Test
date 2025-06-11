@@ -32,7 +32,7 @@
         echo "KO,$vgfree"
         fi
       register: vgszjav
-      when: vgvaljav in "VGAPPS"
+      when: vgvaljav.stdout.split(',')[0] in "OK"
 
     - name: Resultado de la valida VG Java
       assert:
