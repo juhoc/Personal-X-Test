@@ -4,7 +4,7 @@
       lvol:
         vg: VGAPPS
         lv: LVJAVACTM
-        size: 5G
+        size: 5.1G
         force: yes
   
     - name: Crear punto de montura

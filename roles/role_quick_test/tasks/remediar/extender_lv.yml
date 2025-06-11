@@ -19,7 +19,7 @@
         if [ 50 -ge $freelv ] || [ 65 -ge $freelv ]; then
           echo "OK,$freelv"
         elif [ 70 -ge $freelv ] || [ 85 -ge $freelv ]; then
-          echo "KO,$freelv"
+          echo "OK,$freelv"
         elif [ 95 -ge $freelv ]; then
           echo "KO,$freelv"
         fi
