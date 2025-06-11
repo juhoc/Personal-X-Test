@@ -46,7 +46,7 @@
 
     - name: Validacion de LV Java
       become: true
-      shell: lvs 2>/dev/null | grep -qi "java_atm" && echo OK || echo KO
+      shell: lvs 2>/dev/null | grep -qi LVJAVACTM && echo OK || echo KO
       register: fsvaljav
 
     - name: Resultado de la valida LV Java
