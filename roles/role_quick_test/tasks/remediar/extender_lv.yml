@@ -1,4 +1,17 @@
 - block:
+    - name: Validacion del tamaño VG Java 
+      become: true
+      shell: |
+        vgfree=$(vgs | grep -i VGAPPS | tr -s ' ' ',' | cut -d, -f8 | tr -d '<gG' | cut -d. -f1)
+        if [ $vgfree -ge 6 ]; then
+        echo "OK,$vgfree"
+        elif [ $vgfree -ge 5 ]; then
+        echo "KO,$vgfree"
+        elif [ $vgfree -ge 4 ]; then
+        echo "KO,$vgfree"
+        fi
+      register: vgszjav
+
     - name: Validacion del tamaño LV Java 
       become: true
       shell: |
@@ -17,7 +30,7 @@
       lvol:
         vg: VGAPPS
         lv: LVJAVACTM
-        size: 5G
+        size: 5.1G
         resizefs: true
         force: true
-      when: lvszjav.stdout.split(',')[0] != "OK"
+      when: vgszjav.stdout.split(',')[0] == "OK" and lvszjav.stdout.split(',')[0] != "OK"
