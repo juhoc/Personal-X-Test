@@ -37,7 +37,7 @@
     - name: Resultado de la valida VG Java
       assert:
         that:
-          - vgszjav.stdout in "OK"
+          - vgszjav.stdout.split(',')[0] in "OK"
         fail_msg: "El VG VGAPPS no tiene espacion suficiente"
 
     # - name: Incluir role de remediacion VG, LV y Dir Java
