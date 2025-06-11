@@ -1,14 +1,3 @@
 ---
-# - name: Quick test secuencia 0 include task
-#   include_tasks: prueba_modulo_comando_win_v12v1.yml
-
 - name: Quick test secuencia 1 include task
   include_tasks: "{{ dir_accion }}/{{ libro_jugadas }}.yml"
-
-#- name: Quick test secuecia 1 include task
-#  include_tasks: prueba_modulo_comando_lnx_v30_s1.yml
-
-#  when: 
-#    - hostvars[inventory_hostname]['ostype'] != 'windows'
-#    - (ansible_facts['os_family'] == "RedHat" and ansible_facts['distribution_version'] is version('6.4', '>=')) or
-#      (ansible_facts['os_family'] == "Suse" and ansible_facts['distribution_major_version'] is version('12', '>='))
