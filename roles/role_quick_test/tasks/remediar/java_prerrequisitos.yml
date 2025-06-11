@@ -51,7 +51,7 @@
         size: 5G
         resizefs: true
         force: true
-  when: lvszjav.split(',')[0] != "OK"
+  when: lvszjav.stdout.split(',')[0] != "OK"
 
 
     # - name: Validacion de VG Java
