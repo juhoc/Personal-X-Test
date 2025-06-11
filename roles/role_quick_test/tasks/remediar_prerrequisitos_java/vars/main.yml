@@ -1,0 +1,193 @@
+ruta_patrol: P:\BMC\Patrol3\log\PatrolAgent-{{ ansible_facts['hostname'] }}-3181.errs
+software: SentinelAgent_linux_x86_64_v24_1_2_6.rpm
+destino: /var/opt/ansible/
+recurso: /bmc/soft3ros/bmcsoftware/capacity/agent/
+home_ansible: /var/opt/ansible
+fsasb: /var/opt/ansible
+bvmuxat2_home: /var/opt/ansible/
+scripfs_in: incrementar_fs_in.sh
+scripfs_out: incrementar_fs_out.sh
+
+recurso1: \\150.100.188.157\x\sentinell\
+software1: SentinelInstaller_windows_64bit_v23_4_4_223-msi
+destino1: V:\ansible
+
+
+#---variables de transferencia sftp
+usuario: ccrbao
+recurso_dim: /bmc/soft3ros/dimensions/agents/
+temporal: /tmp
+destino_dim: /var/opt/ansible
+#---variables de transferencia web
+ipweb: 150.100.43.207
+puertoweb: 31921
+#---variables de soporte duranten la instalacion
+instala: /diminstall
+#---variables de soporte para la instalacion de Dimension
+dim_siop1: 1
+dim_siop2: q
+dim_siop3: 1
+dim_siop4: 0
+dim_siop5: 1
+dim_siop6: 0
+dim_siop7: 1
+dim_siop8: /opt/dimensions/14.5
+dim_siop9: 1
+dim_siop10: 0
+dim_siop11: 1
+dim_siop12: lvpwimwdiawmx01
+dim_siop13: 671
+dim_siop14: 1
+dim_siop15: dmsys
+dim_siop16: 1
+dim_siop17: 1
+dim_siop18: 3
+
+
+#---variables correo
+#bvmuxat2_home: /var/opt/ansible/
+smtp: 192.168.56.5
+smtpport: 25
+mailfrom: itoperationintegration.mx@company-xz.net
+mailto: julio.cesar.hoyos.corredor@company-xz.net
+#mailsub: "Control-M Reporte de mallas XML"
+#mailbody: "Por este medio se anexa el archivo export_CCR_ADA.zip y la salida de la ejecucion del script obtener_mallas_ADA.sh"
+#mailusr: itoperationintegration.mx@company-xz.net
+#mailpwd: "2E9}x4F68W"
+
+#---viejas variables
+#fs_reportes: /tmp/reportes/
+#fs_repovg: /tmp/reportes/vgrepo_
+#fs_repolv: /tmp/reportes/lvrepo_
+#fs_prerepo: _pre
+#fs_postrepo: _post
+#fs_path: /tmp/
+#fs_ext: .csv
+#fs_crq: "Escriba el ID del CRQ"
+#---nuevas variables gestion de evidencias filesystem
+fs_dmahmsr: $(date +"Fecha":" "%d/%m/%Y" Hora":" "%H:%M)
+fs_dmahmsl: $(date +"_"%a%d%B%Y"H"%H"M"%M"S"%S)
+fs_varoptasb: /var/opt/ansible/
+fs_tlvgrepo: vgtotal_
+fs_tllvrepo: lvtotal_
+fs_indvgrepo: vgindividual_
+fs_indlvrepo: lvtindivual_
+fs_reportes: /tmp/reportes/
+fs_repovg: /tmp/reportes/vgrepo_
+fs_repolv: /tmp/reportes/lvrepo_
+fs_prerepo: _pre
+fs_postrepo: _post
+fs_path: /tmp/
+fs_extdt: .txt
+fs_extdr: .csv
+fs_info: df -HT | egrep -v 'Filesystem|#|tmpfs|boot' | sed 's/ \+/,/g;s/\/dev\///g;s/mapper\///g;s/-/,/g' | tr -d '\t' | sort | grep
+
+#---
+
+gdmmailrepo: V:\repomailgdm
+#gdmmailrepo: /var/opt/ansible/gdm/
+gdmlcfsasb: /var/opt/ansible/
+mountfsasb: /var/opt/ansible
+mountfsasb_b: /var/opt/ansible
+unidadvasb: V:\
+ruta_nbu: /usr/openv/netbackup/bin/
+unidadpaca: P:\installers\
+
+#--bao datos api rest
+api_rest_bao: https://150.100.43.207
+api_rest_bao_port: 38080
+remote_path: /aplicativo/home/ccrbao/baoAnsible/
+#mi_passphrase: 'cDQ1NVcwcmRjaDRnM2k3Nw=='
+
+mi_passphrase: !vault |
+      $ANSIBLE_VAULT;1.1;AES256
+      38336434663031616436383130643532326530626465356465346233623531336334643262643033
+      3130373930386636333962666164306364366333383766330a616462303266303532373366373136
+      62306230313865333734643133653038653234323734336135353830386636303266636661353163
+      3339326664396531620a623061643836633237393964376135366330386164383233633963383835
+      62393566393338376631366363393039313832653762646535383939336534353639
+
+#----
+vgname: VGPROGPROD
+vgsize: 1.01
+
+
+proxy_ep: "http://150.250.71.68:1080"
+proxy_pr: "http://150.82.4.49:1080;http://150.82.4.50:1080"
+id_activacion: "b5539439-a986-4e51-8aed-01d2ebae1e6e"
+id_customer: "a1ac927b-0a89-c7ed-80ad-a805c8e3809e"
+release: "{{ ansible_facts['distribution'] }}"
+entorno: "{{ hostvars[inventory_hostname]['entorno'] }}"
+ip: "{{ ansible_facts['default_ipv4'] ['address'] }}"
+
+
+rponbu: "/bmc/soft3ros/veritas/netbackup/agents"
+pathasb: "/var/opt/ansible"
+
+###-------------------------CONTROL-M
+mailtoA1: itctmintegration.mx@company-xz.net
+mailsubA1: "¡Alerta! Script Faltante en Servidor {{ inventory_hostname }}"
+mailbodyA1: |
+      <html lang="es">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Notificación de Script Faltante</title>
+          <style>
+              body {
+                  font-family: sans-serif;
+              }
+              .error-message {
+                  color: red;
+                  font-weight: bold;
+              }
+              .instruction {
+                  margin-top: 15px;
+              }
+          </style>
+      </head>
+      <body>
+          <p><span class="error-message">¡ALERTA! No existe el script obtener_mallas_ADA.sh en:</span></p>
+          <p><strong>Ruta del script:</strong> /Ctrlmemp/portal/scripts</p>
+          <p><strong>Servidor:</strong> vbldtst01</p>
+          <div class="instruction">
+              <p>Favorde validar el script no existe o hubo un posible cambiado en el nombre.</p>
+          </div>
+      </body>
+      </html>
+
+mailtoA2: itasbintegration.mx@company-xz.net
+mailsubA2: ¡Alerta! No se genero archivo respaldos mallas Control-M
+mailbodyA2: |
+      <html lang="es">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Notificación de Archivo Faltante</title>
+          <style>
+              body {
+                  font-family: sans-serif;
+              }
+              .error-message {
+                  color: red;
+                  font-weight: bold;
+              }
+              .instruction {
+                  margin-top: 15px;
+              }
+          </style>
+      </head>
+      <body>
+          <p><span class="error-message">¡ALERTA! no se genero archivo de respaldo en:</span></p>
+          <p><strong>Ruta del del archivo:</strong> /Ctrlmccrp</p>
+          <p><strong>Servidor:</strong> vbldtst00</p>
+          <div class="instruction">
+              <p>Team Automation, validar la razon por la que no se genero el archivo de respaldo.</p>
+          </div>
+      </body>
+      </html>
+
+lvm_params:
+  lv_mount_point: "{{ lv_mount_point }}"
+
+number_of_partitions: "{{ number_of_partitions }}"
