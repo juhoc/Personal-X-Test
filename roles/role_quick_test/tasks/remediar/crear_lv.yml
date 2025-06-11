@@ -1,0 +1,30 @@
+- block:
+    - name: Crear LogicaVolume
+      become: true
+      lvol:
+        vg: VGAPPS
+        lv: LVJAVACTM
+        size: 5G
+        force: yes
+  
+    - name: Crear punto de montura
+      become: true
+      file:
+        path: /java_atm
+        state: directory
+        mode: "0755"
+  
+    - name: Formatear LogicaVolume
+      become: true
+      filesystem:
+        fstype: ext4
+        dev: /dev/VGAPPS/LVJAVACTM
+  
+    - name: Montar el LogicaVolume
+      become: true
+      mount:
+        path: /java_atm
+        src: /dev/VGAPPS/LVJAVACTM
+        fstype: ext4
+        state: mounted
+  when: fsvaljav.stdout in "KO"

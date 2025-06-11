@@ -57,8 +57,14 @@
       ignore_errors: true
 
     - name: Incluir role de remediacion VG, LV y Dir Java
-      include_tasks: remediar/java_prerrequisitos.yml
+      include_tasks: remediar/crear_lv.yml
       when: fsvaljav.stdout in "KO"
+
+    - name: Incluir role de remediacion VG, LV y Dir Java
+      include_tasks: remediar/extender_lv.yml
+      when: fsvaljav.stdout in "KO"
+
+
 
     # - name: Validacion del tamaño LV Java 
     #   become: true
@@ -74,9 +80,9 @@
     #   register: lvszjav
     #   when: fsvaljav.stdout in "OK"
 
-    - name: Incluir role de remediacion VG, LV y Dir Java
-      include_tasks: remediar/java_prerrequisitos.yml
-      when: fsvaljav.stdout in "KO"
+    # - name: Incluir role de remediacion VG, LV y Dir Java
+    #   include_tasks: remediar/java_prerrequisitos.yml
+    #   when: fsvaljav.stdout in "KO"
 
     # - name: Validacion los puntos de montura para Java 
     #   become: true

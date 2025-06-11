@@ -1,0 +1,23 @@
+- block:
+    - name: Validacion del tamaño LV Java 
+      become: true
+      shell: |
+        freelv=$(df 2>/dev/null -h | grep "java_atm" | tr -s ' ' ',' | cut -d, -f5 | tr -d '%')
+        if [ 50 -ge $freelv ] || [ 65 -ge $freelv ]; then
+          echo "OK,$freelv"
+        elif [ 70 -ge $freelv ] || [ 85 -ge $freelv ]; then
+          echo "KO,$freelv"
+        elif [ 95 -ge $freelv ]; then
+          echo "KO,$freelv"
+        fi
+      register: lvszjav
+
+    - name: Extender el volumen logico
+      become: true
+      lvol:
+        vg: VGAPPS
+        lv: LVJAVACTM
+        size: 5G
+        resizefs: true
+        force: true
+      when: lvszjav.stdout.split(',')[0] != "OK"
