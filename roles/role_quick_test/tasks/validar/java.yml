@@ -58,7 +58,7 @@
 
     - name: Incluir role de remediacion VG, LV y Dir Java
       include_tasks: remediar/java_prerrequisitos.yml
-      when: fsvaljav in "KO"
+      when: fsvaljav.stdout in "KO"
 
     - name: Validacion del tamaño LV Java 
       become: true
@@ -72,11 +72,11 @@
           echo "KO,$freelv"
         fi
       register: lvszjav
-      when: fsvaljav in "OK"
+      when: fsvaljav.stdout in "OK"
 
     - name: Incluir role de remediacion VG, LV y Dir Java
       include_tasks: remediar/java_prerrequisitos.yml
-      when: fsvaljav in "KO"
+      when: fsvaljav.stdout in "KO"
 
     # - name: Validacion los puntos de montura para Java 
     #   become: true
