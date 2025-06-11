@@ -1,3 +1,0 @@
----
-- name: Ejecucion de prerrequisitos JAVA
-  include_tasks: "{{ libro_jugadas }}.yml"

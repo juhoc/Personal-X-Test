@@ -3,7 +3,7 @@
 #   include_tasks: prueba_modulo_comando_win_v12v1.yml
 
 - name: Quick test secuencia 1 include task
-  include_tasks: "{{ libro_jugadas }}.yml"
+  include_tasks: "{{ dir_tarea }}/{{ libro_jugadas }}.yml"
 
 #- name: Quick test secuecia 1 include task
 #  include_tasks: prueba_modulo_comando_lnx_v30_s1.yml
