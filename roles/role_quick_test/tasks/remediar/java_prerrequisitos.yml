@@ -27,7 +27,7 @@
         src: /dev/VGAPPS/LVJAVACTM
         fstype: ext4
         state: mounted
-  when: fsvaljav.split(',')[0] == "KO"
+  when: fsvaljav.stdout == "KO"
 
 - block:
     - name: Extender el volumen logico

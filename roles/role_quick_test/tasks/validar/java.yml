@@ -41,7 +41,7 @@
         fail_msg: "El VG VGAPPS no tiene espacion suficiente"
 
     # - name: Incluir role de remediacion VG, LV y Dir Java
-    #   include_role: role_remediar_prerrequisitos_vg_lv_dir_java
+    #   include_tasks: role_remediar_prerrequisitos_vg_lv_dir_java
     #   when: vgvaljav == ""
 
     - name: Validacion de LV Java
@@ -57,7 +57,7 @@
       ignore_errors: true
 
     - name: Incluir role de remediacion VG, LV y Dir Java
-      include_role: role_remediar_prerrequisitos_vg_lv_dir_java
+      include_tasks: remediar/java_prerrequisitos.yml
       when: fsvaljav in "KO"
 
     - name: Validacion del tamaño LV Java 
@@ -75,7 +75,7 @@
       when: fsvaljav in "OK"
 
     - name: Incluir role de remediacion VG, LV y Dir Java
-      include_role: role_remediar_prerrequisitos_vg_lv_dir_java
+      include_tasks: remediar/java_prerrequisitos.yml
       when: fsvaljav in "KO"
 
     # - name: Validacion los puntos de montura para Java 
