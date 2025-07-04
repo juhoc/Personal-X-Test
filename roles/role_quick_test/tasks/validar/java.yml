@@ -52,6 +52,20 @@
         fail_msg: "El LV LVJAVA no existe"
       ignore_errors: true
 
+    - name: Validacion de Java version
+      become: true
+      shell: |
+        javapath=$(ls -1 / | grep ^java_\w*)
+        javabin=$(ls -lR /$javapath | grep /bin: | tr -d ":")
+        $javabin/java --version | head -1 | tr -s ' ' ',' | cut -d, -f2
+      register: javer
+      when: fsvaljav.stdout in "OK"
+
+    - name: Resultado de la Validacion de la version de Java
+      debug:
+        msg: "La version actual de java en el equipo es {{ fsvaljav.stdout }}"
+      when: fsvaljav.stdout in "OK"
+
     - name: Incluir role de remediacion VG, LV y Dir Java
       include_tasks: remediar/crear_lv.yml
       when: fsvaljav.stdout in "KO"
