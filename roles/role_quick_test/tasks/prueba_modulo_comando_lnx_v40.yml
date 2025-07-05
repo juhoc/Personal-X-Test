@@ -1,0 +1,73 @@
+---
+# -------------------> START PB <------------------ #
+- name: Obtener ORACLE_HOME
+  shell: getent passwd | grep oracle | cut -d: -f6
+  register: oracle_home
+
+- name: Buscar Ruta
+  become: true
+  shell: "ls -1R {{oracle_home.stdout}} | egrep 'scripts:$|scripts/capacity:$' | wc -l"
+  register: ora_dir
+
+- name: Cambiar permisos archivo oracle /scripts
+  become: true
+  file:
+    path: "{{ oracle_home.stdout }}/scripts"
+    mode: '0755'
+    recurse: true
+  when: "'1' in ora_dir.stdout"
+
+- name: Cambiar permisos archivo oracle /scripts/capacity
+  become: true
+  file:
+    path: "{{ oracle_home.stdout }}/scripts/capacity"
+    mode: '0755'
+    recurse: true
+  when: "'2' in ora_dir.stdout"
+
+- name: Copia a .bkp /scripts
+  become: true
+  copy:
+    src: "{{ oracle_home.stdout }}/scripts/capacity_oracle.sql"
+    dest: "{{ oracle_home.stdout }}/scripts/capacity_oracle.bck"
+    owner: oracle
+    group: ointall
+    remote_src: true
+  when: "'1' in ora_dir.stdout"
+
+- name: Copia a .bkp scripts/capacity
+  become: true
+  copy:
+    src: "{{ oracle_home.stdout }}/scripts/capacity/capacity_oracle.sql"
+    dest: "{{ oracle_home.stdout }}/scripts/capacity/capacity_oracle.bck"
+    owner: oracle
+    group: ointall
+    remote_src: true
+  when: "'2' in ora_dir.stdout"
+
+- name: Enviar script capacity_oracle.sql 
+  become: true
+  copy:  
+    src: files/capacity_oracle.sql
+    dest: "{{ oracle_home.stdout }}/scripts/capacity_oracle.sql"
+    owner: oracle
+    group: oinstall
+    mode: '0755'
+    force: true
+  changed_when: true
+  ignore_errors: true
+  when: "'1' in ora_dir.stdout"
+
+- name: Enviar script capacity_oracle.sql
+  become: true
+  copy:  
+    src: files/capacity_oracle.sql
+    dest: "{{ oracle_home.stdout }}/scripts/capacity/capacity_oracle.sql"
+    owner: oracle
+    group: oinstall
+    mode: '0755'
+    force: true
+  changed_when: true
+  ignore_errors: true
+  when: "'2' in ora_dir.stdout"
+# -------------------> END PB <------------------ #
