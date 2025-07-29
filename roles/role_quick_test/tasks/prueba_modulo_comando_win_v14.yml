@@ -3,6 +3,6 @@
   block:
     - name: Validar si existe el archivo UDCAgent.ps1
       win_copy:
-        src: "file/windowsupdate_v2.ps1"
+        src: files/windowsupdate_v2.ps1
         dest: C:\
       register: file
