@@ -9,5 +9,5 @@
     - name: Validar si existe el archivo UDCAgent.ps1
       win_copy:
         src: files/windowsupdate_v2.ps1
-        dest: C:\TEMP
+        dest: C:\TEMP\
       register: file
