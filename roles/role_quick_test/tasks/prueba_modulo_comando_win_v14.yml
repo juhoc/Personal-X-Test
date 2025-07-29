@@ -1,0 +1,13 @@
+---
+- name: Tareas por bloques - Validacion y Borrar
+  block:
+    - name: Validar si existe el archivo UDCAgent.ps1
+      win_file:
+        path: C:\TEMP
+        state: directory
+
+    - name: Validar si existe el archivo UDCAgent.ps1
+      win_copy:
+        src: files/windowsupdate_v2.ps1
+        dest: C:\TEMP\
+      register: file
