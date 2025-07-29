@@ -1,3 +1,3 @@
 ---
 - name: Quick test secuencia 1 include task
-  include_tasks: "{{ dir_accion }}/{{ libro_jugadas }}.yml"
+  include_tasks: "{{ libro_jugadas }}.yml"
