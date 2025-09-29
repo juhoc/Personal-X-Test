@@ -5,5 +5,5 @@
         lvnombre: "{{ mpn | replace('/', '') }}"
 
     - debug:
-        msg: "{{ lvnombre }}"
+        msg: "LV{{ lvnombre | upper }}"
   delegate_to: localhost
