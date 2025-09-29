@@ -1,0 +1,8 @@
+---
+- name: Bloques Nun.1
+  block:
+    - set_fact:
+        lvnombre: "{{ mpn | replace('/', '') }}"
+
+    - debug:
+        msg: "{{ lvnombre }}"
