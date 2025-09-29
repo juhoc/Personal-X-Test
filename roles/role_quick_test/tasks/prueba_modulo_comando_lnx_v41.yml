@@ -6,3 +6,4 @@
 
     - debug:
         msg: "{{ lvnombre }}"
+  delegate_to: localhost
