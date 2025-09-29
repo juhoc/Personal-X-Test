@@ -2,8 +2,8 @@
 - name: Bloques Nun.1
   block:
     - set_fact:
-        lvnombre: "{{ mpn | replace('/', '') }}"
+        lvnombre: "{{ mpn | replace('/', '') | upper }}"
 
     - debug:
-        msg: "LV{{ lvnombre | upper }}"
+        msg: "LV{{ lvnombre }}"
   delegate_to: localhost
