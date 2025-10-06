@@ -14,6 +14,7 @@
     fail_msg: 
       - "El VG VGAPPS no existe"
       - "Utilizar la plantilla de nombre bvm_jobtemplate_lvm_linux"
+      - "y crear el VGAPPS"
       - "Acceda a la URL: https://ansible-tower.eu4.cacf.kyndryl.net/#/templates/job_template/133308/detail"
 
 - name: Ejeplo Nun.2
@@ -30,4 +31,5 @@
     fail_msg: 
       - "El VG VGAPPS no tiene espacion suficiente"
       - "Utilizar la plantilla de nombre bvm_jobtemplate_lvm_linux"
+      - "y extender el VGAPPS"
       - "Acceda a la URL: https://ansible-tower.eu4.cacf.kyndryl.net/#/templates/job_template/133308/details"
