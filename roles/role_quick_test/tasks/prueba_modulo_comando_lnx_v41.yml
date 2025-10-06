@@ -11,5 +11,8 @@
   assert:
     that:
       - "'OK' in valor"
-    fail_msg: "No, no es OK"
+    fail_msg: 
+      - "No, no es OK"
+      - "Tomar accion de la siguiente forma"
+      - "URL:  http://ansible.com"
     success_msg: "Si, so es OK"
