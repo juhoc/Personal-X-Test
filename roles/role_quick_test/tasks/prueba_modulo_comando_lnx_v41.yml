@@ -1,9 +1,15 @@
 ---
 - name: Bloques Nun.1
-  block:
-    - set_fact:
-        lvnombre: "{{ Ya  | replace('/', '') | upper }}"
+  shell: echo "VGAPPS,OK"
+  register: info1
 
-    - debug:
-        msg: "LV{{ lvnombre }}"
-  delegate_to: localhost
+- name: Crear echos dinamicos
+  set_fact:
+    valor: "{{ info1.stdout.split(',')[1] }}"
+
+- name: Validando Formato de Cambio o Incidente
+  assert:
+    that:
+      - "'OK' in valor"
+    fail_msg: "No, no es OK"
+    success_msg: "Si, so es OK"
