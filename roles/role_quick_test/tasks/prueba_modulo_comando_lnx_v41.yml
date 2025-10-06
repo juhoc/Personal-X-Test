@@ -1,6 +1,6 @@
 ---
 - name: Ejeplo Nun.1
-  shell: echo "VGAPPS,KO"
+  shell: echo "VGAPPS,OK"
   register: info1
 
 - name: Crear echos dinamicos
