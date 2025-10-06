@@ -2,7 +2,7 @@
 - name: Bloques Nun.1
   block:
     - set_fact:
-        lvnombre: "{{ mpn | replace('/', '') | upper }}"
+        lvnombre: "{{ Ya  | replace('/', '') | upper }}"
 
     - debug:
         msg: "LV{{ lvnombre }}"
