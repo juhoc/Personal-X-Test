@@ -5,12 +5,12 @@
 
 - name: Crear echos dinamicos
   set_fact:
-    valor: "{{ info1.stdout.split(',')[1] }}"
+    valor1: "{{ info1.stdout.split(',')[1] }}"
 
 - name: Resultado de la validacion VG VGAPPS
   assert:
     that:
-      - "'OK' in valor"
+      - "'OK' in valor1"
     fail_msg: 
       - "El VG VGAPPS no existe"
       - "Utilizar la plantilla de nombre bvm_jobtemplate_lvm_linux"
@@ -23,11 +23,11 @@
 
 - name: Crear echos dinamicos
   set_fact:
-    valor: "{{ info1.stdout.split(',')[1] }}"
+    valor2: "{{ info1.stdout.split(',')[1] }}"
 - name: Resultado de la validacion VG VGAPPS
   assert:
     that:
-      - "'OK' in valor"
+      - "'OK' in valor2"
     fail_msg: 
       - "El VG VGAPPS no tiene espacion suficiente"
       - "Utilizar la plantilla de nombre bvm_jobtemplate_lvm_linux"
