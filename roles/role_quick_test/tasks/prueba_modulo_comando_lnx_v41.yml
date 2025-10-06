@@ -23,7 +23,7 @@
 
 - name: Crear echos dinamicos
   set_fact:
-    valor2: "{{ info1.stdout.split(',')[1] }}"
+    valor2: "{{ info2.stdout.split(',')[1] }}"
 - name: Resultado de la validacion VG VGAPPS
   assert:
     that:
