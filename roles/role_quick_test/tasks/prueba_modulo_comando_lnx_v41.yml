@@ -1,6 +1,6 @@
 ---
 - name: Bloques Nun.1
-  shell: echo "VGAPPS,OK"
+  shell: echo "VGAPPS,KO"
   register: info1
 
 - name: Crear echos dinamicos
