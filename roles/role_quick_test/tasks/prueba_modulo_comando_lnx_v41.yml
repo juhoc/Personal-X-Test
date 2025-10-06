@@ -1,5 +1,5 @@
 ---
-- name: Bloques Nun.1
+- name: Ejeplo Nun.1
   shell: echo "VGAPPS,KO"
   register: info1
 
@@ -7,12 +7,27 @@
   set_fact:
     valor: "{{ info1.stdout.split(',')[1] }}"
 
-- name: Validando Formato de Cambio o Incidente
+- name: Resultado de la validacion VG VGAPPS
   assert:
     that:
       - "'OK' in valor"
     fail_msg: 
-      - "No, no es OK"
-      - "Tomar accion de la siguiente forma"
-      - "URL:  http://ansible.com"
-    success_msg: "Si, so es OK"
+      - "El VG VGAPPS no existe"
+      - "Utilizar la plantilla de nombre bvm_jobtemplate_lvm_linux"
+      - "Acceda a la URL: https://ansible-tower.eu4.cacf.kyndryl.net/#/templates/job_template/133308/detail"
+
+- name: Ejeplo Nun.2
+  shell: echo "VGAPPS,KO"
+  register: info2
+
+- name: Crear echos dinamicos
+  set_fact:
+    valor: "{{ info1.stdout.split(',')[1] }}"
+- name: Resultado de la validacion VG VGAPPS
+  assert:
+    that:
+      - "'OK' in valor"
+    fail_msg: 
+      - "El VG VGAPPS no tiene espacion suficiente"
+      - "Utilizar la plantilla de nombre bvm_jobtemplate_lvm_linux"
+      - "Acceda a la URL: https://ansible-tower.eu4.cacf.kyndryl.net/#/templates/job_template/133308/details"
