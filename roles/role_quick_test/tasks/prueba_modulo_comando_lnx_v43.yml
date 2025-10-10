@@ -25,5 +25,9 @@
 - block:
     - copy:
         content: "{{ cpremotehostip | join('\n') }}"
-        dest: /tmp/concentrado.txt
+        dest: /tmp/concentrado0.txt
+
+    - lineinfile:
+        path: /tmp/concentrado1.txt
+        line: "{{ cpremotehostip | join('\n') }}"
   delegate_to: lvbtst01.bvm.bluecare.kyndryl.net
