@@ -193,3 +193,5 @@ lvm_params:
 number_of_partitions: "{{ number_of_partitions }}"
 
 mpnombre: "{{ mpn }}"
+
+evaluacion: OK
