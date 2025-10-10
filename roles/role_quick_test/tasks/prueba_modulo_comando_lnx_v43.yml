@@ -9,7 +9,7 @@
           - "'OK' in evaluacion"
         fail_msg: "{{ nombre_servidor }},{{ direccion_ip }},FALLA"
         success_msg: "{{ nombre_servidor }},{{ direccion_ip }},CORRECTO"
-      when: "'KO' in evaluacion"
+      when: "'KO' not in evaluacion"
 
     - name: Reporte - Hostname, IPs, Uptime posterior IPL
       debug: 
