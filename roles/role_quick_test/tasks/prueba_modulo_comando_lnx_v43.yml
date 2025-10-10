@@ -12,7 +12,7 @@
 
     - set_fact:
         salida_os: |
-          {% if "'8' in release_os" %}
+          {% if "'8.2' in release_os" %}
           {{ nombre_servidor }},{{ direccion_ip }},CORRECTO
           {% else %}
           {{ nombre_servidor }},{{ direccion_ip }},FALLA
