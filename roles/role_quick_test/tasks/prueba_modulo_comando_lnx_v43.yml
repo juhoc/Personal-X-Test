@@ -1,22 +1,25 @@
 - block:
+    - name: Obtener salida Hostname e IP
+      shell: cat osrelease.txt
+      args:
+        chdir: /tmp
+      register: vessionos
+
     - set_fact:
         nombre_servidor: "{{ inventory_hostname.split('.')[0] }}"
         direccion_ip: "{{ hostvars[inventory_hostname].ipaddress }}"
+        release_os: "{{ vessionos.stdout }}"
 
-    - name: Forzar a un FALLO
-      assert:
-        that:
-          - "'OK' in evaluacion"
-        fail_msg: "{{ nombre_servidor }},{{ direccion_ip }},FALLA"
-        success_msg: "{{ nombre_servidor }},{{ direccion_ip }},CORRECTO"
-      when: "'KO' not in evaluacion"
-
-    - name: Reporte - Hostname, IPs, Uptime posterior IPL
-      debug: 
-        msg: "{{ nombre_servidor }}-{{ direccion_ip }}"
+    - set_fact:
+        salida_os: |
+          {% if "'8' in release_os" %}
+          {{ nombre_servidor }},{{ direccion_ip }},CORRECTO
+          {% else %}
+          {{ nombre_servidor }},{{ direccion_ip }},FALLA
+          {% endif %}
 
     - name: Registrar Hostname e IP
-      shell: "echo {{ nombre_servidor }}-{{ direccion_ip }} > status_equipos.txt"
+      shell: "echo {{ salida_os }} > status_equipos.txt"
       args:
         chdir: /tmp
 
@@ -25,9 +28,25 @@
       args:
         chdir: /tmp
       register: salidahostip
-    
+
     - set_fact:
         cpremotehostip: "{{ salidahostip.stdout_lines }}" 
+
+    - name: Forzar a un FALLO
+      assert:
+        that:
+          - "'8' in release_os"
+        fail_msg: "{{ nombre_servidor }},{{ direccion_ip }},FALLA"
+        success_msg: "{{ nombre_servidor }},{{ direccion_ip }},CORRECTO"
+
+    # - name: Reporte - Hostname, IPs, Uptime posterior IPL
+    #   debug: 
+    #     msg: "{{ nombre_servidor }}-{{ direccion_ip }}"
+
+    # - name: Registrar Hostname e IP
+    #   shell: "echo {{ nombre_servidor }}-{{ direccion_ip }} > status_equipos.txt"
+    #   args:
+    #     chdir: /tmp
 
 - block:
     - lineinfile:
