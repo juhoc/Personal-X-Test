@@ -25,7 +25,5 @@
 - block:
     - copy:
         content: "{{ cpremotehostip | join('\n') }}"
-        dest: "concentrado.txt"
-      args:
-        chdir: /tmp
+        dest: /tmp/concentrado.txt
   delegate_to: lvbtst01.bvm.bluecare.kyndryl.net
