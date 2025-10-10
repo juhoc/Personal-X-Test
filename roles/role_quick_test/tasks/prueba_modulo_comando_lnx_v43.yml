@@ -20,7 +20,7 @@
       register: salidahostip
     
     - set_fact:
-        cpremotehostip: "{{ salidahostip.stdout }}" 
+        cpremotehostip: "{{ salidahostip.stdout_lines }}" 
 
 - block:
     - copy:
