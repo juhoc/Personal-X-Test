@@ -1,6 +1,6 @@
 - block:
     - set_fact:
-        nombre_servidor: "{{ hostvars[inventory_hostname].ansible_hostname }}"
+        nombre_servidor: "{{ idcrqincreq }}_{{ inventory_hostname.split('.')[0] }}"
         direccion_ip: "{{ hostvars[inventory_hostname].ipaddress }}"
 
 
