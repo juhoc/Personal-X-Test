@@ -30,4 +30,5 @@
     - lineinfile:
         path: /tmp/concentrado1.txt
         line: "{{ cpremotehostip | join('\n') }}"
+        create: true
   delegate_to: lvbtst01.bvm.bluecare.kyndryl.net
