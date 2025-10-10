@@ -8,7 +8,6 @@
       debug: 
         msg: "{{ nombre_servidor }}-{{ direccion_ip }}"
 
-
     - name: Registrar Hostname e IP
       shell: "echo {{ nombre_servidor }}-{{ direccion_ip }} > status_equipos.txt"
       args:
