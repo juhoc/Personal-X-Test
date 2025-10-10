@@ -13,3 +13,20 @@
       shell: "echo {{ nombre_servidor }}-{{ direccion_ip }} > status_equipos.txt"
       args:
         chdir: /tmp
+
+    - name: Obtener salida Hostname e IP
+      shell: cat status_equipos.txt
+      args:
+        chdir: /tmp
+      register: salidahostip
+    
+    - set_fact:
+        cpremotehostip: "{{ salidahostip.stdout }}" 
+
+- block:
+    - copy:
+        content: "{{ cpremotehostip | join('\n') }}"
+        dest: "concentrado.txt"
+      args:
+        chdir: /tmp
+  delegate_to: lvbtst01.bvm.bluecare.kyndryl.net
