@@ -19,10 +19,10 @@
           {% endif %}
 
     - debug:
-        msg: "{{ salida_os }}"
+        msg: "{{ salida_os | trim }}"
 
     - name: Registrar Hostname e IP
-      shell: "echo {{ salida_os }} > status_equipos.txt"
+      shell: "echo {{ salida_os | trim }} > status_equipos.txt"
       args:
         chdir: /tmp
 
