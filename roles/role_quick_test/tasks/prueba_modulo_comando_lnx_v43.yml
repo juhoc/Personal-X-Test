@@ -1,5 +1,5 @@
 - block:
-    - name: Obtener salida Hostname e IP
+    - name: Obtener version OS
       shell: cat osrelease.txt
       args:
         chdir: /tmp
@@ -17,6 +17,9 @@
           {% else %}
           {{ nombre_servidor }},{{ direccion_ip }},FALLA
           {% endif %}
+
+    - debug:
+        msg: "{{ salida_os }}"
 
     - name: Registrar Hostname e IP
       shell: "echo {{ salida_os }} > status_equipos.txt"
