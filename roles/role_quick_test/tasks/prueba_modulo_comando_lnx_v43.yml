@@ -21,12 +21,12 @@
     - debug:
         msg: "{{ salida_os.split('-')[0] | trim }}"
 
- - block:
-     - lineinfile:
-         path: "/tmp/{{ salida_os.split('-')[1] | trim }}.csv"
-         line: "{{ salida_os.split('-')[0] | trim }}"
-         create: true
-   delegate_to: lvbtst01.bvm.bluecare.kyndryl.net
+- block:
+    - lineinfile:
+       path: "/tmp/{{ salida_os.split('-')[1] | trim }}.csv"
+       line: "{{ salida_os.split('-')[0] | trim }}"
+       create: true
+  delegate_to: lvbtst01.bvm.bluecare.kyndryl.net
 
 # - name: Forzar a un FALLO
 #   assert:
