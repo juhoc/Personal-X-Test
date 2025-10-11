@@ -13,39 +13,25 @@
     - set_fact:
         salida_os: |
           {% if '8' in release_os %}
-          {{ nombre_servidor }},{{ direccion_ip }},CORRECTO
+          {{ nombre_servidor }},{{ direccion_ip }},CORRECTO-soportosdimeok
           {% else %}
-          {{ nombre_servidor }},{{ direccion_ip }},FALLA
+          {{ nombre_servidor }},{{ direccion_ip }},FALLA-soportosdimeko
           {% endif %}
 
     - debug:
-        msg: "{{ salida_os | trim }}"
+        msg: "{{ salida_os.split('-')[0] | trim }}"
 
-    - name: Registrar Hostname e IP
-      shell: "echo {{ salida_os | trim }} > status_equipos.txt"
-      args:
-        chdir: /tmp
+# - block:
+#     - lineinfile:
+#         path: /tmp/concentrado1.txt
+#         line: "{{ salida_os | join('\n') }}"
+#         create: true
+#   delegate_to: lvbtst01.bvm.bluecare.kyndryl.net
 
-    - name: Obtener salida Hostname e IP
-      shell: cat status_equipos.txt
-      args:
-        chdir: /tmp
-      register: salidahostip
-
-    - set_fact:
-        cpremotehostip: "{{ salidahostip.stdout_lines }}" 
-
-- block:
-    - lineinfile:
-        path: /tmp/concentrado1.txt
-        line: "{{ cpremotehostip | join('\n') }}"
-        create: true
-  delegate_to: lvbtst01.bvm.bluecare.kyndryl.net
-
-- name: Forzar a un FALLO
-  assert:
-    that:
-      - "'8' in release_os"
-    fail_msg: "{{ nombre_servidor }},{{ direccion_ip }},FALLA"
-    success_msg: "{{ nombre_servidor }},{{ direccion_ip }},CORRECTO"
+# - name: Forzar a un FALLO
+#   assert:
+#     that:
+#       - "'8' in release_os"
+#     fail_msg: "{{ nombre_servidor }},{{ direccion_ip }},FALLA"
+#     success_msg: "{{ nombre_servidor }},{{ direccion_ip }},CORRECTO"
 
