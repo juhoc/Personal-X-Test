@@ -28,10 +28,10 @@
        create: true
   delegate_to: lvbtst01.bvm.bluecare.kyndryl.net
 
-# - name: Forzar a un FALLO
-#   assert:
-#     that:
-#       - "'8' in release_os"
-#     fail_msg: "{{ nombre_servidor }},{{ direccion_ip }},FALLA"
-#     success_msg: "{{ nombre_servidor }},{{ direccion_ip }},CORRECTO"
+- name: Forzar a un FALLO
+  assert:
+    that:
+      - "'8' in release_os"
+    fail_msg: "{{ nombre_servidor }},{{ direccion_ip }},FALLA"
+    success_msg: "{{ nombre_servidor }},{{ direccion_ip }},CORRECTO"
 
