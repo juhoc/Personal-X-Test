@@ -49,7 +49,7 @@ dim_siop18: 3
 smtp: 192.168.56.132
 smtpport: 25
 mailfrom: mailalert@company-xz.net
-mailto: juhoc@company-zy.net
+mailto: juhoc@company-xz.net
 mailsub: Prueba de correo
 mailbody: "Se envia correo del usuario: mailalert para el usuario: Julio Cesar Hoyos Corredor" 
 #mailsub: "Control-M Reporte de mallas XML"
