@@ -5,9 +5,9 @@
       register: valpvs
 
     - set_fact: 
-        getvgs: "{{ valpvs.stdout | select('match', 'VGAPPS') }}"
+        getvgs: "{{ valpvs.stdout_lines | select('search', 'VGAPPS') list | length > 0 }}"
 
     - debug:
-        msg: "{{ getvgs | default(NON_VGAPPS) }}"
+        msg: "El VGAPPS existe {{ getvgs | default(NON_VGAPPS) }}"
 
 
