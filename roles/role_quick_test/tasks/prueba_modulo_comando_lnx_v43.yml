@@ -18,8 +18,8 @@
           {{ nombre_servidor }},{{ direccion_ip }},FALLA-soportosdimeko
           {% endif %}
 
-    - debug:
-        msg: "{{ salida_os.split('-')[0] | trim }}"
+    # - debug:
+    #     msg: "{{ salida_os.split('-')[0] | trim }}"
 
 - block:
     - lineinfile:

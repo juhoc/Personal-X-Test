@@ -46,10 +46,12 @@ dim_siop18: 3
 
 #---variables correo
 #bvmuxat2_home: /var/opt/ansible/
-smtp: 192.168.56.5
+smtp: 192.168.56.132
 smtpport: 25
-mailfrom: itoperationintegration.mx@company-xz.net
-mailto: julio.cesar.hoyos.corredor@company-xz.net
+mailfrom: mailaert@company-zy.net
+mailto: juhoc@company-zy.net
+mailsub: Prueba de correo
+mailbody: "Se envia correo del usuario: {{ mailfrom.split{'@'}[0] }} para el usuario: {{ mailto.split{'@'}[0] }}" 
 #mailsub: "Control-M Reporte de mallas XML"
 #mailbody: "Por este medio se anexa el archivo export_CCR_ADA.zip y la salida de la ejecucion del script obtener_mallas_ADA.sh"
 #mailusr: itoperationintegration.mx@company-xz.net

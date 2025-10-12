@@ -9,6 +9,5 @@
         from: "{{ mailfrom }}"
         to: "{{ mailto }}"
         subject: "{{ mailsub }}"
-        body: |
-          Hola Mundo!
-  delegate_to: lvmbaoep1.bvm.bluecare.kyndryl.net
+        body: "{{ mailbody }}"
+  delegate_to: lvbtst00.bvm.bluecare.kyndryl.net
