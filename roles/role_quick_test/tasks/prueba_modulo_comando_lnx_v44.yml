@@ -1,4 +1,13 @@
 - block:
+    - name: Obtener hechos sobre los Grupos de Volúmenes
+        lvg_facts:
+          vg: all
+      register: lvm_facts
+    
+#    - debug:
+#        msg: "{{ lvm_facts }}"
+
+
 #    - name: Obtener version OS
 #      become: true
 #      shell: pvs
@@ -9,11 +18,3 @@
 #
 #    - debug:
 #        msg: "El VGAPPS existe {{ getvgs | default(NON_VGAPPS) }}"
-    - name: 1. Obtener hechos sobre los Grupos de Volúmenes
-        lvg_facts:
-          vg: all
-      register: lvm_facts
-    
-    - debug:
-        msg: "{{ lvm_facts }}"    
-
