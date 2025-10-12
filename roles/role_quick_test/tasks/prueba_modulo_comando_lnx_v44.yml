@@ -4,7 +4,7 @@
       shell: pvs
       register: valpvs
 
-    - set_fatc: 
+    - set_fact: 
         getvgs: "{{ valpvs.stdout_lines | select('match', 'VGAPPS') | list }}"
 
     - debug:
