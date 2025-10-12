@@ -4,7 +4,10 @@
       shell: pvs
       register: valpvs
 
+    - set_fatc: 
+        getvgs: "{{ valpvs.stdout_lines | select('match', 'VGAPPS') | list }}"
+
     - debug:
-        msg: "{{ valpvs.results }}"
+        msg: "{{ getvgs | defaul(NON_VGAPPS) }}"
 
 
