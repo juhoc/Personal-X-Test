@@ -9,5 +9,10 @@
         from: "{{ mailfrom }}"
         to: "{{ mailto }}"
         subject: "{{ mailsub }}"
-        body: "{{ mailbody }}"
+        body:
+          <html style="font-family:Trebuchet MS,Arial,Helvetica,sans-serif;">
+          <h3> Prueba de envio de corro en formato HTML </h3>
+          </html>
+        charset: utf8
+        subtype: html
   delegate_to: lvbtst00.bvm.bluecare.kyndryl.net
