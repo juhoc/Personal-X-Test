@@ -5,6 +5,6 @@
       register: valpvs
 
     - debug:
-        msg: "{{ valpvs.stdout_lines }}"
+        msg: "{{ valpvs.results }}"
 
 
