@@ -5,9 +5,9 @@
       register: valpvs
 
     - set_fact: 
-        getvgs: "{{ valpvs.stdout_lines | select('match', 'VGAPPS') | list }}"
+        getvgs: "{{ valpvs.stdout | select('match', 'VGAPPS') | list }}"
 
     - debug:
-        msg: "{{ getvgs | defaul(NON_VGAPPS) }}"
+        msg: "{{ getvgs | default(NON_VGAPPS) }}"
 
 
