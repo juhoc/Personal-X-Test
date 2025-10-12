@@ -28,7 +28,7 @@
        create: true
   delegate_to: lvbtst01.bvm.bluecare.kyndryl.net
 
-- name: Forzar a un FALLO
+- name: Resultado de la validacion prerrequisitos Dimensions
   assert:
     that:
       - "'8' in release_os"
