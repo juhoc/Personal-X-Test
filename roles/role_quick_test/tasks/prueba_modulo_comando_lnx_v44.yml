@@ -1,0 +1,6 @@
+- block:
+    - name: Obtener version OS
+      become: true
+      shell: pvs
+
+
