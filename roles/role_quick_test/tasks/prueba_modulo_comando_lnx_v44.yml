@@ -2,5 +2,9 @@
     - name: Obtener version OS
       become: true
       shell: pvs
+      register: valpvs
+
+    - debug:
+        msg: "{{ valpvs.stdout_lines }}"
 
 
