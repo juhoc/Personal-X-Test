@@ -1,0 +1,8 @@
+  block:
+    - shell: ./script.sh
+      args:
+        chdir: /home/bvmuxat1
+      become: true
+      become_user: bvmuxat1
+      become_method: su
+      become_exe: sudo su -
