@@ -11,8 +11,11 @@
         subject: "{{ mailsub }}"
         body:
           <html style="font-family:Trebuchet MS,Arial,Helvetica,sans-serif;">
-          <h3> Prueba de envio de corro en formato HTML </h3>
+          <h3> Prueba de envio de archivos dimension </h3>
           </html>
         charset: utf8
         subtype: html
+        attach:
+          - /tmp/soportosdimeok.csv
+          - /tmp/soportosdimeko.csv
   delegate_to: lvbtst00.bvm.bluecare.kyndryl.net
