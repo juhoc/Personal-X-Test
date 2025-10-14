@@ -1,20 +1,16 @@
 - block:
-    - name: Obtener hechos sobre los Grupos de Volúmenes
-        lvg_facts:
-          vg: all
-      register: lvm_facts
-    
-#    - debug:
-#        msg: "{{ lvm_facts }}"
+    - name: Obtener version OS
+      become: true
+      shell: pvs
+      register: valpvs
 
+    - set_fact: 
+        getvgs: "{{ valpvs.stdout_lines.splitlines() | select('search', 'VGAPPS') | list | length > 0 }}"
 
-#    - name: Obtener version OS
-#      become: true
-#      shell: pvs
-#      register: valpvs
-#
-#    - set_fact: 
-#        getvgs: "{{ valpvs.stdout_lines.splitlines() | select('search', 'VGAPPS') | list | length > 0 }}"
-#
-#    - debug:
-#        msg: "El VGAPPS existe {{ getvgs | default(NON_VGAPPS) }}"
+    - debug:
+        msg: "El VGAPPS existe {{ getvgs | default(NON_VGAPPS) }}"
+
+#    - name: Obtener hechos sobre los Grupos de Volúmenes
+#        lvg_facts:
+#          vg: all
+#      register: lvm_facts
