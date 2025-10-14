@@ -1,4 +1,4 @@
-  block:
+- block:
     - shell: ./script.sh
       args:
         chdir: /home/bvmuxat1

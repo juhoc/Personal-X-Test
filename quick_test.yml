@@ -12,7 +12,7 @@
 
 - name: PlayBook Maestro de Programas Producto
   hosts: all
-  gather_facts: true
+  gather_facts: false
   strategy: linear
 
   tasks:
