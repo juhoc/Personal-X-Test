@@ -26,7 +26,12 @@
        path: "/tmp/{{ salida_os.split('-')[1] | trim }}.csv"
        line: "{{ salida_os.split('-')[0] | trim }}"
        create: true
-  delegate_to: lvbtst01.bvm.bluecare.kyndryl.net
+  delegate_to: lvpapansiblmx02.bvm.bluecare.kyndryl.net
+
+
+
+
+
 
 - name: Resultado de la validacion prerrequisitos Dimensions
   assert:

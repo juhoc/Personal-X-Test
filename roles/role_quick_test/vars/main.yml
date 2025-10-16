@@ -46,10 +46,10 @@ dim_siop18: 3
 
 #---variables correo
 #bvmuxat2_home: /var/opt/ansible/
-smtp: 192.168.56.132
+smtp: 172.18.0.225 #192.168.56.132
 smtpport: 25
-mailfrom: mailalert@company-xz.net
-mailto: juhoc@company-xz.net
+mailfrom: itoperationintegration.mx@bbva.com #mailalert@company-xz.net
+mailto: julio.cesar.hoyos.corredor@bbva.com #juhoc@company-xz.net
 mailsub: Prueba de correo
 mailbody: "Se envia correo del usuario: mailalert para el usuario: Julio Cesar Hoyos Corredor" 
 #mailsub: "Control-M Reporte de mallas XML"

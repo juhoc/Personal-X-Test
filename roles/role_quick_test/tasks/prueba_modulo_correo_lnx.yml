@@ -1,5 +1,5 @@
 - name: Tareas por bloques - obtencion de evidencias
-  block:
+- block:
     - name: Enviar correo electrónico
       mail:
         host: "{{ smtp }}"
@@ -15,7 +15,7 @@
           </html>
         charset: utf8
         subtype: html
-        attach:
-          - /tmp/soportosdimeok.csv
-          - /tmp/soportosdimeko.csv
-  delegate_to: lvbtst00.bvm.bluecare.kyndryl.net
+        # attach:
+        #   - /tmp/soportosdimeok.csv
+        #   - /tmp/soportosdimeko.csv
+  delegate_to: ldcdtst00.bvm.bluecare.kyndryl.net
