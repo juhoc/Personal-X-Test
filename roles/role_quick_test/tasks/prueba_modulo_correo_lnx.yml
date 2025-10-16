@@ -1,5 +1,6 @@
+---
 - name: Tareas por bloques - obtencion de evidencias
-- block:
+  block:
     - name: Enviar correo electrónico
       mail:
         host: "{{ smtp }}"
