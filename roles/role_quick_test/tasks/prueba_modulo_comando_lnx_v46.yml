@@ -7,7 +7,14 @@
     #   debug:
     #     var: ansible_facts.packages
 
-    - name: Check whether a package called tar is installed
-      debug:
-        msg: "{{ ansible_facts.packages['tar'] | length }} versions of tar are installed!"
-      when: "'tar' in ansible_facts.packages"
+    # - name: Check whether a package called tar is installed
+    #   debug:
+    #     msg: "{{ ansible_facts.packages['tar'] | length }} versions of tar are installed!"
+    #   when: "'tar' in ansible_facts.packages"
+
+    - name: Resultado de la validacion VG VGAPPS
+      assert:
+        that:
+          - "'tar' in ansible_facts.packages"
+        fail_msg: "El rpm tar no esta instalado" 
+        success_msg: "La version {{ ansible_facts.packages['tar'] | length }} esta instalado"
