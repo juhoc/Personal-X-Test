@@ -3,9 +3,9 @@
       package_facts:
         manager: auto
 
-    - name: Print the rpm package facts
-      debug:
-        var: ansible_facts.packages
+    # - name: Print the rpm package facts
+    #   debug:
+    #     var: ansible_facts.packages
 
     - name: Check whether a package called tar is installed
       debug:
