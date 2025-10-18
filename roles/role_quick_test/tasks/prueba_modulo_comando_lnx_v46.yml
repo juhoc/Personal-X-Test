@@ -6,3 +6,8 @@
     - name: Print the rpm package facts
       debug:
         var: ansible_facts.packages
+
+    - name: Check whether a package called tar is installed
+      debug:
+        msg: "{{ ansible_facts.packages['tar'] | length }} versions of tar are installed!"
+      when: "'tar' in ansible_facts.packages"
