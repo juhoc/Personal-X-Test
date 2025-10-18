@@ -16,5 +16,5 @@
       assert:
         that:
           - "'tar' in ansible_facts.packages"
-        fail_msg: "El rpm tar no esta instalado" 
-        success_msg: "La version {{ ansible_facts.packages['tar'] | length }} esta instalado"
+        fail_msg: "El rpm tar no esta instalado"
+        success_msg: "La version {{ ansible_facts.packages['tar'] | length }} tar, esta instalado"
