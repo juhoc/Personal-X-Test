@@ -13,7 +13,7 @@
     #   when: "'tar' in ansible_facts.packages"
 
     - set_fact:
-        tar_rpm: "{{ ansible_facts.tar[0].name }}-{{ ansible_facts.tar[0].version }}"
+        tar_rpm: "{{ ansible_facts.packages.tar[0].name }}-{{ ansible_facts.packages.tar[0].version }}"
 
     - name: Resultado de la validacion VG VGAPPS
       assert:
