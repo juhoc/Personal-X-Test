@@ -19,4 +19,4 @@
         # attach:
         #   - /tmp/soportosdimeok.csv
         #   - /tmp/soportosdimeko.csv
-  delegate_to: ldcdtst00.bvm.bluecare.kyndryl.net
+  delegate_to: lvpapansiblmx02.bvm.bluecare.kyndryl.net
