@@ -13,11 +13,11 @@
     #   when: "'tar' in ansible_facts.packages"
 
     - set_fact:
-        tar: "{{ ansible_facts.tar[0].name }}-{{ ansible_facts.tar[0].version }}"
+        tar_rpm: "{{ ansible_facts.tar[0].name }}-{{ ansible_facts.tar[0].version }}"
 
     - name: Resultado de la validacion VG VGAPPS
       assert:
         that:
           - "'tar' in ansible_facts.packages"
-        fail_msg: "El rpm {{ tar | default('tar_x86_64') }} no esta instalado"
-        success_msg: "La rpm {{ tar }}, esta instalado"
+        fail_msg: "El rpm {{ tar_rpm | default('tar_x86_64') }} no esta instalado"
+        success_msg: "La rpm {{ tar_rpm }}, esta instalado"
