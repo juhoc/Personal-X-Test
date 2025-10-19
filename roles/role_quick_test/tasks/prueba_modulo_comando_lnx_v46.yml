@@ -1,5 +1,5 @@
 - block:
-    - name: Gather the rpm package facts
+    - name: Recopilar datos de paquete rpm
       package_facts:
         manager: auto
 
@@ -13,9 +13,9 @@
     #   when: "'tar' in ansible_facts.packages"
 
     - set_fact:
-        tar_rpm: "{{ ansible_facts.packages.tar[0].name }}-{{ ansible_facts.packages.tar[0].version }}"
+        tar_rpm: "{{ ansible_facts.packages.tar[0].name }}-v{{ ansible_facts.packages.tar[0].version }}"
 
-    - name: Resultado de la validacion VG VGAPPS
+    - name: Resultado de recopilar datos de paquete rpm 
       assert:
         that:
           - "'tar' in ansible_facts.packages"
