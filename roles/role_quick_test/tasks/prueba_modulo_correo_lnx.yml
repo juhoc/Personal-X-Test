@@ -10,10 +10,7 @@
         from: "{{ mailfrom }}"
         to: "{{ mailto }}"
         subject: "{{ mailsub }}"
-        body:
-          <html style="font-family:Trebuchet MS,Arial,Helvetica,sans-serif;">
-          <h3> Prueba de envio de archivos dimension </h3>
-          </html>
+        body: "{{ mailbody }}"
         charset: utf8
         subtype: html
         # attach:
