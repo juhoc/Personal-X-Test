@@ -68,7 +68,7 @@ mailbody: |
                   font-weight: bold;
               }
               .dimensions-text {
-                  color: red;
+                  color: #FF0000;
                   font-weight: bold;
               }
               table {
@@ -83,14 +83,14 @@ mailbody: |
               }
               th {
                   background-color: navy;
-                  color: white;
+                  color: #FFFFFF;
                   font-weight: bold;
               }
               .file-ok {
-                  color: green;
+                  color: #00C928;
               }
               .file-ko {
-                  color: red;
+                  color: #FF0000;
               }
               .signature {
                   margin-top: 20px;
@@ -127,6 +127,7 @@ mailbody: |
           <p class="team-name">Team Automatizacion.</p>
       </body>
       </html>
+      
 
 
 #mailsub: "Control-M Reporte de mallas XML"
