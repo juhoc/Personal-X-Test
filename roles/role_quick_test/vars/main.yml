@@ -51,7 +51,7 @@ smtpport: 25
 mailfrom: mailalert@company-xz.net
 mailto: juhoc@company-xz.net
 mailsub: Prueba de correo
-mailbody: "Se envia correo del usuario: mailalert para el usuario: Julio Cesar Hoyos Corredor" 
+#mailbody: "Se envia correo del usuario: mailalert para el usuario: Julio Cesar Hoyos Corredor" 
 mailbody: |
       <html>  
       <head profile="http://dublincore.org/documents/dcmi-terms/">
