@@ -18,13 +18,13 @@
     - name: Enviar CSV a Artifacts (con clave fija)
       set_stats:
         data:
-          server_upgrade_report: "{{ csv_report }}"
+          server_upgrade_report: "{{ csv_report | trim }}"
         aggregate: false
 
     - name: Mostrar CSV generado
       debug:
         msg: |
           CSV enviado a Artifacts:
-          {{ csv_report }}
+          {{ csv_report | trim }}
   delegate_to: localhost
   run_once: true
