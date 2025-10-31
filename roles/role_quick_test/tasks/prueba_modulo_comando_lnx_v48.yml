@@ -1,8 +1,7 @@
 - block:
     - name: Guardar información del servidor
       set_fact:
-        server_csv_line: "{{ ansible_default_ipv4.address }},{{ inventory_hostname }},{{ os_pre }},{{ os_post }},{{ domain_status }}"
-
+          server_csv_line: "{{ ansible_default_ipv4.address | trim  }},{{ inventory_hostname.split('.')[0] | trim  }},{{ os_pre | trim  }},{{ os_post | trim  }},{{ domain_status | trim }}"
 
 - block:
     - name: Crear CSV completo
