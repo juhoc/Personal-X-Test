@@ -12,9 +12,11 @@
       set_fact:
         csv_line: "{{ server_info.ip }},{{ server_info.hostname }},{{ server_info.os_pre }},{{ server_info.os_post }},{{ server_info.status }}"
 
-    - name: Enviar datos a Artifacts (por servidor)
+    - name: Crear diccionario para set_stats
+      set_fact:
+        stats_data: "{{ stats_data | default({}) | combine({inventory_hostname: csv_line}) }}"
+
+    - name: Enviar datos a Artifacts
       set_stats:
-        data:
-#          server_{{ inventory_hostname }}: "{{ csv_line }}"
-          {{ inventory_hostname }}: "{{ csv_line }}"
-        per_host: true
+        data: "{{ stats_data }}"
+        per_host: yes
