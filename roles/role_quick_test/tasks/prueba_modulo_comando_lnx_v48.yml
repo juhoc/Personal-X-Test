@@ -1,0 +1,24 @@
+- block:
+    - name: Crear CSV completo
+      set_fact:
+        csv_report: |
+          IP,HOSTNAME,OS_PRE,OS_POST,STATUS
+          {% for host in groups['all'] %}
+          {% if hostvars[host].server_csv_line is defined %}
+          {{ hostvars[host].server_csv_line }}
+          {% endif %}
+          {% endfor %}
+
+    - name: Enviar CSV a Artifacts (con clave fija)
+      set_stats:
+        data:
+          server_upgrade_report: "{{ csv_report }}"
+        aggregate: false
+
+    - name: Mostrar CSV generado
+      debug:
+        msg: |
+          CSV enviado a Artifacts:
+          {{ csv_report }}
+  delegate_to: localhost
+  run_once: true
