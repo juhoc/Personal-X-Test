@@ -1,0 +1,19 @@
+- block:
+    - name: Recopilar información del servidor
+      set_fact:
+        server_info:
+          ip: "{{ ansible_default_ipv4.address }}"
+          hostname: "{{ inventory_hostname }}"
+          os_pre: "{{ os_pre }}"
+          os_post: "{{ os_post }}"
+          status: "{{ domain_status }}"
+
+    - name: Crear línea CSV para este servidor
+      set_fact:
+        csv_line: "{{ server_info.ip }},{{ server_info.hostname }},{{ server_info.os_pre }},{{ server_info.os_post }},{{ server_info.status }}"
+
+    - name: Enviar datos a Artifacts (por servidor)
+      set_stats:
+        data:
+          server_{{ inventory_hostname }}: "{{ csv_line }}"
+        per_host: true

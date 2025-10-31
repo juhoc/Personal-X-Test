@@ -1,1 +1,4 @@
 evaluacion: KO
+os_pre: "Windows2012"
+os_post: "Windows2019"
+domain_status: "En dominio"
