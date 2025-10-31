@@ -15,5 +15,6 @@
     - name: Enviar datos a Artifacts (por servidor)
       set_stats:
         data:
-          server_{{ inventory_hostname }}: "{{ csv_line }}"
+#          server_{{ inventory_hostname }}: "{{ csv_line }}"
+          {{ inventory_hostname }}: "{{ csv_line }}"
         per_host: true
