@@ -13,11 +13,11 @@
   when: reboot_result is not failed
 
 - name: Ejecutar el Upgrade Windows en el equipo remoto
-  win_shell: sleep 3600
+  win_shell: sleep 60
 
 - name: Ejecutar Reboot despues del Upgrade de Windows en el equipo remoto 
   win_reboot:
-    reboot_timeout: 60
+    reboot_timeout: 3600
     test_command: 'exit (Get-Service -Name Netlogon).Status -ne "Running"'
   register: reboot_result
   ignore_errors: true
