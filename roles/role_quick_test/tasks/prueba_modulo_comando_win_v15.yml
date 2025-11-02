@@ -1,28 +1,6 @@
-- name: Deshabilitar UAC en el equipo remoto previo al Upgrade Windows
-  win_shell: sleep 60
-
-- name: Ejecucion del Reboot en el equipo remoto para deshabilitar UAC previo al Upgrade de Windows 
-  win_reboot:
-    reboot_timeout: 3600
-  register: reboot_result
-  ignore_errors: true
-
-- name: Regreso del Reboot del equipo remoto para deshabilitar UAC previo al Upgrade de Windows
-  debug:
-    msg: "El equipo remoto {{ inventory_hostname.split('.')[0] }} ha regresado después de deshabilitar UAC antes del Upgrade Windows"
-  when: reboot_result is not failed
-
-- name: Ejecutar el Upgrade Windows en el equipo remoto
-  win_shell: sleep 60
-
-- name: Ejecutar Reboot despues del Upgrade de Windows en el equipo remoto 
-  win_reboot:
-    reboot_timeout: 3600
-    test_command: 'exit (Get-Service -Name Netlogon).Status -ne "Running"'
-  register: reboot_result
-  ignore_errors: true
-
-- name: Regreso del Reboot del equipo remoto posterior al Upgrade de Windows
-  debug:
-    msg: "El equipo remoto {{ inventory_hostname.split('.')[0] }} ha regresado después del Upgrade Windows"
-  when: reboot_result is not failed
+- name: Reboot with custom connect timeout for unreliable networks
+  ansible.windows.win_reboot:
+    msg: "Scheduled reboot for patching"
+    connect_timeout: 10.0
+    reboot_timeout: 900
+    post_reboot_delay: 60
