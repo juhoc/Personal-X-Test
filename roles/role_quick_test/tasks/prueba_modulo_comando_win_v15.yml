@@ -1,0 +1,18 @@
+- name: Regreso del Reboot del equipo remoto para deshabilitar UAC previo al Upgrade de Windows
+  debug:
+    msg: "El equipo remoto {{ inventory_hostname.split('.')[0] }} ha regresado después de deshabilitar UAC antes del Upgrade Windows"
+
+- name: Ejecutar el Upgrade Windows en el equipo remoto
+  win_shell: sleep 15
+
+- name: Ejecutar Reboot despues del Upgrade de Windows en el equipo remoto 
+  win_reboot:
+    reboot_timeout: 1800
+    test_command: 'exit (Get-Service -Name Netlogon).Status -ne "Running"'
+  register: reboot_result
+  ignore_errors: true
+
+- name: Regreso del Reboot del equipo remoto posterior al Upgrade de Windows
+  debug:
+    msg: "El equipo remoto {{ inventory_hostname.split('.')[0] }} ha regresado después del Upgrade Windows"
+  when: reboot_result is not failed
