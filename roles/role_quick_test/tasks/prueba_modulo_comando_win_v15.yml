@@ -1,5 +1,5 @@
 - name: Reboot with custom connect timeout for unreliable networks
-  ansible.windows.win_reboot:
+  win_reboot:
     msg: "Scheduled reboot for patching"
     connect_timeout: 10.0
     reboot_timeout: 900
