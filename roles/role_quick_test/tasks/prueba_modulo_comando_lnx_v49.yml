@@ -1,7 +1,7 @@
 - block:
     - name: Test ps1
       shell: echo "./busca_vm1 -vmName {{ asbhost }}"
-      loop: "{{ ansible_limit.split('.')[0] | list }}"
+      loop: "{{ ansible_limit.split('\n') | list }}"
       loop_control:
         loop_var: asbhost
   delegate_to: lvpapansiblmx02.bvm.bluecare.kyndryl.net
