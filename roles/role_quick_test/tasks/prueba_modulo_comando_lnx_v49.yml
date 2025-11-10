@@ -3,10 +3,10 @@
       shell: echo "./busca_v -vmName {{ asbhostps1.split('.')[0] }}" > "info_vm_{{ asbhostps1.split('.')[0] }}_$(date_+%y%m%d%_%H)"
       loop: "{{ ansible_play_hosts }}"
       loop_control:
-        loop_var: asbhosps1
+        loop_var: asbhostps1
   
     - name: Write log
-      shell: ls -1rt "info_vm_{{ asbhostps1.split('.')[0] }}"
+      shell: ls -1rt "info_vm_{{ asbhoslog.split('.')[0] }}"
       loop: "{{ ansible_play_hosts }}"
       loop_control:
         loop_var: asbhoslog
