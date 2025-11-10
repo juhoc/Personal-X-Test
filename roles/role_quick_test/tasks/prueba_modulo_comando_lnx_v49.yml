@@ -5,3 +5,4 @@
       # loop_control:
       #   loop_var: asbhost
   delegate_to: lvpapansiblmx02.bvm.bluecare.kyndryl.net
+  run_once: true
