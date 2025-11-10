@@ -4,7 +4,7 @@
 
     - name: Test shell
       become: true
-      shell: echo "./busca_v -vmName {{ iten.split('.')[0] }} Thin" > /tmp/info_vm_{{ iten.split('.')[0] }}_$({{ asbtime }})
+      shell: echo "./busca_v -vmName {{ iten.split('.')[0] }}" > /tmp/info_vm_{{ iten.split('.')[0] }}_$({{ asbtime }})
       loop: "{{ target_hosts }}"
       loop_control:
         loop_var: iten
