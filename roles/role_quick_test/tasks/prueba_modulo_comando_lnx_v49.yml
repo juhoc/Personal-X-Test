@@ -1,6 +1,6 @@
 - block:
     - name: Test shell
-      shell: echo "./busca_v -vmName {{ asbhost.split('.'[0] )}}"
+      shell: echo "./busca_v -vmName {{ asbhost.split('.')[0] }}"
       loop: "{{ ansible_play_hosts }}"
       loop_control:
         loop_var: asbhost
