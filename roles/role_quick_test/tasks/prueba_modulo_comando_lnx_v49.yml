@@ -8,7 +8,7 @@
   
     - name: Write log
       become: true
-      shell: cat /tmp/info_vm_"{{ asbhoslog.split('.')[0] }}_$(date +%y%m%d) | grep Thin"
+      shell: cat /tmp/info_vm_"{{ asbhoslog.split('.')[0] }}_$(date +%y%m%d)" | grep Thin
       loop: "{{ ansible_play_hosts }}"
       loop_control:
         loop_var: asbhoslog
