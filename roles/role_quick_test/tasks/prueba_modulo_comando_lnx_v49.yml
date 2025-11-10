@@ -1,0 +1,4 @@
+- block:
+    - name: Test ps1
+      shell: echo "./busca_vm1 -vmName {{ ansible_limit.split('.')[0] }}"
+  delegate_to: lvpapansiblmx02.bvm.bluecare.kyndryl.net
