@@ -15,7 +15,7 @@
       register: asbhoslogs
 
     - set_fact:
-        catmsg: "{{ asbhoslogs.result }}"
+        catmsg: "{{ asbhoslogs.results }}"
 
 
     # - name: Reporte
