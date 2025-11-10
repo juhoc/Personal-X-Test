@@ -1,8 +1,8 @@
 - block:
     - name: Test shell
-      shell: echo "./busca_v -vmName {{ item }}"
+      shell: echo "./busca_v -vmName {{ asbhost }}"
       loop: "{{ ansible_play_hosts }}"
-      # loop_control:
-      #   loop_var: asbhost
+      loop_control:
+        loop_var: asbhost
   delegate_to: lvpapansiblmx02.bvm.bluecare.kyndryl.net
   run_once: true
