@@ -21,10 +21,10 @@
       assert:
         that:
           - asbhoslogs.failed_when_result is not defined
-        fail_msg: "OK Palabra clave"
-        success_msg: "KO Palabra clave"
-      # loop: "{{ ansible_play_hosts }}"
-      # loop_control:
-      #   loop_var: asbhosmsg
+        fail_msg: "KO Palabra clave no esta en - {{ iten.split('.')[0] }}"
+        success_msg: "OK Palabra clave esta en - {{ iten.split('.')[0] }}"
+      loop: "{{ target_hosts }}"
+      loop_control:
+        loop_var: item
   delegate_to: lvpapansiblmx02.bvm.bluecare.kyndryl.net
   run_once: true
