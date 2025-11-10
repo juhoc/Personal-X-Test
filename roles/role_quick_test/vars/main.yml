@@ -42,7 +42,7 @@ dim_siop15: dmsys
 dim_siop16: 1
 dim_siop17: 1
 dim_siop18: 3
-
+asbtime: "date +%y%m%d"
 
 #---variables correo
 #bvmuxat2_home: /var/opt/ansible/

@@ -1,7 +1,7 @@
 - block:
     - name: Test shell
       become: true
-      shell: echo "./busca_v -vmName {{ asbhostps1.split('.')[0] }} Thin" > /tmp/info_vm_{{ asbhostps1.split('.')[0] }}_$(date +%y%m%d)
+      shell: echo "./busca_v -vmName {{ asbhostps1.split('.')[0] }} Thin" > /tmp/info_vm_{{ asbhostps1.split('.')[0] }}_$({{ asbtime }})
       loop: "{{ ansible_play_hosts }}"
       loop_control:
         loop_var: asbhostps1
@@ -17,15 +17,16 @@
     - set_fact:
         catmsg: "{{ asbhoslogs.results }}"
 
-
-    # - name: Reporte
-    #   assert:
-    #     that:
-    #       - "'Thin' in asbhoslogs.stdout"
-    #     fail_msg: "OK Palabra clave {{ asbhosmsg.split('.')[0] }}"
-    #     success_msg: "KO Palabra clave {{ asbhosmsg.split('.')[0] }}"
-    #   loop: "{{ ansible_play_hosts }}"
-    #   loop_control:
-    #     loop_var: asbhosmsg
+    - name: Reporte
+      assert:
+        that:
+          {% for results in asbhoslogs.results %}
+          - "'Thin' in results.stdout"
+          {% endfor %}
+        fail_msg: "OK Palabra clave {{ asbhosmsg.split('.')[0] }}"
+        success_msg: "KO Palabra clave {{ asbhosmsg.split('.')[0] }}"
+      loop: "{{ ansible_play_hosts }}"
+      loop_control:
+        loop_var: asbhosmsg
   delegate_to: lvpapansiblmx02.bvm.bluecare.kyndryl.net
   run_once: true
