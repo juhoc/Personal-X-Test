@@ -1,8 +1,15 @@
 - block:
     - name: Test shell
-      shell: echo "./busca_v -vmName {{ asbhost.split('.')[0] }}"
+      shell: echo "./busca_v -vmName {{ asbhostps1.split('.')[0] }}" > "info_vm_{{ asbhostps1.split('.')[0] }}_$(date_+%y%m%d%_%H)"
       loop: "{{ ansible_play_hosts }}"
       loop_control:
-        loop_var: asbhost
+        loop_var: asbhosps1
+  
+    - name: Write log
+      shell: ls -1rt "info_vm_{{ asbhostps1.split('.')[0] }}"
+      loop: "{{ ansible_play_hosts }}"
+      loop_control:
+        loop_var: asbhoslog
+      register: asbhoslogs
   delegate_to: lvpapansiblmx02.bvm.bluecare.kyndryl.net
   run_once: true
