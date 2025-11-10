@@ -6,7 +6,7 @@
         loop_var: asbhostps1
   
     - name: Write log
-      shell: ls -1rt "info_vm_{{ asbhoslog.split('.')[0] }}"
+      shell: ls -1rt /tmp/info_vm_"{{ asbhoslog.split('.')[0] }}"
       loop: "{{ ansible_play_hosts }}"
       loop_control:
         loop_var: asbhoslog
