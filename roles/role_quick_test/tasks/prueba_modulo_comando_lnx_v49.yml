@@ -1,12 +1,12 @@
 - block:
     - name: Test shell
-      shell: echo "./busca_v -vmName {{ asbhostps1.split('.')[0] }}" > /tmp/info_vm_{{ asbhostps1.split('.')[0] }}_$(date +%y%m%d_%H)
+      shell: echo "./busca_v -vmName {{ asbhostps1.split('.')[0] }}" > /tmp/info_vm_{{ asbhostps1.split('.')[0] }}_$(date +%y%m%d)
       loop: "{{ ansible_play_hosts }}"
       loop_control:
         loop_var: asbhostps1
   
     - name: Write log
-      shell: ls -1rt /tmp/info_vm_"{{ asbhoslog.split('.')[0] }}"
+      shell: ls -1rt /tmp/ | grep info_vm_"{{ asbhoslog.split('.')[0] }}_$(date +%y%m%d)"
       loop: "{{ ansible_play_hosts }}"
       loop_control:
         loop_var: asbhoslog
