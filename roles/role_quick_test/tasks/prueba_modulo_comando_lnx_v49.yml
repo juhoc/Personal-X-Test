@@ -21,8 +21,8 @@
       assert:
         that:
           - asbhoslogs.failed_when_result is not defined
-        fail_msg: "KO Palabra clave no esta en - {{ item.split('.')[0] }}"
-        success_msg: "OK Palabra clave esta en - {{ item.split('.')[0] }}"
+        fail_msg: "No se encontro el equipo - {{ item.split('.')[0] }} en el vCenter"
+        success_msg: "Se encontro el equipo - {{ item.split('.')[0] }} en el vCenter"
       loop: "{{ target_hosts }}"
       loop_control:
         loop_var: item
