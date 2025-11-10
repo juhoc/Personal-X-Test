@@ -1,6 +1,6 @@
 - block:
     - name: Test shell
-      shell: echo "./busca_v -vmName {{ iten }}"
+      shell: echo "./busca_v -vmName {{ item }}"
       loop: "{{ ansible_play_hosts }}"
       # loop_control:
       #   loop_var: asbhost
