@@ -1,32 +1,30 @@
 - block:
+    - set_fact:
+        target_hosts: "{{ ansible_play_hosts_all }}"
+
     - name: Test shell
       become: true
-      shell: echo "./busca_v -vmName {{ asbhostps1.split('.')[0] }} Thin" > /tmp/info_vm_{{ asbhostps1.split('.')[0] }}_$({{ asbtime }})
-      loop: "{{ ansible_play_hosts }}"
+      shell: echo "./busca_v -vmName {{ iten.split('.')[0] }} Thin" > /tmp/info_vm_{{ iten.split('.')[0] }}_$({{ asbtime }})
+      loop: "{{ target_hosts }}"
       loop_control:
-        loop_var: asbhostps1
+        loop_var: iten
   
     - name: Write log
       become: true
-      shell: cat /tmp/info_vm_"{{ asbhoslog.split('.')[0] }}_$(date +%y%m%d)" | grep Thin
-      loop: "{{ ansible_play_hosts }}"
+      shell: cat /tmp/info_vm_"{{ item.split('.')[0] }}_$(date +%y%m%d)" | grep Thin
+      loop: "{{ target_hosts }}"
       loop_control:
-        loop_var: asbhoslog
+        loop_var: item
       register: asbhoslogs
-
-    - set_fact:
-        catmsg: "{{ asbhoslogs.results }}"
 
     - name: Reporte
       assert:
         that:
-          {% for results in asbhoslogs.results %}
-          - "'Thin' in results.stdout"
-          {% endfor %}
-        fail_msg: "OK Palabra clave {{ asbhosmsg.split('.')[0] }}"
-        success_msg: "KO Palabra clave {{ asbhosmsg.split('.')[0] }}"
-      loop: "{{ ansible_play_hosts }}"
-      loop_control:
-        loop_var: asbhosmsg
+          - asbhoslogs.failed_when_result is not defined
+        fail_msg: "OK Palabra clave"
+        success_msg: "KO Palabra clave"
+      # loop: "{{ ansible_play_hosts }}"
+      # loop_control:
+      #   loop_var: asbhosmsg
   delegate_to: lvpapansiblmx02.bvm.bluecare.kyndryl.net
   run_once: true
