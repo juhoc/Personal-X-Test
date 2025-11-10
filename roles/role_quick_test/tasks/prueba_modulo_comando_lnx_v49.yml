@@ -11,7 +11,7 @@
   
     - name: Write log
       become: true
-      shell: cat /tmp/info_vm_"{{ item.split('.')[0] }}_$(date +%y%m%d)" | grep Thin
+      shell: cat /tmp/info_vm_"{{ item.split('.')[0] }}_$(date +%y%m%d)" | grep Thin >/dev/null && echo "VM {{ item.split('.')[0] }}" || echo "NOT_FOUND_VM"
       loop: "{{ target_hosts }}"
       loop_control:
         loop_var: item
