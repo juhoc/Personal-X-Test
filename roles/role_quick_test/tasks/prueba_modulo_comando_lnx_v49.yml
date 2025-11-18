@@ -26,5 +26,5 @@
       loop: "{{ target_hosts }}"
       loop_control:
         loop_var: item
-  delegate_to: lvpapansiblmx02.bvm.bluecare.kyndryl.net
+  delegate_to: lvbh0tst9.bvm.bluecare.kyndryl.net
   run_once: true
