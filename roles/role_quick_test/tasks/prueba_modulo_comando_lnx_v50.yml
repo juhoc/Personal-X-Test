@@ -1,17 +1,17 @@
 - block:
     - name: Quien soy en el ServidorA
       become: true
-      become_user: userget
+      become_user: userput
       become_method: su
       become_exe: sudo su -
       shell: id -a
 
-    # - name: Copiar archivo de ServidorA a ServidorB
-    #   become: true
-    #   become_user: userget
-    #   become_method: su
-    #   become_exe: sudo su -
-    #   shell: |
-    #     eval $(ssh-agent -s)
-    #     echo "{{ mi_passphrase }}" | ssh-add /home/ccrbao/.ssh/id_rsa
-    #     scp -o StrictHostKeyChecking=no {{ software }} ccrbao@{{ item }}:/tmp
+    - name: Copiar archivo de ServidorA a ServidorB
+      become: true
+      become_user: userput
+      become_method: su
+      become_exe: sudo su -
+      shell: |
+        eval $(ssh-agent -s)
+        echo "{{ userget }}"
+        scp -o StrictHostKeyChecking=no /tmp/NetBackup_put.zip userget@192.168.56.63:/tmp
