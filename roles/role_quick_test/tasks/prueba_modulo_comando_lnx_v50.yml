@@ -23,9 +23,9 @@
       become_method: su
       become_exe: sudo su -      
       expect:
-        command: scp -o StrictHostKeyChecking=no {{ scpuser }}@{{ iprmt }}:~/{{ bckfile }} .
+        command: scp -o StrictHostKeyChecking=no -o PreferredAuthentications=password {{ scpuser }}@{{ iprmt }}:~/{{ bckfile }} .
         responses:
-          (?i)password: "{{ password }}"
+          (?i)password: "{{ passrmt }}"
         timeout: 60
       loop: "{{ ip_host.split('\n') }}"
       loop_control:

@@ -18,4 +18,4 @@ userput: !vault |
       3562
 scpuser: usertfm
 bckfile: backup_fw.tar
-password: transfermedia
+passrmt: transfermedia
