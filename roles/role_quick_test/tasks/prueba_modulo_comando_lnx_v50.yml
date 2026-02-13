@@ -4,7 +4,7 @@
       become_user: userput
       become_method: su
       become_exe: sudo su -
-      shell: id -a
+      shell: whoami
 
     # - name: Copiar archivo de ServidorA a ServidorB
     #   become: true
