@@ -6,16 +6,36 @@
       become_exe: sudo su -
       shell: whoami
 
-    - name: Copiar archivo de DeviceB al ServerA
+    # - name: Copiar archivo de DeviceB al ServerA
+    #   become: true
+    #   become_user: "{{ scpuser }}"
+    #   become_method: su
+    #   become_exe: sudo su -
+    #   shell: scp -o StrictHostKeyChecking=no {{ scpuser }}@{{ iprmt }}:~/{{ bckfile }} .
+    #   ignore_errors: true
+    #   loop: "{{ ip_host.split('\n') }}"
+    #   loop_control:
+    #     loop_var: iprmt
+
+    - name: Descargar ArchivoB desde el F5 usando SCP
       become: true
       become_user: "{{ scpuser }}"
       become_method: su
-      become_exe: sudo su -
-      shell: scp -o StrictHostKeyChecking=no {{ scpuser }}@{{ iprmt }}:~/{{ bckfile }} .
-      ignore_errors: true
+      become_exe: sudo su -      
+      expect:
+        command: scp -o StrictHostKeyChecking=no {{ scpuser }}@{{ iprmt }}:~/{{ bckfile }} .
+        responses:
+          (?i)password: "{{ password }}"
+        timeout: 60
       loop: "{{ ip_host.split('\n') }}"
       loop_control:
         loop_var: iprmt
+      register: scp_result
+
+    - name: Verificar la descarga
+      debug:
+        msg: "Archivo descargado exitosamente en /tmp"
+      when: scp_result.rc == 0
 
     # - name: Copiar archivo de DeviceB al ServerA
     #   become: true
