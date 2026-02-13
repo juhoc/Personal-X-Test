@@ -11,11 +11,11 @@
       become_user: "{{ scpuser }}"
       become_method: su
       become_exe: sudo su -
-      shell: scp -o StrictHostKeyChecking=no {{ scpuser }}@{{ ip }}:~/{{ bckfile }} .
+      shell: scp -o StrictHostKeyChecking=no {{ scpuser }}@{{ iprmt }}:~/{{ bckfile }} .
       ignore_errors: true
       loop: "{{ ip_host.split('\n') }}"
       loop_control:
-        loop_var: ip
+        loop_var: iprmt
 
     # - name: Copiar archivo de DeviceB al ServerA
     #   become: true
