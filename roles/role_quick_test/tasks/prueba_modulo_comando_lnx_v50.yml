@@ -6,9 +6,18 @@
       become_exe: sudo su -
       shell: whoami
 
-    - name: Copiar archivo de ServidorA a ServidorB
-      become: true
-      become_user: userput
-      become_method: su
-      become_exe: sudo su -
-      shell: echo "{{ userget }}" | scp -o StrictHostKeyChecking=no userget@192.168.56.63:/tmp/NetBackup_get.zip /tmp
+    # - name: Copiar archivo de ServidorA a ServidorB
+    #   become: true
+    #   become_user: userput
+    #   become_method: su
+    #   become_exe: sudo su -
+    #   shell: echo "{{ userget }}" | scp -o StrictHostKeyChecking=no userget@192.168.56.63:/tmp/NetBackup_get.zip /tmp
+
+    - name: Ejecutar comando SCP
+      command: >
+        scp -o StrictHostKeyChecking=no 
+        userget@192.168.56.63:/tmp/NetBackup_get.zip
+        /tmp
+      environment:
+        SSHPASS: "{{ userget }}"
+      when: ansible_password is defined
