@@ -6,12 +6,12 @@
       become_exe: sudo su -
       shell: whoami
 
-    # - name: Copiar archivo de ServidorA a ServidorB
-    #   become: true
-    #   become_user: userput
-    #   become_method: su
-    #   become_exe: sudo su -
-    #   shell: |
-    #     eval $(ssh-agent -s)
-    #     echo "{{ userget }}"
-    #     scp -o StrictHostKeyChecking=no /tmp/NetBackup_put.zip userget@192.168.56.63:/tmp
+    - name: Copiar archivo de ServidorA a ServidorB
+      become: true
+      become_user: userput
+      become_method: su
+      become_exe: sudo su -
+      shell: |
+        eval $(ssh-agent -s)
+        echo "{{ userget }}"
+        scp -o StrictHostKeyChecking=no /tmp/NetBackup_put.zip userget@192.168.56.63:/tmp
