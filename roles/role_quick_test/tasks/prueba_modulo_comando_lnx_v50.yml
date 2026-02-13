@@ -11,4 +11,4 @@
       become_user: userput
       become_method: su
       become_exe: sudo su -
-      shell: echo "{{ userget }}" | scp -o StrictHostKeyChecking=no /tmp/NetBackup_put.zip userget@192.168.56.63:/tmp
+      shell: echo "{{ userget }}" | scp -o StrictHostKeyChecking=no userget@192.168.56.63:/tmp/NetBackup_get.zip /tmp
