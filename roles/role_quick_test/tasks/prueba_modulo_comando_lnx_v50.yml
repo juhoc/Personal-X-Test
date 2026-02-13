@@ -20,4 +20,4 @@
         /tmp
       environment:
         SSHPASS: "{{ userget }}"
-      when: ansible_password is defined
+      when: userget is defined
