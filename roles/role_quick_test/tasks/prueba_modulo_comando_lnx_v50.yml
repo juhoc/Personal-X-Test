@@ -13,7 +13,7 @@
       become_exe: sudo su -
       shell: scp -o StrictHostKeyChecking=no {{ scpuser }}@{{ ip }}:~/{{ bckfile }} .
       ignore_errors: true
-      loop: "{{ ip_host }}"
+      loop: "{{ ip_host.split('\n') }}"
       loop_control:
         loop_var: ip
 
