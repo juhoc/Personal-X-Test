@@ -1,27 +1,32 @@
 - block:
-    - name: Quien soy en el ServidorA
+    - name: Quien soy en el ServerA
       become: true
-      become_user: userput
+      become_user: "{{ scpuser }}"
       become_method: su
       become_exe: sudo su -
       shell: whoami
 
-    # - name: Copiar archivo de ServidorA a ServidorB
+    - name: Copiar archivo de DeviceB al ServerA
+      become: true
+      become_user: "{{ scpuser }}"
+      become_method: su
+      become_exe: sudo su -
+      shell: scp -o StrictHostKeyChecking=no {{ scpuser }}@{{ ip }}:~/{{ bckfile }} .
+      ignore_errors: true
+      loop: "{{ ip_host }}"
+      loop_control:
+        loop_var: ip
+
+    # - name: Copiar archivo de DeviceB al ServerA
     #   become: true
     #   become_user: userput
     #   become_method: su
     #   become_exe: sudo su -
-    #   shell: echo "{{ userget }}" | scp -o StrictHostKeyChecking=no userget@192.168.56.63:/tmp/NetBackup_get.zip /tmp
-
-    - name: Ejecutar comando SCP
-      become: true
-      become_user: userput
-      become_method: su
-      become_exe: sudo su -
-      command: >
-        scp -o StrictHostKeyChecking=no 
-        userget@192.168.56.63:/tmp/NetBackup_get.zip
-        /tmp
-      environment:
-        SSHPASS: "{{ userget }}"
-      when: userget is defined
+    #   command: >
+    #     scp -o StrictHostKeyChecking=no 
+    #     userget@192.168.56.63:/tmp/NetBackup_get.zip
+    #     /tmp
+    #   environment:
+    #     SSHPASS: "{{ userget }}"
+    #   when: userget is defined
+    #   ignore_errors: true
