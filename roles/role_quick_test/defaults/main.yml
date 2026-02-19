@@ -18,4 +18,5 @@ userput: !vault |
       3562
 scpuser: was60
 bckfile: /WebSphere80/logs/waslog.bin
+rpofile: /WebSphere80/logs
 passrmt: "!A2s3d4f5g"
