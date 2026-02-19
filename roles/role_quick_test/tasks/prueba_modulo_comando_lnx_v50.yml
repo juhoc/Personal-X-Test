@@ -17,7 +17,7 @@
     #   loop_control:
     #     loop_var: iprmt
 
-    - name: Copiar archivo de DeviceB al ServerA
+    - name: Descagar archivo del ServerB al ServerA
       become: true
       become_user: "{{ scpuser }}"
       become_method: su
